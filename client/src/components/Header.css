@@ -1,0 +1,245 @@
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #6A1B9A;
+    /* Deep purple */
+    color: #FBC02D;
+    /* Soft yellow */
+}
+
+.company-name {
+    font-size: 18px;
+    /* Adjust font size as needed */
+    color: #FBC02D;
+    /* Soft yellow */
+    font-weight: bold;
+    /* Make the font bold for emphasis */
+    text-align: left;
+    /* Align text to the left */
+    margin-top: 10px;
+    /* Add some space above the name */
+    margin-left: 15px;
+    /* Add left margin to create space from the logo */
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    /* Center logo and text vertically */
+    flex-grow: 1;
+}
+
+.logo {
+    width: 90px;
+    /* Adjust according to your logo size */
+    height: auto;
+
+}
+
+.logo-text {
+    display: flex;
+    flex-direction: column;
+    /* Stack short and long name vertically */
+    margin-left: 10px;
+    /* Space between logo and text */
+}
+
+.short-name {
+    margin: 0;
+    /* Remove default margin */
+    font-size: 24px;
+    /* Adjust as necessary */
+    font-weight: bold;
+    font-family: 'Pacifico', cursive;
+    /* Use the imported font */
+}
+
+.long-name {
+    margin: 0;
+    /* Remove default margin */
+    font-size: 14px;
+    /* Adjust as necessary */
+    color: #FFD700;
+    /* Color for long name */
+}
+
+nav {
+    flex: 2;
+}
+
+.nav-list {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    position: relative;
+    /* Added for absolute positioning of dropdown */
+}
+
+.nav-list li {
+    position: relative;
+    /* Required for dropdown positioning */
+}
+
+
+.nav-list button {
+    background: none;
+    border: none;
+    color: white;
+    /* Light text color */
+    font-weight: 500;
+    cursor: pointer;
+    padding: 10px 15px;
+    /* Add padding for better touch area */
+    text-align: left;
+    /* Align text to the left */
+    transition: all 0.3s ease;
+}
+
+.nav-list button:hover,
+.nav-list button:focus {
+    background-color: rgba(255, 215, 0, 0.2);
+    /* Light gold background on hover */
+}
+
+/* Dropdown Content */
+.dropdown-content {
+    display: none;
+    /* Hidden by default */
+    position: absolute;
+    background-color: #444;
+    /* Slightly lighter dark background for dropdown */
+    color: white;
+    padding: 10px;
+    border-radius: 4px;
+    top: 100%;
+    /* Position below the nav item */
+    left: 50%;
+    transform: translateX(-50%);
+    /* Center it */
+    white-space: nowrap;
+    /* Prevent text wrapping */
+    z-index: 1;
+    /* Ensure it appears above other elements */
+}
+
+.nav-list li:hover .dropdown-content {
+    display: block;
+    /* Show on hover */
+}
+
+/* Media Query for Responsive Design */
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .nav-list {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .nav-list button {
+        padding: 10px;
+        /* Add padding for touch targets */
+    }
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    /* Center vertically */
+    width: 100%;
+    /* Ensure it takes full width */
+    margin-right: 10px;
+}
+
+.short-name {
+    font-size: 48px;
+    /* Adjust font size */
+    font-weight: bold;
+    font-family: 'Pacifico', cursive;
+    /* Cursive font for short name */
+    margin-right: 20px;
+    /* Add some space between short name and long name */
+}
+
+.long-name {
+    font-size: 16px;
+    /* Adjust size for long name */
+    color: #ffe600;
+    /* Color for long name */
+    font-weight: normal;
+    /* Normal weight for long name */
+    text-align: left;
+    /* Align text to the left */
+}
+
+
+
+
+.long-name span {
+    display: block;
+    /* Each span will be on a new line */
+}
+
+.menu-toggle {
+    display: none;
+    /* Hide by default, show on small screens */
+    background-color: #333;
+    /* Match with header background */
+    border: none;
+    color: #fff;
+    /* Change color to fit your theme */
+    font-size: 24px;
+    cursor: pointer;
+    margin-left: auto;
+    width: 70px; /* Set a fixed width */
+    height: 50px; /* Set a fixed height */
+    /* Push button to the right */
+}
+
+/* Show the toggle button on small screens */
+@media (max-width: 768px) {
+    .menu-toggle {
+        display: block;
+        padding: 0;
+        /* Show menu toggle button */
+        /* margin-left: auto;  */
+    }
+
+    .nav {
+        display: none;
+        /* Hide navigation by default */
+    }
+
+    .nav.open {
+        display: block;
+        /* Show navigation when menu is open */
+        width: 100%;
+        /* Full width for dropdown */
+    }
+
+    .nav-list {
+        flex-direction: column;
+        /* Stack items vertically */
+        align-items: center;
+        /* Center items */
+        width: 100%;
+        /* Full width for dropdown */
+    }
+
+    .nav-list li {
+        margin-right: 0;
+        /* Remove margin on smaller screens */
+        margin-bottom: 10px;
+        /* Add spacing between stacked items */
+        width: 100%;
+        /* Make list items full width */
+        text-align: center;
+        /* Center text for better appearance */
+    }
+}

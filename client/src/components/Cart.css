@@ -1,0 +1,78 @@
+/* Cart popup container */
+.cart-popup {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 320px;
+  max-height: 400px;
+  overflow-y: auto;
+  background: white;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  border-radius: 12px;
+  padding: 20px;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+/* Close button top-right */
+.close-btn {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  border: none;
+  background: transparent;
+  font-size: 24px;
+  cursor: pointer;
+  color: #888;
+  transition: color 0.2s ease;
+}
+.close-btn:hover {
+  color: #333;
+}
+
+/* Cart items */
+.cart-list {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 20px 0;
+}
+
+.cart-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.cart-controls {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.cart-controls button {
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+/* Proceed button */
+.proceed-btn {
+  width: 100%;
+  padding: 10px 0;
+  background-color: #007bff;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.proceed-btn:hover {
+  background-color: #0056b3;
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

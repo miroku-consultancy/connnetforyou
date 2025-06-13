@@ -1,0 +1,61 @@
+/* src/components/Solutions.css */
+
+.solutions-section {
+    padding: 40px 20px;
+    text-align: center;
+    background-color: #f9f9f9;
+}
+
+.solutions-list {
+    display: flex; /* Use flexbox for layout */
+    justify-content: center; /* Center items */
+    flex-wrap: wrap; /* Allow items to wrap */
+    gap: 20px; /* Space between items */
+}
+
+.solution-item {
+    background: #ffffff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 10px;
+    flex: 1 1 250px; /* Allow items to grow and shrink with a base width */
+    max-width: 250px; /* Set a max width for items */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    text-align: left; /* Align text to left */
+    transition: transform 0.2s; /* Add a transition for hover effect */
+}
+
+.solution-item:hover {
+    transform: translateY(-5px); /* Slight lift effect on hover */
+}
+
+.solution-image {
+    width: 100%; /* Make the image take the full width of the item */
+    border-radius: 8px; /* Round the image corners */
+    margin-bottom: 15px; /* Space between image and text */
+}
+
+.solution-item h2 {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+}
+
+.solution-item p {
+    font-size: 1em;
+    line-height: 1.5;
+}
+
+/* Media Queries for Responsive Design */
+@media (max-width: 768px) {
+    .solution-item {
+        flex: 1 1 200px; /* Adjust width for medium screens */
+    }
+}
+
+@media (min-width: 768px) {
+    .industry-list {
+        flex-direction: row; /* Switch to row layout on larger screens */
+        justify-content: space-around;
+    }
+}

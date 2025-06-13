@@ -1,0 +1,77 @@
+/* About.css */
+.about-section {
+    padding: 40px 20px;
+    text-align: center;
+    background-color: #f9f9f9;
+}
+
+.content {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+}
+
+.text-container {
+    flex: 1;
+    margin-right: 20px;
+}
+
+.image-container {
+    flex: 1;
+}
+
+.image {
+    width: 100%;
+    border-radius: 8px;
+}
+
+.office-container {
+    margin-top: 20px;
+}
+
+.office-image-wrapper {
+    position: relative;
+}
+
+.office-image {
+    width: 100%;
+    border-radius: 8px;
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.office-image-wrapper:hover .overlay {
+    opacity: 1;
+}
+
+@media (max-width: 768px) {
+    .content {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .text-container {
+        margin-right: 0;
+        margin-bottom: 20px;
+    }
+
+    .image-container {
+        width: 100%;
+    }
+}

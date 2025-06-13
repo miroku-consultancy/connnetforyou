@@ -1,0 +1,647 @@
+{
+    "navItems": [
+        {
+            "name": "Courses",
+            "id": "#training",
+            "description": [
+                "JLPT N5 Level",
+                "JLPT N4 Level",
+                "JLPT N3 Level",
+                "JLPT N2 Level",
+                "JLPT N1 Level"
+            ]
+        },
+        {
+            "name": "About",
+            "id": "#about",
+            "description": [
+                "About Us"
+            ],
+            "url": "https://mirokulanguageacademy.com/"
+        },
+        {
+            "name": "Contact",
+            "id": "#contact",
+            "description": [
+                "mirokulanguageacademy@gmail.com"
+            ]
+        },
+        {
+            "name": "Ask",
+            "id": "#SubmitForm",
+            "description": [
+                "Ask with us"
+            ]
+        }
+    ],
+    "industries": [
+        {
+            "name": "Ecommerce",
+            "description": "Online retail and sales solutions that empower businesses to reach their customers effectively through user-friendly platforms.",
+            "details": "Our ecommerce solutions include fully customizable storefronts, secure payment gateways, and integrated inventory management systems, ensuring a seamless shopping experience for customers and increased sales for businesses.",
+            "image": "images/ecommerce.jfif"
+        },
+        {
+            "name": "ERP",
+            "description": "Enterprise Resource Planning for businesses to streamline operations and improve efficiency.",
+            "details": "We provide comprehensive ERP solutions that integrate various business processes, including finance, HR, and supply chain management, enabling real-time data access and informed decision-making.",
+            "image": "images/erp.jfif"
+        },
+        {
+            "name": "Social",
+            "description": "Social media platforms and solutions for enhancing engagement and communication.",
+            "details": "Our social media solutions help businesses build their online presence, engage with their audience, and analyze user behavior through targeted advertising and analytics tools.",
+            "image": "images/social.png"
+        },
+        {
+            "name": "Website",
+            "description": "Single page applications designed for speed and efficiency without traditional loading times.",
+            "details": "Our website solutions leverage modern frameworks to create responsive and interactive single-page applications, ensuring a smooth user experience across all devices.",
+            "image": "images/WebsiteImg.jfif"
+        }
+    ],
+    "contact": {
+        "heading": "Contact Us",
+        "description": "If you're interested in our services, please reach out:",
+        "office": {
+            "title": "Registered Office:",
+            "delhititle": "Delhi Office:",
+            "delhiaddress": "Connect4U, Delhi",
+            "address": "428 Bhatia Road, Daulatpura, Ghaziabad, Uttar Pradesh, India - 201001"
+        },
+        "email": {
+            "icon": "images/email-icon.jfif",
+            "address": "mirokulanguageacademy@gmail.com",
+            "phone": "+919599972731",
+            "schedule": "Monday to Friday 9am to 5pm"
+        },
+        "backgroundImage": "images/contact-background.jfif"
+    },
+    "about": {
+        "heading": "Why Choose Us",
+        "description": [
+            "Welcome to Connect4U, where we provide expert software solutions tailored to your business needs. Our team of experienced professionals is dedicated to helping you succeed in the ever-evolving tech landscape.",
+            "We believe in building strong partnerships with our clients and delivering high-quality results that exceed expectations. Our services include custom software development, IT strategy consulting, and agile transformations."
+        ],
+        "teamImage": "images/Schedule.png",
+        "office": {
+            "title": "Our Office",
+            "subtitle": "Welcome to Connect4U where we are dedicated to helping you master Japanese language and achieve your career goals. Our expert team of educators and counselors is here to provide you with the best learning experience, tailored to your individual needs.",
+            "description": "At Connect4U, our commitment goes beyond mere language instruction; we strive to foster cultural understanding and bridge diverse communities. As a Japanese Language Trainer with us, you will be instrumental in advancing this important mission. We are in search of passionate and dynamic educators who are dedicated to inspiring and engaging a varied and vibrant student body.",
+            "image": "images/about-help.png"
+        }
+    },
+    "services": [
+        {
+            "title": "Custom Software Development",
+            "description": "Tailored software solutions to meet your business needs.",
+            "image": "images/custom-software.jfif"
+        },
+        {
+            "title": "Cloud Solutions",
+            "description": "Flexible and scalable cloud services for your organization.",
+            "image": "images/cloud-solutions.jfif"
+        },
+        {
+            "title": "IT Strategy and Consulting",
+            "description": "Expert advice to optimize your IT infrastructure.",
+            "image": "images/it-strategy.jfif"
+        },
+        {
+            "title": "Agile Transformation",
+            "description": "Transforming your processes for better efficiency and adaptability.",
+            "image": "images/agile-transformation.jfif"
+        }
+    ],
+    "solutions": [
+        {
+            "title": "Web Applications",
+            "description": "Custom web applications tailored to your business needs, enhancing productivity and efficiency.",
+            "image": "images/web-app.jfif"
+        },
+        {
+            "title": "Hybrid Mobile Applications",
+            "description": "Cross-platform mobile applications that deliver a native experience on both Android and iOS.",
+            "image": "images/mobile-app.jfif"
+        },
+        {
+            "title": "REST APIs",
+            "description": "Robust and secure APIs that allow seamless integration with various systems and services.",
+            "image": "images/api.jfif"
+        },
+        {
+            "title": "Cloud Solutions",
+            "description": "Scalable cloud services leveraging platforms like AWS and Azure to support your business growth.",
+            "image": "images/cloud.jfif"
+        }
+    ],
+    "home": {
+        "heading": "Welcome to Connect4U",
+        "description": "Connect4U where we are dedicated to helping you master Japanese language and achieve your career goals.",
+        "backgroundImage": "images/home.png"
+    },
+    "submitForm": {
+        "heading": "Ask Us",
+        "description": "if you are interested in taking admission in our Academy, please send us a message."
+    },
+    "training": {
+        "heading": "Courses",
+        "programs": [
+            {
+                "title": "JLPT N5 Level",
+                "description": "Welcome to our JLPT N5 Course, an essential step in your journey toward mastering the Japanese language. This course is thoughtfully structured to provide you with a comprehensive foundation, focusing on critical elements such as basic grammar, essential vocabulary, and a deep understanding of the Japanese writing systems—Hiragana, Katakana, and introductory Kanji.",
+                "duration": "6 months",
+                "prerequisites": "What You will Master Basic Grammar: An introduction to essential Japanese grammar, covering sentence structure, verb conjugation, and fundamental particles. Essential Vocabulary:Learn fundamental vocabulary for everyday conversations, including greetings, numbers, and common phrases. Introduction to Kanji and Kana:Begin studying Hiragana and Katakana, the Japanese syllabaries, along with a few basic Kanji characters. Fundamental Listening and Reading Skills:Build the ability to understand and respond to basic Japanese in everyday situations, as well as read and comprehend short, simple texts.",
+                "image": "images/JLPT-N5-COURSE-e1726413714873.png"
+            },
+            {
+                "title": "JLPT N4 Level",
+                "description": "Welcome to our JLPT N4 Course. This course builds upon the foundational skills acquired at the N5 level, with a focus on intermediate grammar, essential vocabulary expansion, and enhanced proficiency in both Kanji and Kana. Additionally, you will further develop your listening and reading comprehension abilities, equipping you to understand and use the language in everyday situations with greater confidence.",
+                "duration": "6 months",
+                "prerequisites": "What You will Master Basic to Intermediate Grammar: Emphasize expanding your grammar foundation with intermediate structures, enabling the formation of more intricate sentences. Essential Vocabulary: Acquire fundamental vocabulary frequently used in daily life, including phrases relevant to various everyday situations. Kanji and Kana Proficiency: Enhance your proficiency in Kanji and Kana (Hiragana and Katakana) by studying characters and combinations commonly encountered in everyday life. Basic Listening and Reading Comprehension: Enhance your skills to understand and interpret basic Japanese used in everyday dialogue, as well as in straightforward written content like emails and advertisements.",
+                "image": "images/JLPT-N4-COURSE-e1726413699416.png"
+            },
+            {
+                "title": "JLPT N3 Level",
+                "description": "Welcome to our JLPT N3 Course. This course is designed to significantly enhance your command of Japanese. It focuses on expanding your vocabulary, refining your understanding of grammar, and deepening your knowledge of Kanji. You will also develop greater proficiency in reading and listening comprehension, enabling you to engage with more nuanced and sophisticated materials. This course is a crucial step in advancing your language skills, bringing you closer to fluency and preparing you for higher levels of communication in Japanese.",
+                "duration": "6 months",
+                "prerequisites": "What You will Master Intermediate Grammar: Explore advanced grammatical structures to enhance the depth and sophistication of conversations and comprehension. Vocabulary Development: Broaden your vocabulary to encompass intermediate-level words that are crucial for everyday conversations and fundamental written content. Kanji Recognition: Study and familiarize yourself with a broader set of frequently used Kanji, emphasizing their meanings and pronunciations. Listening and Reading: Develop the skills to identify key points in dialogues and straightforward texts, including news briefs and short stories.",
+                "image": "images/JLPT-N3-COURSE-e1726413686934.png"
+            },
+            {
+                "title": "JLPT N2 Level",
+                "description": "Welcome to our JLPT N2 Course, expertly designed for learners seeking to achieve mastery in intermediate to advanced Japanese. This course acts as a critical transition between basic proficiency and advanced language skills, offering comprehensive training in complex grammar, vocabulary, and Kanji. By focusing on enhancing your reading, listening, and comprehension abilities, it equips you to engage confidently with more sophisticated Japanese in both everyday and professional contexts.",
+                "duration": "6 months",
+                "prerequisites": "Advanced Grammar: Develop a deep understanding of advanced grammatical structures to create refined and sophisticated sentences, incorporating conditional, causative, and passive constructions. Enhanced Vocabulary: Build a diverse vocabulary, encompassing technical terms, idiomatic expressions, and colloquialisms, vital for advanced understanding and effective communication. Kanji Expertise: Achieve mastery of a substantial number of Kanji characters, emphasizing their multiple readings and meanings, essential for advanced reading and writing proficiency. Advanced Comprehension Skills: Enhance listening and reading proficiency to near-native levels, with an emphasis on grasping intricate texts and audio content, including news, narratives, and professional discussions..",               "image": "images/JLPT-N2-COURSE-e1726413669683.png"
+            },
+            {
+                "title": "JLPT N1 Level",
+                "description": "Welcome to our JLPT N1 Course, specifically designed for advanced learners of Japanese. As the highest level of the Japanese-Language Proficiency Test (JLPT), N1 necessitates an exceptional command of the language. This course is meticulously crafted to help you attain the highest standards of linguistic proficiency, encompassing advanced grammar, vocabulary, and Kanji, while honing your reading, listening, and overall comprehension skills to an expert level.",
+                "duration": "6 months",
+                "prerequisites": "Proficient Reading Skills: Cultivate the ability to comprehend intricate texts, including subtle expressions and diverse writing styles. Vocabulary and Kanji: Enhance your command of advanced vocabulary while mastering a comprehensive range of kanji characters. Listening Skills: Strengthen your skills in comprehending spoken Japanese in diverse settings, including swift dialogues and professional presentations. Speaking and Writing Fluency: Enhance the ability to articulate complex ideas clearly and appropriately in Japanese, both verbally and in writing..",
+                "image": "images/JLPT-N1-COURSE-e1726413669687.png"
+            }
+        ]
+    },
+  "products": [
+  {
+    "id": 1,
+    "name": "Fresh Bananas",
+    "description": "Sweet and ripe bananas, perfect for smoothies and snacks.",
+    "price": 45,
+    "category": "Fruits",
+    "available": true,
+    "image": "/images/banana.jpg"
+  },
+  {
+    "id": 2,
+    "name": "Organic Tomatoes",
+    "description": "Juicy organic tomatoes, great for salads and sauces.",
+    "price": 38,
+    "category": "Vegetables",
+    "available": true,
+    "image": "/images/tomatoes.jpg"
+  },
+  {
+    "id": 3,
+    "name": "Red Apples",
+    "description": "Crisp and sweet red apples, ideal for snacks and baking.",
+    "price": 60,
+    "category": "Fruits",
+    "available": true,
+    "image": "/images/apple.jpeg"
+  },
+  {
+    "id": 4,
+    "name": "Carrots",
+    "description": "Crunchy fresh carrots, perfect for salads and cooking.",
+    "price": 25,
+    "category": "Vegetables",
+    "available": true,
+    "image": "/images/carrots.jpg"
+  },
+  {
+    "id": 5,
+    "name": "Green Grapes",
+    "description": "Sweet and juicy green grapes, great for snacking.",
+    "price": 70,
+    "category": "Fruits",
+    "available": true,
+    "image": "/images/grapes.jpg"
+  },
+  {
+    "id": 6,
+    "name": "Cucumber",
+    "description": "Fresh cucumbers, perfect for salads and sandwiches.",
+    "price": 30,
+    "category": "Vegetables",
+    "available": true,
+    "image": "/images/cucumber.avif"
+  },
+  {
+    "id": 7,
+    "name": "Sweet Pineapple",
+    "description": "Tropical sweet pineapple, great for desserts and juices.",
+    "price": 85,
+    "category": "Fruits",
+    "available": true,
+    "image": "/images/pineapple.jpg"
+  },
+  {
+    "id": 8,
+    "name": "Bell Peppers",
+    "description": "Colorful bell peppers, packed with vitamins.",
+    "price": 40,
+    "category": "Vegetables",
+    "available": true,
+    "image": "/images/bell-pepper.jpg"
+  },
+  {
+    "id": 9,
+    "name": "Strawberries",
+    "description": "Fresh strawberries, sweet and juicy for desserts.",
+    "price": 120,
+    "category": "Fruits",
+    "available": true,
+    "image": "/images/strawberries.jpg"
+  },
+  {
+    "id": 10,
+    "name": "Broccoli",
+    "description": "Green broccoli florets, great for steaming and cooking.",
+    "price": 50,
+    "category": "Vegetables",
+    "available": true,
+    "image": "/images/broccoli.jpg"
+  },
+  {
+    "id": 11,
+    "name": "Oranges",
+    "description": "Fresh oranges, perfect for juicing and eating.",
+    "price": 55,
+    "category": "Fruits",
+    "available": true,
+    "image": "/images/oranges.jpeg"
+  },
+  {
+    "id": 12,
+    "name": "Spinach",
+    "description": "Fresh spinach leaves, great for salads and cooking.",
+    "price": 35,
+    "category": "Vegetables",
+    "available": true,
+    "image": "/images/spinach.jpg"
+  },
+  {
+    "id": 13,
+    "name": "Blueberries",
+    "description": "Organic blueberries, packed with antioxidants.",
+    "price": 150,
+    "category": "Fruits",
+    "available": true,
+    "image": "/images/blueberries.jpg"
+  },
+  {
+    "id": 14,
+    "name": "Potatoes",
+    "description": "Fresh potatoes, perfect for fries, mash, and roasting.",
+    "price": 28,
+    "category": "Vegetables",
+    "available": true,
+    "image": "/images/potatoes.jpg"
+  },
+  {
+    "id": 15,
+    "name": "Mangoes",
+    "description": "Ripe and juicy mangoes, a tropical delight.",
+    "price": 90,
+    "category": "Fruits",
+    "available": true,
+    "image": "/images/mango.jpg"
+  },
+  {
+    "id": 16,
+    "name": "Cauliflower",
+    "description": "Fresh cauliflower heads, perfect for roasting or steaming.",
+    "price": 48,
+    "category": "Vegetables",
+    "available": true,
+    "image": "/images/cauliflower.jpg"
+  },
+  {
+    "id": 17,
+    "name": "Cherries",
+    "description": "Sweet cherries, ideal for snacking or baking.",
+    "price": 180,
+    "category": "Fruits",
+    "available": true,
+    "image": "/images/cherries.jpg"
+  },
+  {
+    "id": 18,
+    "name": "Green Beans",
+    "description": "Fresh green beans, great for steaming and salads.",
+    "price": 32,
+    "category": "Vegetables",
+    "available": true,
+    "image": "/images/green-beans.jpg"
+  },
+  {
+    "id": 19,
+    "name": "Watermelon",
+    "description": "Refreshing watermelon slices, perfect for summer.",
+    "price": 70,
+    "category": "Fruits",
+    "available": true,
+    "image": "/images/watermelon.jpg"
+  },
+  {
+    "id": 20,
+    "name": "Zucchini",
+    "description": "Fresh zucchini, great for grilling and cooking.",
+    "price": 29,
+    "category": "Vegetables",
+    "available": true,
+    "image": "/images/zucchini.jpg"
+  },
+  {
+    "id": 21,
+    "name": "Pineapple",
+    "description": "Sweet pineapple chunks, great for smoothies.",
+    "price": 88,
+    "category": "Fruits",
+    "available": true,
+    "image": "/images/pineapple.jpg"
+  },
+  {
+    "id": 22,
+    "name": "Sweet Corn",
+    "description": "Fresh corn on the cob, perfect for grilling.",
+    "price": 45,
+    "category": "Vegetables",
+    "available": true,
+    "image": "/images/corn.jpg"
+  },
+  {
+    "id": 23,
+    "name": "Pears",
+    "description": "Juicy and sweet pears, perfect for desserts and snacking.",
+    "price": 65,
+    "category": "Fruits",
+    "available": true,
+    "image": "/images/pears.jpg"
+  },
+  {
+    "id": 24,
+    "name": "Onions",
+    "description": "Fresh onions, essential for cooking.",
+    "price": 20,
+    "category": "Vegetables",
+    "available": true,
+    "image": "/images/onions.jpg"
+  },
+  {
+    "id": 25,
+    "name": "Avocados",
+    "description": "Creamy avocados, perfect for salads and spreads.",
+    "price": 110,
+    "category": "Fruits",
+    "available": true,
+    "image": "/images/avocado.jpg"
+  },
+  {
+    "id": 26,
+    "name": "Garlic",
+    "description": "Fresh garlic bulbs, adds flavor to any dish.",
+    "price": 25,
+    "category": "Vegetables",
+    "available": true,
+    "image": "/images/garlic.jpg"
+  },
+  {
+    "id": 27,
+    "name": "Kiwis",
+    "description": "Tangy and sweet kiwis, rich in vitamin C.",
+    "price": 80,
+    "category": "Fruits",
+    "available": true,
+    "image": "/images/kiwi.jpg"
+  },
+  {
+    "id": 28,
+    "name": "Eggplants",
+    "description": "Fresh eggplants, great for grilling and cooking.",
+    "price": 40,
+    "category": "Vegetables",
+    "available": true,
+    "image": "/images/eggplant.jpg"
+  },
+  {
+    "id": 29,
+    "name": "Lemons",
+    "description": "Fresh lemons, perfect for cooking and drinks.",
+    "price": 35,
+    "category": "Fruits",
+    "available": true,
+    "image": "/images/lemon.jpg"
+  },
+  {
+    "id": 30,
+    "name": "Cabbage",
+    "description": "Crunchy cabbage heads, ideal for salads and cooking.",
+    "price": 28,
+    "category": "Vegetables",
+    "available": true,
+    "image": "/images/cabbage.jpg"
+  },
+  {
+    "id": 31,
+    "name": "Pomegranates",
+    "description": "Fresh pomegranates, rich in antioxidants.",
+    "price": 100,
+    "category": "Fruits",
+    "available": true,
+    "image": "/images/pomegranate.jpg"
+  },
+  {
+    "id": 32,
+    "name": "Brussels Sprouts",
+    "description": "Fresh Brussels sprouts, perfect for roasting.",
+    "price": 60,
+    "category": "Vegetables",
+    "available": true,
+    "image": "/images/brussels.jpg"
+  },
+  {
+    "id": 33,
+    "name": "Papaya",
+    "description": "Sweet papaya chunks, rich in vitamins.",
+    "price": 70,
+    "category": "Fruits",
+    "available": true,
+    "image": "/images/papaya.jpg"
+  },
+  {
+    "id": 34,
+    "name": "Asparagus",
+    "description": "Fresh asparagus spears, great for grilling.",
+    "price": 120,
+    "category": "Vegetables",
+    "available": true,
+    "image": "/images/asparagus.jpg"
+  },
+  {
+    "id": 35,
+    "name": "Blackberries",
+    "description": "Sweet and tart blackberries, perfect for desserts.",
+    "price": 140,
+    "category": "Fruits",
+    "available": true,
+    "image": "/images/blackberries.jpg"
+  },
+  {
+    "id": 36,
+    "name": "Sweet Potatoes",
+    "description": "Nutritious sweet potatoes, great for baking.",
+    "price": 45,
+    "category": "Vegetables",
+    "available": true,
+    "image": "/images/sweet-potatoes.jpg"
+  },
+  {
+    "id": 37,
+    "name": "Cantaloupe",
+    "description": "Juicy cantaloupe slices, perfect for summer.",
+    "price": 65,
+    "category": "Fruits",
+    "available": true,
+    "image": "/images/cantaloupe.jpg"
+  },
+  {
+    "id": 38,
+    "name": "Radishes",
+    "description": "Crunchy radishes, ideal for salads.",
+    "price": 25,
+    "category": "Vegetables",
+    "available": true,
+    "image": "/images/radishes.jpg"
+  },
+  {
+    "id": 39,
+    "name": "Dragon Fruit",
+    "description": "Exotic dragon fruit, sweet and vibrant.",
+    "price": 150,
+    "category": "Fruits",
+    "available": true,
+    "image": "/images/dragon-fruit.jpg"
+  },
+  {
+    "id": 40,
+    "name": "Leeks",
+    "description": "Fresh leeks, great for soups and stews.",
+    "price": 35,
+    "category": "Vegetables",
+    "available": true,
+    "image": "/images/leeks.jpg"
+  },
+  {
+    "id": 41,
+    "name": "Clementines",
+    "description": "Sweet clementines, easy to peel and eat.",
+    "price": 55,
+    "category": "Fruits",
+    "available": true,
+    "image": "/images/clementines.jpg"
+  },
+  {
+    "id": 42,
+    "name": "Turnips",
+    "description": "Fresh turnips, perfect for roasting and soups.",
+    "price": 28,
+    "category": "Vegetables",
+    "available": true,
+    "image": "/images/turnips.jpg"
+  },
+  {
+    "id": 43,
+    "name": "Tangerines",
+    "description": "Juicy tangerines, great for snacking.",
+    "price": 60,
+    "category": "Fruits",
+    "available": true,
+    "image": "/images/tangerines.jpg"
+  },
+  {
+    "id": 44,
+    "name": "Swiss Chard",
+    "description": "Fresh Swiss chard, nutritious and tasty.",
+    "price": 40,
+    "category": "Vegetables",
+    "available": true,
+    "image": "/images/swiss-chard.jpg"
+  },
+  {
+    "id": 45,
+    "name": "Guava",
+    "description": "Sweet guava fruit, rich in vitamin C.",
+    "price": 75,
+    "category": "Fruits",
+    "available": true,
+    "image": "/images/guava.jpg"
+  },
+  {
+    "id": 46,
+    "name": "Celery",
+    "description": "Crunchy celery stalks, perfect for salads and snacks.",
+    "price": 30,
+    "category": "Vegetables",
+    "available": true,
+    "image": "/images/celery.jpg"
+  },
+  {
+    "id": 47,
+    "name": "Honeydew Melon",
+    "description": "Sweet honeydew melon, refreshing and juicy.",
+    "price": 70,
+    "category": "Fruits",
+    "available": true,
+    "image": "/images/honeydew.jpg"
+  },
+  {
+    "id": 48,
+    "name": "Mushrooms",
+    "description": "Fresh mushrooms, great for cooking and salads.",
+    "price": 55,
+    "category": "Vegetables",
+    "available": true,
+    "image": "/images/mushrooms.jpg"
+  },
+  {
+    "id": 49,
+    "name": "Raspberries",
+    "description": "Sweet and tart raspberries, perfect for desserts.",
+    "price": 140,
+    "category": "Fruits",
+    "available": true,
+    "image": "/images/raspberries.jpg"
+  },
+  {
+    "id": 50,
+    "name": "Pumpkin",
+    "description": "Fresh pumpkin, great for pies and soups.",
+    "price": 60,
+    "category": "Vegetables",
+    "available": true,
+    "image": "/images/pumpkin.jpg"
+  }
+
+  ]
+,
+        "orders": [
+          { "id": 1, "productId": 1, "quantity": 2, "totalPrice": 200 },
+          { "id": 2, "productId": 2, "quantity": 1, "totalPrice": 150 },
+          { "id": 3, "productId": 3, "quantity": 3, "totalPrice": 600 }
+        ]
+      
+      
+}
