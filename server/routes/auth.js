@@ -24,7 +24,7 @@ router.post('/send-token', async (req, res) => {
 
   try {
     await pool.query(`
-      INSERT INTO users (email, otp, otp_expires_at)
+      INSERT INTO public.users (email, otp, otp_expires_at)
       VALUES ($1, $2, $3)
       ON CONFLICT (email) DO UPDATE
       SET otp = $2, otp_expires_at = $3
@@ -50,7 +50,7 @@ router.post('/login-with-token', async (req, res) => {
   if (!email || !token) return res.status(400).json({ error: 'Email and OTP required' });
 
   try {
-    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    const result = await pool.query('SELECT * FROM public.users WHERE email = $1', [email]);
     const user = result.rows[0];
 
     if (!user || user.otp !== token) {
@@ -66,7 +66,7 @@ router.post('/login-with-token', async (req, res) => {
     });
 
     // Clear OTP after login
-    await pool.query('UPDATE users SET otp = NULL, otp_expires_at = NULL WHERE id = $1', [user.id]);
+    await pool.query('UPDATE public.users SET otp = NULL, otp_expires_at = NULL WHERE id = $1', [user.id]);
 
     res.json({
       message: 'Login successful',
