@@ -9,33 +9,15 @@ const Product = () => {
   const { cart, cartLoaded, addToCart } = useCart();
   const navigate = useNavigate();
 
-  // Change this to your live backend URL
-  const API_BASE_URL = 'https://connect4u-server.onrender.com';  // <-- update with your actual live API URL
+  const API_BASE_URL = 'https://connect4u-server.onrender.com'; // ✅ Hardcoded
 
   useEffect(() => {
     const fetchProducts = async () => {
-      const token = localStorage.getItem('authToken');
-      if (!token) {
-        console.error('No auth token found');
-        navigate('/login'); // Redirect if not logged in
-        return;
-      }
-
       try {
-        const response = await fetch(`${API_BASE_URL}/api/products`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
+        const response = await fetch(`${API_BASE_URL}/api/products`);
 
         if (!response.ok) {
-          if (response.status === 401) {
-            alert('Session expired. Please log in again.');
-            localStorage.removeItem('authToken');
-            navigate('/login');
-          } else {
-            throw new Error('Failed to fetch products');
-          }
+          throw new Error('Failed to fetch products');
         }
 
         const data = await response.json();
@@ -46,7 +28,7 @@ const Product = () => {
     };
 
     fetchProducts();
-  }, [navigate, API_BASE_URL]);
+  }, []);
 
   useEffect(() => {
     if (!cartLoaded) return;
