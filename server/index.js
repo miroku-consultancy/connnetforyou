@@ -14,7 +14,7 @@ const allowedOrigins = [
   'https://connect4u-client.onrender.com'
 ];
 
-// ✅ Define corsOptions
+// ✅ CORS configuration
 const corsOptions = {
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
@@ -23,28 +23,13 @@ const corsOptions = {
       callback(new Error('Not allowed by CORS'));
     }
   },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 };
 
-// ✅ Apply CORS middleware
+// ✅ Apply only this CORS middleware
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // Handle preflight requests
-
-// ✅ Manual CORS headers for stricter control (esp. on Render)
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "https://connect4u-client.onrender.com");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  res.header("Access-Control-Allow-Credentials", "true");
-
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(204); // Preflight success
-  }
-
-  next();
-});
 
 // ✅ Parse JSON bodies
 app.use(express.json());
