@@ -22,7 +22,7 @@ const Order = () => {
   const [selectedItem, setSelectedItem] = useState(null);
 
   // Change this to your live backend URL
-  const API_BASE_URL = 'https://connect4u-server.onrender.com'; // <-- update this!
+  const API_BASE_URL = 'https://connnect4u-server.onrender.com'; // <-- update this!
 
   const total = items.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
 
