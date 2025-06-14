@@ -13,7 +13,7 @@ const Payment = () => {
       const stripe = await stripePromise;
 
       // ✅ Use dynamic API base URL
-      const baseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+      const baseUrl = 'https://connnet4you-server.onrender.com' || 'http://localhost:5000';
 
       try {
         const response = await fetch(`${baseUrl}/api/stripe/create-checkout-session`, {
