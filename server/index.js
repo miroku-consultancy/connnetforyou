@@ -1,61 +1,58 @@
-// server/index.js
-
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const pool = require('./db'); // Your PostgreSQL connection module
+const pool = require('./db'); // PostgreSQL connection module
 
-// Load environment variables from .env file
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Allowed origins for CORS (adjust the React frontend URL after deployment)
+// ✅ CORS setup
 const allowedOrigins = [
-  'http://localhost:3000',                // local dev React frontend
-  'https://connect4u-client.onrender.com' // deployed React frontend (update this)
+  'http://localhost:3000',
+  'https://connect4u-client.onrender.com',
 ];
 
-app.use(cors({
+const corsOptions = {
   origin: function (origin, callback) {
-    // allow requests with no origin (like curl, mobile apps)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-      return callback(new Error(msg), false);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error('Not allowed by CORS'));
     }
-    return callback(null, true);
   },
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+};
 
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
-// Middleware to parse JSON
+app.options('*', cors(corsOptions)); // ✅ Preflight support
+
+// Middleware
 app.use(express.json());
 
-// Connect to PostgreSQL
+// DB connection
 pool.connect()
   .then(() => console.log('✅ Connected to PostgreSQL database'))
   .catch(err => console.error('❌ PostgreSQL connection error:', err));
 
-// Import your routes
+// Routes
 const addressRoutes = require('./routes/addressRoutes');
 const stripeRoutes = require('./routes/stripe');
 const productRoutes = require('./routes/productRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const authRoutes = require('./routes/auth');
 
-// Use routes with prefix
 app.use('/api/auth', authRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/address', addressRoutes);
 app.use('/api/stripe', stripeRoutes);
 app.use('/api/products', productRoutes);
 
-// Basic root route for sanity check
+// Root route
 app.get('/', (req, res) => {
   res.send('🛒 eCommerce backend is running!');
 });
