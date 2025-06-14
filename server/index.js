@@ -31,6 +31,8 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 // Middleware to parse JSON
 app.use(express.json());
 
