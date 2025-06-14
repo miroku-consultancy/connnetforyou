@@ -2,7 +2,8 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
 
-const stripePromise = loadStripe('pk_test_51RXgiVRLVKTMiCsFKTmHxNGQgNr0gP18cXk20y29PMbB3s3kLm4KCmC2EFTDnmjkyJZ4wTLW8NTkbpXktlSVrrNt00dMcayt2a'); // Use Stripe public test key
+// ✅ Use your actual Stripe public test key
+const stripePromise = loadStripe('pk_test_51RXgiVRLVKTMiCsFKTmHxNGQgNr0gP18cXk20y29PMbB3s3kLm4KCmC2EFTDnmjkyJZ4wTLW8NTkbpXktlSVrrNt00dMcayt2a');
 
 const Payment = () => {
   const navigate = useNavigate();
@@ -11,23 +12,35 @@ const Payment = () => {
     const redirectToStripe = async () => {
       const stripe = await stripePromise;
 
-      const response = await fetch('http://localhost:5000/api/stripe/create-checkout-session', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+      // ✅ Use dynamic API base URL
+      const baseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
+      try {
+        const response = await fetch(`${baseUrl}/api/stripe/create-checkout-session`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
 
-      const session = await response.json();
+        if (!response.ok) {
+          throw new Error('Failed to create Stripe session');
+        }
 
-      const result = await stripe.redirectToCheckout({
-        sessionId: session.id,
-      });
+        const session = await response.json();
 
-      if (result.error) {
-        alert('Payment failed: ' + result.error.message);
-        navigate('/payment'); // Optional fallback
+        const result = await stripe.redirectToCheckout({
+          sessionId: session.id,
+        });
+
+        if (result.error) {
+          alert('Payment failed: ' + result.error.message);
+          navigate('/payment');
+        }
+      } catch (err) {
+        console.error('Error:', err);
+        alert('An error occurred during payment. Please try again.');
+        navigate('/payment');
       }
     };
 
