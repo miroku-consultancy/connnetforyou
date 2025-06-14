@@ -12,7 +12,7 @@ const EmailTokenLogin = () => {
   const sendOtp = async () => {
     setLoading(true);
     try {
-      const res = await fetch('https://connnet4you-server.onrender.com/api/auth/send-token', {
+      const res = await fetch('https://connnet4you-server.onrender.com/api/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
@@ -34,7 +34,7 @@ const EmailTokenLogin = () => {
   const verifyOtp = async () => {
     setLoading(true);
     try {
-      const res = await fetch('https://connnet4you-server.onrender.com/api/auth/login-with-token', {
+      const res = await fetch('https://connnet4you-server.onrender.com/api/auth/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, token: otp }),
