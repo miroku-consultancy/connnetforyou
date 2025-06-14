@@ -1,3 +1,5 @@
+// server/index.js
+
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -8,7 +10,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ✅ CORS setup
+// ✅ CORS setup (with silent rejection for unknown origins)
 const allowedOrigins = [
   'http://localhost:3000',
   'https://connect4u-client.onrender.com',
@@ -16,11 +18,12 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
+    // allow requests with no origin (e.g., curl, Postman)
+    if (!origin || allowedOrigins.includes(origin)) {
       return callback(null, true);
     } else {
-      return callback(new Error('Not allowed by CORS'));
+      // silently reject disallowed origins (no error thrown)
+      return callback(null, false);
     }
   },
   credentials: true,
@@ -31,15 +34,15 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions)); // ✅ Preflight support
 
-// Middleware
+// ✅ Middleware
 app.use(express.json());
 
-// DB connection
+// ✅ PostgreSQL connection
 pool.connect()
   .then(() => console.log('✅ Connected to PostgreSQL database'))
   .catch(err => console.error('❌ PostgreSQL connection error:', err));
 
-// Routes
+// ✅ Import and use routes
 const addressRoutes = require('./routes/addressRoutes');
 const stripeRoutes = require('./routes/stripe');
 const productRoutes = require('./routes/productRoutes');
@@ -52,12 +55,12 @@ app.use('/api/address', addressRoutes);
 app.use('/api/stripe', stripeRoutes);
 app.use('/api/products', productRoutes);
 
-// Root route
+// ✅ Root route
 app.get('/', (req, res) => {
   res.send('🛒 eCommerce backend is running!');
 });
 
-// Start server
+// ✅ Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
