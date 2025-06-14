@@ -22,12 +22,15 @@ const Product = () => {
       }
 
       try {
-        const response = await fetch('https://connect4u-server.onrender.com/api/products');
-        // const response = await fetch(`${API_BASE_URL}/api/products`, {
-        //   headers: {
-        //     'Authorization': `Bearer ${token}`,
-        //   },
-        // });
+        const response = await fetch('https://connect4u-server.onrender.com/api/products', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include', // Ensures cookies are sent
+        });
+
 
         if (!response.ok) {
           if (response.status === 401) {
