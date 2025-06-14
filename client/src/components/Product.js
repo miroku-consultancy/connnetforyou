@@ -10,7 +10,7 @@ const Product = () => {
   const navigate = useNavigate();
 
   // Change this to your live backend URL
-  const API_BASE_URL = 'https://connnect4u-server.onrender.com';  // <-- update with your actual live API URL
+  const API_BASE_URL = 'https://connnet4you-server.onrender.com';  // <-- update with your actual live API URL
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -22,7 +22,7 @@ const Product = () => {
       }
 
       try {
-        const response = await fetch('https://connnect4u-server.onrender.com/api/products', {
+        const response = await fetch('https://connnet4you-server.onrender.com/api/products', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
