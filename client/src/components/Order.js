@@ -21,6 +21,9 @@ const Order = () => {
   });
   const [selectedItem, setSelectedItem] = useState(null);
 
+  // Change this to your live backend URL
+  const API_BASE_URL = 'https://connect4u-server.onrender.com'; // <-- update this!
+
   const total = items.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
 
   const validatePhone = (phone) => /^[6-9]\d{9}$/.test(phone);
@@ -32,7 +35,7 @@ const Order = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/address', {
+      const response = await fetch(`${API_BASE_URL}/api/address`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(tempAddress),
@@ -62,7 +65,7 @@ const Order = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:5000/api/orders', {
+      const response = await fetch(`${API_BASE_URL}/api/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData),

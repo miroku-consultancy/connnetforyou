@@ -9,7 +9,9 @@ const Product = () => {
   const { cart, cartLoaded, addToCart } = useCart();
   const navigate = useNavigate();
 
-  // ✅ Fetch products with token
+  // Change this to your live backend URL
+  const API_BASE_URL = 'https://connect4u-server.onrender.com';  // <-- update with your actual live API URL
+
   useEffect(() => {
     const fetchProducts = async () => {
       const token = localStorage.getItem('authToken');
@@ -20,7 +22,7 @@ const Product = () => {
       }
 
       try {
-        const response = await fetch('http://localhost:5000/api/products', {
+        const response = await fetch(`${API_BASE_URL}/api/products`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -44,9 +46,8 @@ const Product = () => {
     };
 
     fetchProducts();
-  }, [navigate]);
+  }, [navigate, API_BASE_URL]);
 
-  // ✅ Sync quantities with cart
   useEffect(() => {
     if (!cartLoaded) return;
 
