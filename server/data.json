@@ -317,7 +317,7 @@
     "price": 90,
     "category": "Fruits",
     "available": true,
-    "image": "/images/mango.jpg"
+    "image": "/images/mango.jpeg"
   },
   {
     "id": 16,
