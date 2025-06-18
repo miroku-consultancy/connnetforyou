@@ -90,7 +90,7 @@ const Product = () => {
 
   return (
     <section className="product-section">
-      <h1 className="page-title">Explore Fresh Picks 🥬</h1>
+      <h1 className="page-title">Explore Fres Picks 🥬</h1>
 
       {groupedProducts.map(({ subcategory, items }, index) => (
         items.length > 0 && (
