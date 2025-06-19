@@ -45,6 +45,9 @@ const stripeRoutes = require('./routes/stripe');
 const productRoutes = require('./routes/productRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/userRoutes'); // ✅ Add this
+app.use('/api/users', userRoutes); // ✅ Register it
+
 
 app.use('/api/auth', authRoutes);
 app.use('/api/orders', orderRoutes);

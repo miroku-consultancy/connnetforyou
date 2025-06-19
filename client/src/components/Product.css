@@ -131,3 +131,31 @@
   padding: 50px;
   color: #888;
 }
+
+.user-profile-banner {
+  background-color: #f2fdf2;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.user-profile-banner p {
+  margin: 0.25rem 0;
+}
+
+.user-profile-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #f0f9f2;
+  padding: 10px 15px;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.user-icon {
+  font-size: 1.5rem;
+}

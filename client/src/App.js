@@ -16,11 +16,14 @@ import Payment from './components/Payment';
 import OrderSummary from './components/OrderSummary';
 import EmailTokenLogin from './components/EmailTokenLogin';
 import ProtectedRoute from './components/ProtectedRoute';
+
+import { UserProvider } from './components/UserContext';
 import './App.css';
 
 const App = () => {
   return (
     <CartProvider>
+      <UserProvider>
       <Router>
         <Header />
 
@@ -77,6 +80,7 @@ const App = () => {
           <p>&copy; 2024 Connect4U. All rights reserved.</p>
         </footer>
       </Router>
+      </UserProvider>
     </CartProvider>
   );
 };

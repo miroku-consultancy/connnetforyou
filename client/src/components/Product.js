@@ -2,27 +2,33 @@ import React, { useEffect, useState } from 'react';
 import './Product.css';
 import { useCart } from './CartContext';
 import { useNavigate } from 'react-router-dom';
+import { useUser } from './UserContext'; // adjust if path differs
 
 const Product = () => {
   const [products, setProducts] = useState([]);
   const [quantities, setQuantities] = useState({});
   const { cart, cartLoaded, addToCart } = useCart();
+  const { user, loadingUser } = useUser();
   const navigate = useNavigate();
 
   const API_BASE_URL = 'https://connnet4you-server.onrender.com';
 
   const SUBCATEGORIES = [
-    'Fresh Vegetables',
-    'Mangoes & Melons',
     'Fresh Fruits',
+    'Mangoes & Melons',
+    'Plants & Gardening',
+    'Fresh Vegetables',
     'Exotics & Premium',
     'Leafy, Herbs & Seasonings',
     'Organics & Hydroponics',
-    'Plants & Gardening',
     'Flowers & Leaves',
     'Cuts & Sprouts',
     'Dried & Dehydrated',
   ];
+  useEffect(() => {
+    console.log("👤 User from context:", user);
+    console.log("⏳ Loading user?", loadingUser);
+  }, [user, loadingUser]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -62,7 +68,6 @@ const Product = () => {
 
   useEffect(() => {
     if (!cartLoaded) return;
-
     const initialQuantities = {};
     Object.values(cart).forEach((item) => {
       initialQuantities[item.id] = item.quantity;
@@ -86,10 +91,23 @@ const Product = () => {
     items: freshProducts.filter(p => p.subcategory === subcategory),
   }));
 
-  if (!cartLoaded || products.length === 0) return <div className="loading">Loading fresh picks...</div>;
+  if (!cartLoaded || products.length === 0) {
+    return <div className="loading">Loading fresh picks...</div>;
+  }
 
   return (
     <section className="product-section">
+      {!loadingUser && user && (
+        <div className="user-profile-banner">
+          <span role="img" aria-label="user" className="user-icon">👤</span>
+          <div>
+            <p>Welcome back, <strong>{user.name || user.email?.split('@')[0]}</strong></p>
+            <p>{user.email}</p>
+          </div>
+        </div>
+      )}
+
+
       <h1 className="page-title">Explore Fresh Picks 🥬</h1>
 
       {groupedProducts.map(({ subcategory, items }, index) => (
@@ -125,7 +143,8 @@ const Product = () => {
 
       {Object.keys(cart).length > 0 && (
         <div className="floating-cart" onClick={() => navigate('/order')}>
-          🛒 {Object.values(cart).reduce((a, i) => a + i.quantity, 0)} item(s) | ₹{Object.values(cart).reduce((a, i) => a + i.quantity * i.price, 0).toFixed(2)} → View Cart
+          🛒 {Object.values(cart).reduce((a, i) => a + i.quantity, 0)} item(s) | ₹
+          {Object.values(cart).reduce((a, i) => a + i.quantity * i.price, 0).toFixed(2)} → View Cart
         </div>
       )}
     </section>
