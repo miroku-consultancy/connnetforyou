@@ -1,6 +1,6 @@
 // src/App.js
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
 import Services from './components/Services';
 import About from './components/About';
@@ -14,7 +14,7 @@ import Cart from './components/Cart';
 import Order from './components/Order';
 import Payment from './components/Payment';
 import OrderSummary from './components/OrderSummary';
-import EmailTokenLogin from './components/EmailTokenLogin'; // New login component
+import EmailTokenLogin from './components/EmailTokenLogin';
 import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 
@@ -23,10 +23,11 @@ const App = () => {
     <CartProvider>
       <Router>
         <Header />
+
         <main>
           <Routes>
-            <Route path="/" element={<Navigate to="/auth" replace />} />
-            <Route path="/auth" element={<EmailTokenLogin />} />
+            {/* Login page directly on root path to avoid refresh 404 on Render */}
+            <Route path="/" element={<EmailTokenLogin />} />
 
             {/* Protected Routes */}
             <Route
@@ -43,9 +44,30 @@ const App = () => {
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/submit" element={<SubmitForm />} />
-            <Route path="/order" element={<ProtectedRoute><Order /></ProtectedRoute>} />
-            <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
-            <Route path="/order-summary" element={<ProtectedRoute><OrderSummary /></ProtectedRoute>} />
+            <Route
+              path="/order"
+              element={
+                <ProtectedRoute>
+                  <Order />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/payment"
+              element={
+                <ProtectedRoute>
+                  <Payment />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/order-summary"
+              element={
+                <ProtectedRoute>
+                  <OrderSummary />
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </main>
 
