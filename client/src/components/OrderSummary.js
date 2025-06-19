@@ -1,26 +1,38 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useCart } from './CartContext'; // import cart context
 import './OrderSummary.css';
 
 const OrderSummary = () => {
   const [order, setOrder] = useState(null);
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { clearCart } = useCart(); // using clearCart from context
 
   useEffect(() => {
-    // Show alerts based on Stripe redirect
+    // Stripe redirect status alerts
     if (searchParams.get('success')) {
       alert('✅ Payment successful! Thank you for your order.');
     } else if (searchParams.get('canceled')) {
       alert('❌ Payment was canceled. You can try again.');
     }
 
-    // Load order data from localStorage
+    // Load and set order from localStorage
     const savedOrder = localStorage.getItem('orderSummary');
     if (savedOrder) {
       setOrder(JSON.parse(savedOrder));
-      localStorage.removeItem('orderSummary'); // optional cleanup
+      localStorage.removeItem('orderSummary');
     }
-  }, [searchParams]);
+
+    // Handle browser back/forward navigation
+    const handlePopState = () => {
+      clearCart(); // Clear cart if user navigates away manually
+      navigate('/products', { replace: true });
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [searchParams, clearCart, navigate]);
 
   if (!order) return <div style={{ padding: '2rem' }}>Loading summary...</div>;
 
@@ -28,7 +40,7 @@ const OrderSummary = () => {
     <div className="order-summary">
       <h1>Order Summary</h1>
 
-      <h3>Ordered On: <span>{order.orderDate}</span></h3>
+      <h3>Ordered On: <span>{new Date(order.orderDate).toLocaleString()}</span></h3>
 
       <ul className="order-items">
         {order.items.map(item => (
@@ -36,12 +48,7 @@ const OrderSummary = () => {
             <img
               src={process.env.PUBLIC_URL + item.image}
               alt={item.name}
-              style={{
-                width: '60px',
-                height: '60px',
-                objectFit: 'cover',
-                marginRight: '15px',
-              }}
+              className="summary-image"
             />
             <div>
               <strong>{item.name}</strong><br />
@@ -66,6 +73,16 @@ const OrderSummary = () => {
           {order.address.city} - {order.address.zip}
         </p>
       </div>
+
+      <button
+        className="go-to-products-btn"
+        onClick={() => {
+          clearCart();
+          navigate('/products');
+        }}
+      >
+        🛒 Go to Products
+      </button>
     </div>
   );
 };

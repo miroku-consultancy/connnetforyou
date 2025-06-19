@@ -5,7 +5,7 @@ import './Order.css';
 import './AddressPopup.css';
 
 const Order = () => {
-  const { cart, cartLoaded } = useCart();
+  const { cart, cartLoaded, addToCart } = useCart();
   const items = Object.values(cart);
   const navigate = useNavigate();
 
@@ -21,9 +21,7 @@ const Order = () => {
   });
   const [selectedItem, setSelectedItem] = useState(null);
 
-  // Change this to your live backend URL
-  const API_BASE_URL = 'https://connnet4you-server.onrender.com'; // <-- update this!
-
+  const API_BASE_URL = 'https://connnet4you-server.onrender.com';
   const total = items.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
 
   const validatePhone = (phone) => /^[6-9]\d{9}$/.test(phone);
@@ -42,7 +40,6 @@ const Order = () => {
       });
 
       if (!response.ok) throw new Error('Failed to save address');
-
       const savedAddress = await response.json();
       setAddress(savedAddress);
       setShowAddressPopup(false);
@@ -72,21 +69,20 @@ const Order = () => {
       });
 
       if (!response.ok) throw new Error('Failed to place order');
-
       const result = await response.json();
-      console.log('✅ Order placed:', result);
-
       localStorage.setItem('orderSummary', JSON.stringify({ ...orderData, orderId: result.orderId }));
 
-      if (paymentMethod === 'cod') {
-        navigate('/order-summary');
-      } else {
-        navigate('/payment');
-      }
+      navigate(paymentMethod === 'cod' ? '/order-summary' : '/payment');
     } catch (error) {
-      console.error('❌ Order placement failed:', error);
+      console.error('Order placement failed:', error);
       alert('Failed to place order. Please try again.');
     }
+  };
+
+  const handleQtyChange = (item, delta) => {
+    const newQty = Math.max(0, item.quantity + delta);
+    const diff = newQty - item.quantity;
+    if (diff !== 0) addToCart(item, diff);
   };
 
   if (!cartLoaded) return <div className="order-page"><h2>Loading cart...</h2></div>;
@@ -94,24 +90,46 @@ const Order = () => {
 
   return (
     <div className="order-page">
-      <h1>Confirm Your Order</h1>
-      <ul className="order-list">
+      <h1>🧺 Your Cart</h1>
+      <div className="order-list">
         {items.map((item) => (
-          <li key={item.id} className="order-item" onClick={() => setSelectedItem(item)}>
-            <img src={process.env.PUBLIC_URL + item.image} alt={item.name} />
-            <div>
-              <strong>{item.name}</strong> x {item.quantity} - ₹{(Number(item.price) * item.quantity).toFixed(2)}
+          <div key={item.id} className="order-row">
+            <img
+              src={process.env.PUBLIC_URL + item.image}
+              alt={item.name}
+              className="order-img"
+              onClick={() => setSelectedItem(item)}
+            />
+            <div className="order-details">
+              <h3>{item.name}</h3>
+              <div className="qty-controls">
+                <button onClick={() => handleQtyChange(item, -1)} disabled={item.quantity <= 1}>−</button>
+                <span>{item.quantity}</span>
+                <button onClick={() => handleQtyChange(item, 1)}>+</button>
+              </div>
             </div>
-          </li>
+            <div className="order-price">₹{(item.price * item.quantity).toFixed(2)}</div>
+          </div>
         ))}
-      </ul>
+      </div>
 
-      <h3>Total: ₹{total.toFixed(2)}</h3>
+      <div className="order-total">
+        <h2>Total: ₹{total.toFixed(2)}</h2>
+      </div>
 
       {address ? (
         <div className="address-summary">
           <h4>Deliver To:</h4>
           <p>{address.name}, {address.street}, {address.city} - {address.zip}<br />Phone: {address.phone}</p>
+          <button
+            className="edit-btn"
+            onClick={() => {
+              setTempAddress(address);
+              setShowAddressPopup(true);
+            }}
+          >
+            Edit Address
+          </button>
 
           <div className="payment-options">
             <label>

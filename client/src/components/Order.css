@@ -1,89 +1,156 @@
 .order-page {
   max-width: 800px;
-  margin: 30px auto;
+  margin: 0 auto;
   padding: 20px;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .order-page h1 {
   text-align: center;
+  margin-bottom: 20px;
   color: #333;
-  margin-bottom: 25px;
 }
 
 .order-list {
-  list-style: none;
-  padding: 0;
-  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.order-item {
-  background: #fafafa;
-  border: 1px solid #eee;
-  padding: 10px;
-  border-radius: 8px;
-  margin-bottom: 10px;
+.order-row {
   display: flex;
   align-items: center;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: #fdfdfd;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.08);
+  gap: 16px;
 }
 
-.order-item img {
+.order-img {
   width: 60px;
   height: 60px;
   object-fit: cover;
-  border-radius: 5px;
-  margin-right: 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.order-details {
+  flex-grow: 1;
+}
+
+.order-details h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  color: #222;
+}
+
+.qty-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.qty-controls button {
+  width: 30px;
+  height: 30px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+  background-color: #fff;
+  border: 2px solid #ccc;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.qty-controls button:hover {
+  background-color: #f1f1f1;
+  border-color: #888;
+}
+
+.qty-controls span {
+  font-size: 18px;
+  font-weight: 600;
+  min-width: 24px;
+  text-align: center;
+  display: inline-block;
+}
+
+.order-price {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111;
+  min-width: 70px;
+  text-align: right;
+}
+
+.order-total {
+  text-align: right;
+  margin-top: 24px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #222;
+  border-top: 1px solid #ccc;
+  padding-top: 12px;
 }
 
 .address-summary {
-  background-color: #f0f8ff;
-  padding: 20px;
-  border-radius: 8px;
-  margin-top: 20px;
+  background: #f9f9f9;
+  padding: 16px;
+  margin-top: 24px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+}
+
+.address-summary h4 {
+  margin-top: 0;
+}
+
+.address-summary p {
+  margin: 4px 0 10px;
+  line-height: 1.5;
 }
 
 .payment-options {
-  margin-top: 20px;
+  margin: 12px 0;
 }
 
 .payment-options label {
   display: block;
-  margin-bottom: 10px;
-  font-weight: 500;
-  padding: 10px 15px;
-  border-radius: 6px;
-  border: 1px solid #ddd;
+  margin: 6px 0;
   cursor: pointer;
-  transition: all 0.2s ease;
 }
 
-.payment-options input[type="radio"] {
-  margin-right: 10px;
-}
-
-.payment-options label:hover {
-  background-color: #f5f5f5;
-}
-
-.payment-options input[type="radio"]:checked + label {
-  background-color: #e0f7fa;
-  border-color: #00acc1;
-}
-
-button {
+.address-summary button {
+  margin-top: 10px;
   background-color: #28a745;
-  border: none;
   color: white;
-  padding: 12px 20px;
-  font-size: 16px;
+  font-weight: bold;
+  padding: 10px 18px;
+  border: none;
   border-radius: 6px;
   cursor: pointer;
-  margin-top: 20px;
-  transition: background 0.3s ease;
 }
 
-button:hover {
+.address-summary button:hover {
   background-color: #218838;
+}
+
+/* Small "Edit Address" button */
+.address-summary .edit-btn {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 4px 8px;
+  font-size: 12px;
+  background-color: #007bff;
+  color: white;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+}
+
+.address-summary .edit-btn:hover {
+  background-color: #0069d9;
 }

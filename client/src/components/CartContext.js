@@ -2,13 +2,14 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const CartContext = createContext();
 
+// Custom hook to access cart context
 export const useCart = () => useContext(CartContext);
 
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState({});
-  const [cartLoaded, setCartLoaded] = useState(false); // ✅ NEW
+  const [cartLoaded, setCartLoaded] = useState(false);
 
-  // Load cart from localStorage once on mount
+  // Load cart from localStorage on initial mount
   useEffect(() => {
     const savedCart = localStorage.getItem('cart');
     if (savedCart) {
@@ -18,7 +19,7 @@ export const CartProvider = ({ children }) => {
         console.error('Failed to parse saved cart from localStorage', e);
       }
     }
-    setCartLoaded(true); // ✅ Mark cart as loaded
+    setCartLoaded(true);
   }, []);
 
   // Save cart to localStorage whenever it changes
@@ -26,6 +27,7 @@ export const CartProvider = ({ children }) => {
     localStorage.setItem('cart', JSON.stringify(cart));
   }, [cart]);
 
+  // Add item to cart or update quantity
   const addToCart = (product, quantity = 1) => {
     setCart((prev) => {
       const existing = prev[product.id];
@@ -46,6 +48,7 @@ export const CartProvider = ({ children }) => {
     });
   };
 
+  // Update quantity by delta (used for +/- buttons)
   const updateQuantity = (productId, delta) => {
     setCart((prev) => {
       const item = prev[productId];
@@ -64,8 +67,14 @@ export const CartProvider = ({ children }) => {
     });
   };
 
+  // Clear the cart completely
+  const clearCart = () => {
+    setCart({});
+    localStorage.removeItem('cart');
+  };
+
   return (
-    <CartContext.Provider value={{ cart, cartLoaded, addToCart, updateQuantity }}>
+    <CartContext.Provider value={{ cart, cartLoaded, addToCart, updateQuantity, clearCart }}>
       {children}
     </CartContext.Provider>
   );
