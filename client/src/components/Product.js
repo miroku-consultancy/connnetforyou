@@ -102,7 +102,6 @@ const Product = () => {
           <span role="img" aria-label="user" className="user-icon">👤</span>
           <div>
             <p>Welcome back, <strong>{user.name || user.email?.split('@')[0]}</strong></p>
-            <p>{user.email}</p>
           </div>
         </div>
       )}
