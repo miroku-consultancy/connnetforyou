@@ -1,8 +1,8 @@
-// src/components/EmailTokenLogin.js
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
+import {jwtDecode} from 'jwt-decode'; // Correct import without {}
 import { toast } from 'react-toastify';
+import { useUser } from './UserContext'; // Adjust path as needed
 import './EmailTokenLogin.css';
 
 const EmailTokenLogin = () => {
@@ -11,6 +11,9 @@ const EmailTokenLogin = () => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  // Get refreshUser function from UserContext
+  const { refreshUser } = useUser();
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -63,6 +66,10 @@ const EmailTokenLogin = () => {
       if (res.ok) {
         localStorage.setItem('authToken', data.token);
         localStorage.setItem('userId', data.user.id);
+
+        // IMPORTANT: refresh user context here!
+        refreshUser();
+
         toast.success('🎉 Login successful!');
         navigate('/products');
       } else {
