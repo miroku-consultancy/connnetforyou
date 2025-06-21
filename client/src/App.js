@@ -1,6 +1,6 @@
 // src/App.js
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Header from './components/Header';
 import Services from './components/Services';
 import About from './components/About';
@@ -24,62 +24,65 @@ const App = () => {
   return (
     <CartProvider>
       <UserProvider>
-      <Router>
-        <Header />
+        <Router>
+          <Header />
 
-        <main>
-          <Routes>
-            {/* Login page directly on root path to avoid refresh 404 on Render */}
-            <Route path="/" element={<EmailTokenLogin />} />
+          <main>
+            <Routes>
+              {/* Login page directly on root path to avoid refresh 404 on Render */}
+              <Route path="/" element={<EmailTokenLogin />} />
 
-            {/* Protected Routes */}
-            <Route
-              path="/products"
-              element={
-                <ProtectedRoute>
-                  <Product />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/services" element={<Services />} />
-            <Route path="/industries" element={<Industry />} />
-            <Route path="/solutions" element={<Solutions />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/submit" element={<SubmitForm />} />
-            <Route
-              path="/order"
-              element={
-                <ProtectedRoute>
-                  <Order />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/payment"
-              element={
-                <ProtectedRoute>
-                  <Payment />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/order-summary"
-              element={
-                <ProtectedRoute>
-                  <OrderSummary />
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
-        </main>
+              {/* Redirect legacy /summary route to /order-summary */}
+              <Route path="/summary" element={<Navigate to="/order-summary" replace />} />
 
-        <Cart />
+              {/* Protected Routes */}
+              <Route
+                path="/products"
+                element={
+                  <ProtectedRoute>
+                    <Product />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="/services" element={<Services />} />
+              <Route path="/industries" element={<Industry />} />
+              <Route path="/solutions" element={<Solutions />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/submit" element={<SubmitForm />} />
+              <Route
+                path="/order"
+                element={
+                  <ProtectedRoute>
+                    <Order />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/payment"
+                element={
+                  <ProtectedRoute>
+                    <Payment />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/order-summary"
+                element={
+                  <ProtectedRoute>
+                    <OrderSummary />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </main>
 
-        <footer>
-          <p>&copy; 2024 Connect4U. All rights reserved.</p>
-        </footer>
-      </Router>
+          <Cart />
+
+          <footer>
+            <p>&copy; 2024 Connect4U. All rights reserved.</p>
+          </footer>
+        </Router>
       </UserProvider>
     </CartProvider>
   );
