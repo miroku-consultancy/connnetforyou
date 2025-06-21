@@ -148,33 +148,14 @@
 }
 
 .user-profile-banner {
-  background-color: #f2fdf2;
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  font-size: 1rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.user-profile-banner p {
-  margin: 0.25rem 0;
-}
-
-.user-icon {
-  font-size: 1.5rem;
-}
-.user-profile-banner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #e8f5e9;
-  padding: 12px 20px;
-  border-radius: 10px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.1);
+  background-color: #f1f1f1;
+  padding: 10px 15px;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .user-icon {
@@ -203,13 +184,96 @@
   background-color: #b71c1c;
   transform: translateY(0);
 }
-.user-profile-banner {
+
+/* ===== Cart Popup Styles ===== */
+
+.cart-popup {
+  position: fixed;
+  bottom: 90px;
+  right: 20px;
+  width: 320px;
+  background: #ffffff;
+  border: 1px solid #dfe7df;
+  border-radius: 12px;
+  padding: 20px 16px 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  z-index: 1050;
+  animation: fadeInCart 0.3s ease;
+  font-family: 'Segoe UI', sans-serif;
+  position: relative; /* needed for absolute children */
+}
+
+.cart-popup h2 {
+  margin-top: 0;
+  color: #2d572c;
+  font-size: 1.3rem;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.cart-popup ul {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.cart-popup ul li {
+  font-size: 0.95rem;
+  padding: 6px 0;
+  border-bottom: 1px dashed #ccc;
   display: flex;
   align-items: center;
-  justify-content: space-between; /* Ensures logout button goes to the right */
-  background-color: #f1f1f1;
-  padding: 10px 15px;
-  margin-bottom: 1rem;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.cart-close-btn {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  font-weight: bold;
+  color: #555;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.cart-close-btn:hover {
+  color: #000;
+}
+
+/* Optional: Fade-in animation */
+@keyframes fadeInCart {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.cart-close-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: transparent;   /* transparent background */
+  border: none;
+  font-size: 20px;           /* smaller font size */
+  font-weight: bold;
+  color: #555;
+  cursor: pointer;
+  padding: 0;                /* remove default padding */
+  width: 28px;               /* smaller clickable area */
+  height: 28px;
+  line-height: 28px;         /* center the × vertically */
+  text-align: center;        /* center the × horizontally */
+  border-radius: 50%;        /* optional: round button */
+  transition: color 0.2s ease;
+}
+
+.cart-close-btn:hover {
+  color: #000;
 }
