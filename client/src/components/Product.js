@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './Product.css';
 import { useCart } from './CartContext';
 import { useNavigate } from 'react-router-dom';
-import { useUser } from './UserContext'; // adjust if path differs
+import { useUser } from './UserContext';
 
 const Product = () => {
   const [products, setProducts] = useState([]);
@@ -25,10 +25,6 @@ const Product = () => {
     'Cuts & Sprouts',
     'Dried & Dehydrated',
   ];
-  useEffect(() => {
-    console.log("👤 User from context:", user);
-    console.log("⏳ Loading user?", loadingUser);
-  }, [user, loadingUser]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -106,7 +102,6 @@ const Product = () => {
         </div>
       )}
 
-
       <h1 className="page-title">Explore Fresh Picks 🥬</h1>
 
       {groupedProducts.map(({ subcategory, items }, index) => (
@@ -116,23 +111,28 @@ const Product = () => {
             <div className="product-grid">
               {items.map((product) => (
                 <div key={product.id} className="product-card">
-                  <img
-                    src={process.env.PUBLIC_URL + product.image}
-                    alt={product.name}
-                    className="product-image"
-                  />
+                  <div className="image-container">
+                    <img
+                      src={process.env.PUBLIC_URL + product.image}
+                      alt={product.name}
+                      className="product-image"
+                    />
+                    <div className="qty-controls-overlay">
+                      <button
+                        className="qty-btn"
+                        onClick={() => handleQtyChange(product, -1)}
+                        disabled={(quantities[product.id] || 0) <= 0}
+                      >−</button>
+                      <span className="qty-number">{quantities[product.id] || 0}</span>
+                      <button
+                        className="qty-btn"
+                        onClick={() => handleQtyChange(product, 1)}
+                      >+</button>
+                    </div>
+                  </div>
                   <h3>{product.name}</h3>
                   <p className="product-description">{product.description}</p>
                   <p className="product-price">₹{product.price}</p>
-                  <div className="qty-controls">
-                    <button
-                      className="qty-btn"
-                      onClick={() => handleQtyChange(product, -1)}
-                      disabled={(quantities[product.id] || 0) <= 0}
-                    >−</button>
-                    <span className="qty-number">{quantities[product.id] || 0}</span>
-                    <button className="qty-btn" onClick={() => handleQtyChange(product, 1)}>+</button>
-                  </div>
                 </div>
               ))}
             </div>

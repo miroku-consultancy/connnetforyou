@@ -1,17 +1,38 @@
 /* Cart popup container */
 .cart-popup {
   position: fixed;
-  bottom: 30px;
-  right: 30px;
+  bottom: 20px;
+  right: 20px;
   width: 320px;
-  max-height: 400px;
+  max-height: 450px;
   overflow-y: auto;
-  background: white;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-  border-radius: 12px;
-  padding: 20px;
-  z-index: 1000;
-  animation: fadeIn 0.3s ease;
+  background: #f0f9f2;
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  padding: 20px 24px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  z-index: 1100;
+  animation: fadeInUp 0.3s ease forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header */
+.cart-popup h2 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 1.5rem;
+  color: #2d572c;
+  text-align: center;
 }
 
 /* Close button top-right */
@@ -44,35 +65,79 @@
   margin-bottom: 12px;
 }
 
+.cart-item img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+.cart-item > div {
+  flex: 1;
+  font-weight: 600;
+  color: #264d26;
+}
+
+/* Controls container */
 .cart-controls {
   display: flex;
   gap: 6px;
   align-items: center;
 }
 
+/* Buttons inside controls */
 .cart-controls button {
   padding: 4px 8px;
   cursor: pointer;
+  border: none;
+  background-color: #50b14b;
+  color: white;
+  font-weight: 700;
+  border-radius: 6px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.25s ease;
+}
+.cart-controls button:hover {
+  background-color: #3d8c36;
+}
+.cart-controls button:disabled {
+  background-color: #a9d1a8;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Quantity text */
+.cart-controls span {
+  min-width: 24px;
+  text-align: center;
+  font-weight: 700;
+  color: #2f6b2f;
+  user-select: none;
+}
+
+/* Total price */
+h3 {
+  text-align: right;
+  color: #2d572c;
+  margin-bottom: 12px;
 }
 
 /* Proceed button */
 .proceed-btn {
   width: 100%;
   padding: 10px 0;
-  background-color: #007bff;
+  background-color: #50b14b;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   color: white;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  font-size: 1.1rem;
+  transition: background-color 0.3s ease;
+  box-shadow: 0 4px 12px rgba(80, 177, 75, 0.4);
 }
 .proceed-btn:hover {
-  background-color: #0056b3;
-}
-
-/* Fade in animation */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  background-color: #3d8c36;
 }

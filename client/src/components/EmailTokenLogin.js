@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 
 const EmailTokenLogin = () => {
   const [email, setEmail] = useState('');
@@ -7,6 +8,28 @@ const EmailTokenLogin = () => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  // ✅ Check for existing token
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      try {
+        const decoded = jwtDecode(token); // { id, email, exp, iat }
+        if (decoded.exp * 1000 > Date.now()) {
+          // Token is valid
+          navigate('/products');
+        } else {
+          // Token expired
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('userId');
+        }
+      } catch (err) {
+        // Invalid token
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userId');
+      }
+    }
+  }, [navigate]);
 
   const sendOtp = async () => {
     setLoading(true);
