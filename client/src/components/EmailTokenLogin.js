@@ -1,9 +1,9 @@
+// src/components/EmailTokenLogin.js
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {jwtDecode} from 'jwt-decode';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import './EmailTokenLogin.css'; // your CSS file
+import { jwtDecode } from 'jwt-decode';
+import { toast } from 'react-toastify';
+import './EmailTokenLogin.css';
 
 const EmailTokenLogin = () => {
   const [email, setEmail] = useState('');
@@ -119,20 +119,6 @@ const EmailTokenLogin = () => {
           </>
         )}
       </div>
-
-      {/* Toast container to show toasts */}
-      <ToastContainer
-        position="bottom-center"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="colored"
-      />
     </div>
   );
 };
