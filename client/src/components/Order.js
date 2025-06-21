@@ -49,6 +49,7 @@ const Order = () => {
     }
   };
 
+  // <-- UPDATED handleOrder function START -->
   const handleOrder = async () => {
     if (!paymentMethod) return alert('Please select a payment method');
     if (!address) return alert('Please enter your address');
@@ -70,14 +71,24 @@ const Order = () => {
 
       if (!response.ok) throw new Error('Failed to place order');
       const result = await response.json();
-      localStorage.setItem('orderSummary', JSON.stringify({ ...orderData, orderId: result.orderId }));
 
-      navigate(paymentMethod === 'cod' ? '/order-summary' : '/payment');
+      const fullOrder = { ...orderData, orderId: result.orderId };
+
+      // Store order in localStorage for summary page
+      localStorage.setItem('orderSummary', JSON.stringify(fullOrder));
+
+      if (paymentMethod === 'cod') {
+        navigate('/order-summary');
+      } else {
+        // Pass order via state to Payment component
+        navigate('/payment', { state: { order: fullOrder } });
+      }
     } catch (error) {
       console.error('Order placement failed:', error);
       alert('Failed to place order. Please try again.');
     }
   };
+  // <-- UPDATED handleOrder function END -->
 
   const handleQtyChange = (item, delta) => {
     const newQty = Math.max(0, item.quantity + delta);

@@ -1,19 +1,28 @@
 import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
 
-// ✅ Use your actual Stripe public test key
 const stripePromise = loadStripe('pk_test_51RXgiVRLVKTMiCsFKTmHxNGQgNr0gP18cXk20y29PMbB3s3kLm4KCmC2EFTDnmjkyJZ4wTLW8NTkbpXktlSVrrNt00dMcayt2a');
 
 const Payment = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const order = location.state?.order;
 
   useEffect(() => {
     const redirectToStripe = async () => {
-      const stripe = await stripePromise;
+      if (!order) {
+        alert('No order details found. Please try again.');
+        navigate('/order');
+        return;
+      }
 
-      // ✅ Use dynamic API base URL
-      const baseUrl = 'https://connnet4you-server.onrender.com' || 'http://localhost:5000';
+      // Store order in localStorage before redirect
+      localStorage.setItem('orderSummary', JSON.stringify(order));
+
+      const stripe = await stripePromise;
+      const baseUrl = 'https://connnet4you-server.onrender.com';
+      const frontendUrl = window.location.origin;
 
       try {
         const response = await fetch(`${baseUrl}/api/stripe/create-checkout-session`, {
@@ -21,6 +30,10 @@ const Payment = () => {
           headers: {
             'Content-Type': 'application/json',
           },
+          body: JSON.stringify({
+            success_url: `${frontendUrl}/summary?success=true`,
+            cancel_url: `${frontendUrl}/summary?canceled=true`,
+          }),
         });
 
         if (!response.ok) {
@@ -35,17 +48,17 @@ const Payment = () => {
 
         if (result.error) {
           alert('Payment failed: ' + result.error.message);
-          navigate('/payment');
+          navigate('/summary?canceled=true');
         }
       } catch (err) {
-        console.error('Error:', err);
+        console.error('Payment error:', err);
         alert('An error occurred during payment. Please try again.');
-        navigate('/payment');
+        navigate('/summary?canceled=true');
       }
     };
 
     redirectToStripe();
-  }, [navigate]);
+  }, [navigate, order]);
 
   return (
     <div style={{ padding: '2rem', textAlign: 'center' }}>
