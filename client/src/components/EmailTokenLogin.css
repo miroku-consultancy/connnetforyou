@@ -1,0 +1,89 @@
+.email-login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #e0f7fa, #f1f8e9);
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.email-login-box {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 30px 25px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  animation: fadeIn 0.4s ease;
+}
+
+.email-login-box h2 {
+  margin-bottom: 20px;
+  color: #2e7d32;
+  font-weight: 700;
+}
+
+.login-input {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 1rem;
+  border-radius: 10px;
+  border: 1.5px solid #ccc;
+  margin-bottom: 16px;
+  transition: border-color 0.3s;
+}
+.login-input:focus {
+  border-color: #4caf50;
+  outline: none;
+}
+
+.login-btn {
+  background-color: #4caf50;
+  color: white;
+  font-weight: 600;
+  padding: 12px 0;
+  border: none;
+  border-radius: 10px;
+  width: 100%;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+.login-btn:hover:not(:disabled) {
+  background-color: #388e3c;
+  transform: translateY(-2px);
+}
+.login-btn:disabled {
+  background-color: #a5d6a7;
+  cursor: not-allowed;
+}
+
+.resend-text {
+  margin-top: 16px;
+  font-size: 0.95rem;
+}
+
+.resend-link {
+  background: none;
+  border: none;
+  color: #2e7d32;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 600;
+}
+.resend-link:hover {
+  color: #1b5e20;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

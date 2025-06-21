@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
+import './EmailTokenLogin.css'; // link to the CSS below
 
 const EmailTokenLogin = () => {
   const [email, setEmail] = useState('');
@@ -9,22 +10,18 @@ const EmailTokenLogin = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // ✅ Check for existing token
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
       try {
-        const decoded = jwtDecode(token); // { id, email, exp, iat }
+        const decoded = jwtDecode(token);
         if (decoded.exp * 1000 > Date.now()) {
-          // Token is valid
           navigate('/products');
         } else {
-          // Token expired
           localStorage.removeItem('authToken');
           localStorage.removeItem('userId');
         }
-      } catch (err) {
-        // Invalid token
+      } catch {
         localStorage.removeItem('authToken');
         localStorage.removeItem('userId');
       }
@@ -39,15 +36,14 @@ const EmailTokenLogin = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
-
       const data = await res.json();
       if (res.ok) {
-        alert('OTP sent to your email!');
+        alert('✅ OTP sent to your email!');
         setStep(2);
       } else {
         alert(data.error || 'Failed to send OTP');
       }
-    } catch (err) {
+    } catch {
       alert('Network error');
     }
     setLoading(false);
@@ -61,58 +57,60 @@ const EmailTokenLogin = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, token: otp }),
       });
-
       const data = await res.json();
       if (res.ok) {
         localStorage.setItem('authToken', data.token);
         localStorage.setItem('userId', data.user.id);
-        alert('Login successful!');
+        alert('🎉 Login successful!');
         navigate('/products');
       } else {
         alert(data.error || 'Invalid OTP');
       }
-    } catch (err) {
+    } catch {
       alert('Network error');
     }
     setLoading(false);
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: 'auto', padding: 20 }}>
-      {step === 1 ? (
-        <>
-          <h2>Enter your Email</h2>
-          <input
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            placeholder="Email"
-            required
-            style={{ width: '100%', padding: 8, marginBottom: 12 }}
-          />
-          <button onClick={sendOtp} disabled={loading || !email}>
-            {loading ? 'Sending...' : 'Send OTP'}
-          </button>
-        </>
-      ) : (
-        <>
-          <h2>Enter OTP</h2>
-          <input
-            type="text"
-            value={otp}
-            onChange={e => setOtp(e.target.value)}
-            placeholder="OTP"
-            required
-            style={{ width: '100%', padding: 8, marginBottom: 12 }}
-          />
-          <button onClick={verifyOtp} disabled={loading || !otp}>
-            {loading ? 'Verifying...' : 'Login'}
-          </button>
-          <p>
-            Didn't get OTP? <button onClick={() => setStep(1)}>Resend</button>
-          </p>
-        </>
-      )}
+    <div className="email-login-container">
+      <div className="email-login-box">
+        <h2>{step === 1 ? '🔐 Secure Login' : '📩 Verify OTP'}</h2>
+
+        {step === 1 ? (
+          <>
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              required
+              className="login-input"
+            />
+            <button onClick={sendOtp} disabled={loading || !email} className="login-btn">
+              {loading ? 'Sending...' : 'Send OTP'}
+            </button>
+          </>
+        ) : (
+          <>
+            <input
+              type="text"
+              value={otp}
+              onChange={e => setOtp(e.target.value)}
+              placeholder="Enter OTP"
+              required
+              className="login-input"
+            />
+            <button onClick={verifyOtp} disabled={loading || !otp} className="login-btn">
+              {loading ? 'Verifying...' : 'Login'}
+            </button>
+            <p className="resend-text">
+              Didn't get OTP?{' '}
+              <button className="resend-link" onClick={() => setStep(1)}>Resend</button>
+            </p>
+          </>
+        )}
+      </div>
     </div>
   );
 };

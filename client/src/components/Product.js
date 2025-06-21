@@ -3,6 +3,7 @@ import './Product.css';
 import { useCart } from './CartContext';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from './UserContext';
+import LogoutButton from './LogoutButton';
 
 const Product = () => {
   const [products, setProducts] = useState([]);
@@ -99,6 +100,7 @@ const Product = () => {
           <div>
             <p>Welcome back, <strong>{user.name || user.email?.split('@')[0]}</strong></p>
           </div>
+          <LogoutButton />
         </div>
       )}
 
