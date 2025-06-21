@@ -107,3 +107,22 @@ body {
     transform: scale(1);
   }
 }
+.Toastify__toast-container {
+  pointer-events: none;
+}
+
+.Toastify__toast-container > * {
+  pointer-events: auto;
+}
+.Toastify__toast-container {
+  max-width: 350px;  /* Limit width */
+  margin: 1rem auto; /* Center horizontally if positioned center */
+  right: auto !important; /* Reset right positioning if needed */
+  left: auto !important;  /* Reset left positioning if needed */
+}
+.resend-link:disabled {
+  color: #a5d6a7; /* lighter green */
+  cursor: not-allowed;
+  text-decoration: none;
+  opacity: 0.6;
+}

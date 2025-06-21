@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
-import './EmailTokenLogin.css'; // link to the CSS below
+import {jwtDecode} from 'jwt-decode';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import './EmailTokenLogin.css'; // your CSS file
 
 const EmailTokenLogin = () => {
   const [email, setEmail] = useState('');
@@ -38,13 +40,13 @@ const EmailTokenLogin = () => {
       });
       const data = await res.json();
       if (res.ok) {
-        alert('✅ OTP sent to your email!');
+        toast.success('✅ OTP sent to your email!');
         setStep(2);
       } else {
-        alert(data.error || 'Failed to send OTP');
+        toast.error(data.error || 'Failed to send OTP');
       }
     } catch {
-      alert('Network error');
+      toast.error('Network error');
     }
     setLoading(false);
   };
@@ -61,13 +63,13 @@ const EmailTokenLogin = () => {
       if (res.ok) {
         localStorage.setItem('authToken', data.token);
         localStorage.setItem('userId', data.user.id);
-        alert('🎉 Login successful!');
+        toast.success('🎉 Login successful!');
         navigate('/products');
       } else {
-        alert(data.error || 'Invalid OTP');
+        toast.error(data.error || 'Invalid OTP');
       }
     } catch {
-      alert('Network error');
+      toast.error('Network error');
     }
     setLoading(false);
   };
@@ -106,11 +108,31 @@ const EmailTokenLogin = () => {
             </button>
             <p className="resend-text">
               Didn't get OTP?{' '}
-              <button className="resend-link" onClick={() => setStep(1)}>Resend</button>
+              <button
+                className="resend-link"
+                onClick={() => setStep(1)}
+                disabled={loading}
+              >
+                Resend
+              </button>
             </p>
           </>
         )}
       </div>
+
+      {/* Toast container to show toasts */}
+      <ToastContainer
+        position="bottom-center"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
     </div>
   );
 };
