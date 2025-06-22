@@ -43,7 +43,6 @@ const OrderHistory = () => {
         }
 
         const data = await response.json();
-        console.log('📦 Order history data:', data);
         setOrders(data);
       } catch (err) {
         console.error('Error fetching order history:', err);
@@ -79,34 +78,40 @@ const OrderHistory = () => {
   return (
     <section className="order-history-page">
       <h2>Your Order History 📜</h2>
+
       {orders.map((order) => (
         <div key={order.id} className="order-card">
           <p><strong>Order ID:</strong> {order.id}</p>
           <p><strong>Date:</strong> {new Date(order.order_date).toLocaleString()}</p>
 
           <ul className="order-items">
-            {order.items.map((item) => (
-              <li key={item.product_id} className="order-item">
-                <img
-  src={
-    item.image_url && typeof item.image_url === 'string'
-      ? item.image_url.startsWith('/')
-        ? `${API_BASE_URL}${item.image_url}`
-        : item.image_url
-      : 'https://via.placeholder.com/60'
-  }
-  alt={item.name}
-  className="item-image"
-/>
+            {order.items.map((item) => {
+              const imageSrc = item.image_url
+                ? item.image_url.startsWith('/')
+                  ? `${API_BASE_URL}${item.image_url}`
+                  : item.image_url
+                : 'https://via.placeholder.com/60';
 
-                <div className="item-details">
-                  <span className="item-name">{item.name}</span>
-                  <span className="item-qty-price">
-                    {item.quantity} × {formatCurrency(item.price)}
-                  </span>
-                </div>
-              </li>
-            ))}
+              return (
+                <li key={item.product_id} className="order-item">
+                  <img
+                    src={imageSrc}
+                    alt={item.name}
+                    className="item-image"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'https://via.placeholder.com/60';
+                    }}
+                  />
+                  <div className="item-details">
+                    <span className="item-name">{item.name}</span>
+                    <span className="item-qty-price">
+                      {item.quantity} × {formatCurrency(item.price)}
+                    </span>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
 
           <p><strong>Total:</strong> {formatCurrency(order.total)}</p>

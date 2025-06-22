@@ -306,43 +306,47 @@ body {
 }
 
 /* --- Cart Popup --- */
+/* --- Cart Popup --- */
 .cart-popup {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(30, 30, 30, 0.45);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  bottom: 60px;        /* 60px from bottom */
+  right: 18px;         /* 18px from right */
+  width: 320px;        /* fixed width */
+  max-height: 400px;   /* max height with scroll */
+  background-color: #fff;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  overflow-y: auto;
   z-index: 120;
   user-select: none;
+
+  /* remove full screen styles */
+  /* remove display: flex, justify-content, align-items */
 }
 
 .cart-popup-content {
-  background-color: #fff;
-  border-radius: 14px;
-  padding: 1.5rem 2rem;
-  max-width: 480px;
-  width: 90vw;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  padding: 1rem 1.5rem;
+  max-width: 100%; /* fill the popup */
+  width: 100%;
+  max-height: none;
+  overflow: visible;
   position: relative;
+  box-shadow: none;
+  border-radius: inherit;
 }
 
 .cart-close-btn {
   position: absolute;
   top: 8px;
-  right: 14px;
+  right: 12px;  /* a bit of padding from the right */
   background: none;
   border: none;
-  font-size: 2rem;
+  font-size: 1.6rem;
   color: #555;
   cursor: pointer;
   transition: color 0.25s ease;
   user-select: none;
+  z-index: 10;
 }
 
 .cart-close-btn:hover,
@@ -350,6 +354,7 @@ body {
   color: #2e7d32;
   outline: none;
 }
+
 
 .cart-popup-content h2 {
   margin-top: 0;
@@ -514,3 +519,10 @@ body {
   }
 }
 
+@media (max-width: 480px) {
+  .address-select {
+    font-size: 0.85rem;
+    padding: 2px 5px;
+    min-width: 80px; /* or adjust as needed */
+  }
+}
