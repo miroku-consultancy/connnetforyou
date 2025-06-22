@@ -54,9 +54,9 @@ const Header = () => {
                 <div className="company-name">
                     <span>Connect4U</span>
                 </div>
-                <button className="menu-toggle" onClick={toggleMenu} aria-label="Toggle Menu">
+                {/* <button className="menu-toggle" onClick={toggleMenu} aria-label="Toggle Menu">
                     {isMenuOpen ? '✖' : '☰'}
-                </button>
+                </button> */}
             </div>
 
             <nav className={`nav ${isMenuOpen ? 'open' : ''}`}>
