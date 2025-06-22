@@ -12,7 +12,6 @@ const Product = () => {
   const [quantities, setQuantities] = useState({});
   const [showCartPopup, setShowCartPopup] = useState(false);
 
-  // Changed from single address object to array of addresses
   const [addresses, setAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
 
@@ -217,7 +216,7 @@ const Product = () => {
           <span role="img" aria-label="user" className="user-icon">
             👤
           </span>
-          <div>
+          <div className="user-info-container">
             <p>
               Welcome back,{' '}
               <strong>{user.name || user.email?.split('@')[0]}</strong>
@@ -229,6 +228,7 @@ const Product = () => {
                 <select
                   value={selectedAddressId || ''}
                   onChange={handleAddressSelect}
+                  className="address-select"
                 >
                   {addresses.map((addr) => (
                     <option key={addr.id} value={addr.id}>
@@ -241,6 +241,7 @@ const Product = () => {
                 <button
                   onClick={() => setShowAddressPopup(true)}
                   className="edit-btn"
+                  title="Edit Address"
                 >
                   ✏️ Edit Address
                 </button>
@@ -260,19 +261,23 @@ const Product = () => {
                   setShowAddressPopup(true);
                 }}
                 className="edit-btn"
+                title="Add Address"
               >
                 ➕ Add Address
               </button>
             )}
           </div>
-          <LogoutButton />
-          <button
-            onClick={() => navigate('/order-history')}
-            className="order-history-btn"
-            style={{ marginLeft: '1rem' }}
-          >
-            View Order History
-          </button>
+
+          <div className="user-actions">
+            <LogoutButton />
+            <button
+              onClick={() => navigate('/order-history')}
+              className="order-history-btn"
+              title="View your past orders"
+            >
+              📜 Order History
+            </button>
+          </div>
         </div>
       )}
 
@@ -357,6 +362,7 @@ const Product = () => {
             <button
               className="cart-close-btn"
               onClick={() => setShowCartPopup(false)}
+              aria-label="Close Cart"
             >
               &times;
             </button>
