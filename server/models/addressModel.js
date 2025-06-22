@@ -11,13 +11,13 @@ const pool = new Pool({
 });
 
 const saveAddress = async (address) => {
-  const { name, street, city, zip, phone } = address;
+  const { name, street, city, zip, phone, user_id } = address;
 
   try {
     const result = await pool.query(
-      `INSERT INTO addresses (name, street, city, zip, phone)
-       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [name, street, city, zip, phone]
+      `INSERT INTO addresses (name, street, city, zip, phone, user_id)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [name, street, city, zip, phone, user_id]
     );
     return result.rows[0];
   } catch (error) {
@@ -25,6 +25,5 @@ const saveAddress = async (address) => {
     throw error;
   }
 };
-
 
 module.exports = { saveAddress };

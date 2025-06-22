@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { useCart } from './CartContext';
 import { useNavigate } from 'react-router-dom';
+import { useUser } from './UserContext'; // ✅ Added to get userId
+import AddressPopup from './AddressPopup'; // ⬅ Reused popup
 import './Order.css';
-import './AddressPopup.css';
 
 const Order = () => {
   const { cart, cartLoaded, addToCart } = useCart();
   const items = Object.values(cart);
   const navigate = useNavigate();
+  const { user } = useUser(); // ✅ Get logged-in user
 
   const [showAddressPopup, setShowAddressPopup] = useState(false);
   const [address, setAddress] = useState(null);
@@ -24,19 +26,26 @@ const Order = () => {
   const API_BASE_URL = 'https://connnet4you-server.onrender.com';
   const total = items.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
 
-  const validatePhone = (phone) => /^[6-9]\d{9}$/.test(phone);
-
   const handleAddressSubmit = async () => {
-    if (!validatePhone(tempAddress.phone)) {
-      alert('Please enter a valid 10-digit phone number starting with 6-9');
-      return;
-    }
-
     try {
+      const token = localStorage.getItem('authToken');
+      if (!user?.id) {
+        alert('User ID missing. Please log in again.');
+        return;
+      }
+
+      const addressWithUserId = {
+        ...tempAddress,
+        userId: user.id, // ✅ Include userId
+      };
+
       const response = await fetch(`${API_BASE_URL}/api/address`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(tempAddress),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(addressWithUserId),
       });
 
       if (!response.ok) throw new Error('Failed to save address');
@@ -71,9 +80,9 @@ const Order = () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/orders`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,  // <-- Send the auth token here
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(orderData),
       });
@@ -82,8 +91,6 @@ const Order = () => {
       const result = await response.json();
 
       const fullOrder = { ...orderData, orderId: result.orderId };
-
-      // Store order in localStorage for summary page
       localStorage.setItem('orderSummary', JSON.stringify(fullOrder));
 
       if (paymentMethod === 'cod') {
@@ -138,7 +145,11 @@ const Order = () => {
       {address ? (
         <div className="address-summary">
           <h4>Deliver To:</h4>
-          <p>{address.name}, {address.street}, {address.city} - {address.zip}<br />Phone: {address.phone}</p>
+          <p>
+            {address.name}, {address.street}, {address.city} - {address.zip}
+            <br />
+            Phone: {address.phone}
+          </p>
           <button
             className="edit-btn"
             onClick={() => {
@@ -153,7 +164,8 @@ const Order = () => {
             <label>
               <input type="radio" value="cod" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} />
               Cash on Delivery
-            </label><br />
+            </label>
+            <br />
             <label>
               <input type="radio" value="online" checked={paymentMethod === 'online'} onChange={() => setPaymentMethod('online')} />
               Pay Online
@@ -167,20 +179,12 @@ const Order = () => {
       )}
 
       {showAddressPopup && (
-        <div className="address-popup-overlay" onClick={() => setShowAddressPopup(false)}>
-          <div className="address-popup" onClick={(e) => e.stopPropagation()}>
-            <button className="close-btn" onClick={() => setShowAddressPopup(false)}>&times;</button>
-            <h2>Delivery Address</h2>
-            <form onSubmit={(e) => { e.preventDefault(); handleAddressSubmit(); }}>
-              <input type="text" placeholder="Name" value={tempAddress.name} onChange={(e) => setTempAddress({ ...tempAddress, name: e.target.value })} required />
-              <input type="text" placeholder="Street" value={tempAddress.street} onChange={(e) => setTempAddress({ ...tempAddress, street: e.target.value })} required />
-              <input type="text" placeholder="City" value={tempAddress.city} onChange={(e) => setTempAddress({ ...tempAddress, city: e.target.value })} required />
-              <input type="text" placeholder="ZIP Code" value={tempAddress.zip} onChange={(e) => setTempAddress({ ...tempAddress, zip: e.target.value })} required />
-              <input type="tel" placeholder="Phone Number" value={tempAddress.phone} onChange={(e) => setTempAddress({ ...tempAddress, phone: e.target.value })} required maxLength={10} />
-              <button type="submit">Save Address</button>
-            </form>
-          </div>
-        </div>
+        <AddressPopup
+          tempAddress={tempAddress}
+          setTempAddress={setTempAddress}
+          onClose={() => setShowAddressPopup(false)}
+          onSubmit={handleAddressSubmit}
+        />
       )}
 
       {selectedItem && (
@@ -189,7 +193,7 @@ const Order = () => {
             <button className="close-btn" onClick={() => setSelectedItem(null)}>&times;</button>
             <h2>{selectedItem.name}</h2>
             <img src={process.env.PUBLIC_URL + selectedItem.image} alt={selectedItem.name} />
-            <p>{selectedItem.description || "No description available."}</p>
+            <p>{selectedItem.description || 'No description available.'}</p>
             <p><strong>Price:</strong> ₹{Number(selectedItem.price).toFixed(2)}</p>
           </div>
         </div>

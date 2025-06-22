@@ -12,6 +12,7 @@ import Product from './components/Product';
 import ProtectedRoute from './components/ProtectedRoute';
 import Cart from './components/Cart';
 import Header from './components/Header';
+import AddressPopup from './components/AddressPopup'; // Adjust the path if it's in a subfolder like ./pages/AddressPopup
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
             <Route path="/order-summary" element={<ProtectedRoute><OrderSummary /></ProtectedRoute>} />
             <Route path="/order-history" element={<OrderHistory />} />
+            <Route path="/address" element={<AddressPopup />} />
           </Routes>
         </main>
         <Cart />

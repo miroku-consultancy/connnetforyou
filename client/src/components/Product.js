@@ -1,14 +1,26 @@
+// client/src/Product.js
 import React, { useEffect, useState } from 'react';
 import './Product.css';
 import { useCart } from './CartContext';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from './UserContext';
 import LogoutButton from './LogoutButton';
+import AddressPopup from './AddressPopup';
 
 const Product = () => {
   const [products, setProducts] = useState([]);
   const [quantities, setQuantities] = useState({});
   const [showCartPopup, setShowCartPopup] = useState(false);
+  const [address, setAddress] = useState(null);
+  const [tempAddress, setTempAddress] = useState({
+    name: '',
+    street: '',
+    city: '',
+    zip: '',
+    phone: '',
+  });
+  const [showAddressPopup, setShowAddressPopup] = useState(false);
+
   const { cart, cartLoaded, addToCart } = useCart();
   const { user, loadingUser } = useUser();
   const navigate = useNavigate();
@@ -28,6 +40,7 @@ const Product = () => {
     'Dried & Dehydrated',
   ];
 
+  // Fetch products on mount
   useEffect(() => {
     const fetchProducts = async () => {
       const token = localStorage.getItem('authToken');
@@ -64,6 +77,59 @@ const Product = () => {
     fetchProducts();
   }, [navigate]);
 
+  // Fetch latest address for logged-in user
+  useEffect(() => {
+    const fetchAddress = async () => {
+      const token = localStorage.getItem('authToken');
+      if (!token || !user?.id) return;
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/address`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setAddress(data);
+        } else {
+          setAddress(null);
+        }
+      } catch (error) {
+        console.error('Error fetching address:', error);
+      }
+    };
+
+    if (user?.id) {
+      fetchAddress();
+    }
+  }, [user]);
+
+  // Save or update address
+  const handleAddressSubmit = async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(`${API_BASE_URL}/api/address`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(tempAddress),
+      });
+
+      if (!response.ok) throw new Error('Failed to save address');
+      const savedAddress = await response.json();
+      setAddress(savedAddress);
+      setShowAddressPopup(false);
+    } catch (error) {
+      console.error('Error saving address:', error);
+      alert('There was an error saving your address. Please try again.');
+    }
+  };
+
+  // Sync quantities with cart
   useEffect(() => {
     if (!cartLoaded) return;
     const initialQuantities = {};
@@ -73,6 +139,7 @@ const Product = () => {
     setQuantities(initialQuantities);
   }, [cart, cartLoaded]);
 
+  // Handle quantity change for a product
   const handleQtyChange = (product, delta) => {
     const prevQty = quantities[product.id] || 0;
     const newQty = Math.max(0, prevQty + delta);
@@ -83,6 +150,7 @@ const Product = () => {
     if (diff !== 0) addToCart(product, diff);
   };
 
+  // Filter fresh category products and group by subcategory
   const freshProducts = products.filter(
     (p) => p.category?.toLowerCase() === 'fresh'
   );
@@ -108,9 +176,34 @@ const Product = () => {
               Welcome back,{' '}
               <strong>{user.name || user.email?.split('@')[0]}</strong>
             </p>
+
+            {address ? (
+              <p className="user-address-banner">
+                <strong>Delivering to:</strong> {address.name}, {address.street},{' '}
+                {address.city} - {address.zip}
+                <br />
+                📞 {address.phone}
+                <br />
+                <button
+                  onClick={() => {
+                    setTempAddress(address);
+                    setShowAddressPopup(true);
+                  }}
+                  className="edit-btn"
+                >
+                  ✏️ Edit Address
+                </button>
+              </p>
+            ) : (
+              <button
+                onClick={() => setShowAddressPopup(true)}
+                className="edit-btn"
+              >
+                ➕ Add Address
+              </button>
+            )}
           </div>
           <LogoutButton />
-          {/* Added Order History Button */}
           <button
             onClick={() => navigate('/order-history')}
             className="order-history-btn"
@@ -178,53 +271,77 @@ const Product = () => {
       {Object.keys(cart).length > 0 && (
         <div className="floating-cart" onClick={() => setShowCartPopup(true)}>
           🛒{' '}
-          {Object.values(cart).reduce((a, i) => a + i.quantity, 0)} item(s) | ₹
+          {Object.values(cart).reduce((sum, item) => sum + item.quantity, 0)}{' '}
+          item(s) | ₹
           {Object.values(cart)
-            .reduce((a, i) => a + i.quantity * i.price, 0)
+            .reduce((sum, item) => sum + item.quantity * item.price, 0)
             .toFixed(2)}{' '}
           → View Cart
         </div>
       )}
 
-      {/* View Cart Popup */}
+      {/* Cart Popup */}
       {showCartPopup && (
-        <div className="cart-popup">
-          <button
-            className="cart-close-btn"
-            onClick={() => setShowCartPopup(false)}
+        <div
+          className="cart-popup"
+          onClick={() => setShowCartPopup(false)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="cart-popup-content"
+            onClick={(e) => e.stopPropagation()}
           >
-            &times;
-          </button>
-          <h2>Your Cart</h2>
-          <ul>
-            {Object.values(cart).map((item) => (
-              <li key={item.id} style={{ margin: '10px 0' }}>
-                <img
-                  src={
-                    item.image.startsWith('http')
-                      ? item.image
-                      : process.env.PUBLIC_URL + item.image
-                  }
-                  alt={item.name}
-                  style={{
-                    width: '40px',
-                    height: '40px',
-                    objectFit: 'cover',
-                    borderRadius: '6px',
-                    marginRight: '10px',
-                    verticalAlign: 'middle',
-                  }}
-                />
-                {item.name} × {item.quantity} = ₹{item.quantity * item.price}
-              </li>
-            ))}
-          </ul>
-          <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-            <button onClick={() => navigate('/order')} className="login-btn">
-              Proceed to Order
+            <button
+              className="cart-close-btn"
+              onClick={() => setShowCartPopup(false)}
+            >
+              &times;
             </button>
+            <h2>Your Cart</h2>
+            <ul>
+              {Object.values(cart).map((item) => (
+                <li key={item.id} style={{ margin: '10px 0' }}>
+                  <img
+                    src={
+                      item.image.startsWith('http')
+                        ? item.image
+                        : process.env.PUBLIC_URL + item.image
+                    }
+                    alt={item.name}
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      objectFit: 'cover',
+                      borderRadius: '6px',
+                      marginRight: '10px',
+                      verticalAlign: 'middle',
+                    }}
+                  />
+                  {item.name} × {item.quantity} = ₹{item.quantity * item.price}
+                </li>
+              ))}
+            </ul>
+            <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+              <button
+                onClick={() => navigate('/order')}
+                className="login-btn"
+              >
+                Proceed to Order
+              </button>
+            </div>
           </div>
         </div>
+      )}
+
+      {/* Address Popup */}
+      {showAddressPopup && (
+        <AddressPopup
+          tempAddress={tempAddress}
+          setTempAddress={setTempAddress}
+          onClose={() => setShowAddressPopup(false)}
+          onSubmit={handleAddressSubmit}
+        />
       )}
     </section>
   );

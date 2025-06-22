@@ -14,11 +14,12 @@ const stripeRoutes = require('./routes/stripe');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ✅ CORS setup (allow OPTIONS preflight)
+// CORS setup with allowed origins and handling OPTIONS preflight
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://connect4u-client.onrender.com'
+  'https://connect4u-client.onrender.com',
 ];
+
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
@@ -28,38 +29,39 @@ app.use(cors({
     }
   },
   credentials: true,
-  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
-//app.options('*', cors()); // make sure preflight requests are handled
 
 app.use(express.json());
 
-// ✅ Database connection check
+// Connect to PostgreSQL DB
 pool.connect()
   .then(() => console.log('✅ Connected to PostgreSQL database'))
   .catch(err => console.error('❌ PostgreSQL connection error:', err));
 
-// ✅ Mount routes
+// Mount all routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/address', addressRoutes);
 app.use('/api/stripe', stripeRoutes);
+
+// Serve static images
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
-// ✅ Default route
+// Root endpoint
 app.get('/', (req, res) => {
   res.send('🛒 eCommerce backend is running!');
 });
 
-// ✅ Catch-all 404 handler
+// 404 handler
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-// ✅ Centralized error handler
+// Centralized error handler
 app.use((err, req, res, next) => {
   console.error(err);
   if (err.message.includes('CORS')) {
@@ -68,6 +70,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Server error', message: err.message });
 });
 
+// Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
