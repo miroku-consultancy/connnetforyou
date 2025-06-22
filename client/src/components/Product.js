@@ -11,7 +11,11 @@ const Product = () => {
   const [products, setProducts] = useState([]);
   const [quantities, setQuantities] = useState({});
   const [showCartPopup, setShowCartPopup] = useState(false);
-  const [address, setAddress] = useState(null);
+
+  // Changed from single address object to array of addresses
+  const [addresses, setAddresses] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
+
   const [tempAddress, setTempAddress] = useState({
     name: '',
     street: '',
@@ -77,10 +81,11 @@ const Product = () => {
     fetchProducts();
   }, [navigate]);
 
-  // Fetch latest address for logged-in user
+  // Fetch all addresses for logged-in user
   useEffect(() => {
-    const fetchAddress = async () => {
+    const fetchAddresses = async () => {
       const token = localStorage.getItem('authToken');
+
       if (!token || !user?.id) return;
 
       try {
@@ -91,22 +96,44 @@ const Product = () => {
         });
 
         if (response.ok) {
-          const data = await response.json();
-          setAddress(data);
+          const data = await response.json(); // Array of addresses
+          setAddresses(data);
+
+          if (data.length > 0) {
+            setSelectedAddressId(data[0].id);
+            setTempAddress(data[0]);
+          } else {
+            setSelectedAddressId(null);
+            setTempAddress({
+              name: '',
+              street: '',
+              city: '',
+              zip: '',
+              phone: '',
+            });
+          }
         } else {
-          setAddress(null);
+          setAddresses([]);
+          setSelectedAddressId(null);
+          setTempAddress({
+            name: '',
+            street: '',
+            city: '',
+            zip: '',
+            phone: '',
+          });
         }
       } catch (error) {
-        console.error('Error fetching address:', error);
+        console.error('Error fetching addresses:', error);
       }
     };
 
     if (user?.id) {
-      fetchAddress();
+      fetchAddresses();
     }
   }, [user]);
 
-  // Save or update address
+  // Save or update address and refresh addresses list
   const handleAddressSubmit = async () => {
     try {
       const token = localStorage.getItem('authToken');
@@ -121,12 +148,31 @@ const Product = () => {
 
       if (!response.ok) throw new Error('Failed to save address');
       const savedAddress = await response.json();
-      setAddress(savedAddress);
+
+      // Refetch addresses after save to sync with backend
+      const addressesResponse = await fetch(`${API_BASE_URL}/api/address`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (addressesResponse.ok) {
+        const updatedAddresses = await addressesResponse.json();
+        setAddresses(updatedAddresses);
+        setSelectedAddressId(savedAddress.id);
+        setTempAddress(savedAddress);
+      }
+
       setShowAddressPopup(false);
     } catch (error) {
       console.error('Error saving address:', error);
       alert('There was an error saving your address. Please try again.');
     }
+  };
+
+  // Handle address selection from dropdown
+  const handleAddressSelect = (e) => {
+    const id = Number(e.target.value);
+    setSelectedAddressId(id);
+    const addr = addresses.find((a) => a.id === id);
+    if (addr) setTempAddress(addr);
   };
 
   // Sync quantities with cart
@@ -177,18 +223,23 @@ const Product = () => {
               <strong>{user.name || user.email?.split('@')[0]}</strong>
             </p>
 
-            {address ? (
+            {addresses.length > 0 ? (
               <p className="user-address-banner">
-                <strong>Delivering to:</strong> {address.name}, {address.street},{' '}
-                {address.city} - {address.zip}
-                <br />
-                📞 {address.phone}
+                <strong>Delivering to:</strong>{' '}
+                <select
+                  value={selectedAddressId || ''}
+                  onChange={handleAddressSelect}
+                >
+                  {addresses.map((addr) => (
+                    <option key={addr.id} value={addr.id}>
+                      {addr.name}, {addr.street}, {addr.city} - {addr.zip} (📞{' '}
+                      {addr.phone})
+                    </option>
+                  ))}
+                </select>
                 <br />
                 <button
-                  onClick={() => {
-                    setTempAddress(address);
-                    setShowAddressPopup(true);
-                  }}
+                  onClick={() => setShowAddressPopup(true)}
                   className="edit-btn"
                 >
                   ✏️ Edit Address
@@ -323,10 +374,7 @@ const Product = () => {
               ))}
             </ul>
             <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-              <button
-                onClick={() => navigate('/order')}
-                className="login-btn"
-              >
+              <button onClick={() => navigate('/order')} className="login-btn">
                 Proceed to Order
               </button>
             </div>

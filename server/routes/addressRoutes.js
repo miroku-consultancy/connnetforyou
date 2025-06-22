@@ -23,19 +23,20 @@ router.get('/', authenticateToken, async (req, res) => {
   try {
     const user_id = req.user.id;
     const result = await pool.query(
-      'SELECT * FROM addresses WHERE user_id = $1 ORDER BY id DESC LIMIT 1',
+      'SELECT * FROM addresses WHERE user_id = $1 ORDER BY id DESC',  // removed LIMIT 1
       [user_id]
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ message: 'No address found' });
+      return res.status(404).json({ message: 'No addresses found' });
     }
 
-    res.json(result.rows[0]);
+    res.json(result.rows);  // send the whole array
   } catch (err) {
-    console.error('Error fetching address:', err);
-    res.status(500).json({ message: 'Error fetching address' });
+    console.error('Error fetching addresses:', err);
+    res.status(500).json({ message: 'Error fetching addresses' });
   }
 });
+
 
 module.exports = router;
