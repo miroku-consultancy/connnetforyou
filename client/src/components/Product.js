@@ -247,7 +247,18 @@ const Product = () => {
               </p>
             ) : (
               <button
-                onClick={() => setShowAddressPopup(true)}
+                onClick={() => {
+                  // Reset tempAddress to empty for new address add
+                  setTempAddress({
+                    name: '',
+                    street: '',
+                    city: '',
+                    zip: '',
+                    phone: '',
+                  });
+                  setSelectedAddressId(null);
+                  setShowAddressPopup(true);
+                }}
                 className="edit-btn"
               >
                 ➕ Add Address
@@ -322,8 +333,8 @@ const Product = () => {
       {Object.keys(cart).length > 0 && (
         <div className="floating-cart" onClick={() => setShowCartPopup(true)}>
           🛒{' '}
-          {Object.values(cart).reduce((sum, item) => sum + item.quantity, 0)}{' '}
-          item(s) | ₹
+          {Object.values(cart).reduce((sum, item) => sum + item.quantity, 0)} item(s)
+          | ₹
           {Object.values(cart)
             .reduce((sum, item) => sum + item.quantity * item.price, 0)
             .toFixed(2)}{' '}

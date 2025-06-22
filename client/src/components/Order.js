@@ -1,18 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCart } from './CartContext';
 import { useNavigate } from 'react-router-dom';
-import { useUser } from './UserContext'; // ✅ Added to get userId
-import AddressPopup from './AddressPopup'; // ⬅ Reused popup
+import { useUser } from './UserContext';
+import AddressPopup from './AddressPopup';
 import './Order.css';
+
+const API_BASE_URL = 'https://connnet4you-server.onrender.com';
 
 const Order = () => {
   const { cart, cartLoaded, addToCart } = useCart();
   const items = Object.values(cart);
   const navigate = useNavigate();
-  const { user } = useUser(); // ✅ Get logged-in user
+  const { user } = useUser();
 
   const [showAddressPopup, setShowAddressPopup] = useState(false);
-  const [address, setAddress] = useState(null);
+  const [addresses, setAddresses] = useState([]);  // User's saved addresses list
+  const [address, setAddress] = useState(null);    // Selected address
   const [paymentMethod, setPaymentMethod] = useState('');
   const [tempAddress, setTempAddress] = useState({
     name: '',
@@ -23,8 +26,35 @@ const Order = () => {
   });
   const [selectedItem, setSelectedItem] = useState(null);
 
-  const API_BASE_URL = 'https://connnet4you-server.onrender.com';
   const total = items.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
+
+  // Fetch saved addresses on mount or when user changes
+  useEffect(() => {
+    const fetchAddresses = async () => {
+      if (!user?.id) return;
+
+      try {
+        const token = localStorage.getItem('authToken');
+        const res = await fetch(`${API_BASE_URL}/api/address`, {  // Backend gets user from token
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error('Failed to fetch addresses');
+        const data = await res.json();
+        setAddresses(data);
+        if (data.length > 0) {
+          setAddress(data[0]);
+        } else {
+          setAddress(null);
+        }
+      } catch (error) {
+        console.error('Error fetching addresses:', error);
+        setAddresses([]);
+        setAddress(null);
+      }
+    };
+
+    fetchAddresses();
+  }, [user]);
 
   const handleAddressSubmit = async () => {
     try {
@@ -34,10 +64,9 @@ const Order = () => {
         return;
       }
 
-      const addressWithUserId = {
-        ...tempAddress,
-        userId: user.id, // ✅ Include userId
-      };
+      // Include id if editing existing address, else it's a new one
+      const addressPayload = { ...tempAddress };
+      if (tempAddress.id) addressPayload.id = tempAddress.id;
 
       const response = await fetch(`${API_BASE_URL}/api/address`, {
         method: 'POST',
@@ -45,13 +74,30 @@ const Order = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(addressWithUserId),
+        body: JSON.stringify(addressPayload),
       });
 
       if (!response.ok) throw new Error('Failed to save address');
       const savedAddress = await response.json();
+
+      // If editing existing address, update the address list
+      if (tempAddress.id) {
+        setAddresses(prev =>
+          prev.map(addr => (addr.id === savedAddress.id ? savedAddress : addr))
+        );
+      } else {
+        setAddresses(prev => [...prev, savedAddress]);
+      }
+
       setAddress(savedAddress);
       setShowAddressPopup(false);
+      setTempAddress({
+        name: '',
+        street: '',
+        city: '',
+        zip: '',
+        phone: '',
+      });
     } catch (error) {
       console.error('Error saving address:', error);
       alert('There was an error saving your address. Please try again.');
@@ -60,7 +106,11 @@ const Order = () => {
 
   const handleOrder = async () => {
     if (!paymentMethod) return alert('Please select a payment method');
-    if (!address) return alert('Please enter your address');
+    if (!address) {
+      alert('Please select or enter your address.');
+      setShowAddressPopup(true);
+      return;
+    }
 
     const token = localStorage.getItem('authToken');
     if (!token) {
@@ -142,41 +192,94 @@ const Order = () => {
         <h2>Total: ₹{total.toFixed(2)}</h2>
       </div>
 
-      {address ? (
-        <div className="address-summary">
-          <h4>Deliver To:</h4>
-          <p>
-            {address.name}, {address.street}, {address.city} - {address.zip}
-            <br />
-            Phone: {address.phone}
-          </p>
+      {/* Show address list if exists */}
+      {addresses.length > 0 ? (
+        <div className="address-list">
+          <h3>Select Delivery Address</h3>
+          {addresses.map((addr) => (
+            <div key={addr.id} className="address-item-wrapper">
+              <label className="address-item">
+                <input
+                  type="radio"
+                  name="selectedAddress"
+                  value={addr.id}
+                  checked={address?.id === addr.id}
+                  onChange={() => setAddress(addr)}
+                />
+                <div>
+                  {addr.name}, {addr.street}, {addr.city} - {addr.zip}
+                  <br />
+                  Phone: {addr.phone}
+                </div>
+              </label>
+              <button
+                className="edit-address-btn"
+                onClick={() => {
+                  setTempAddress(addr);
+                  setShowAddressPopup(true);
+                }}
+              >
+                Edit
+              </button>
+            </div>
+          ))}
+          {/* Add new address button */}
           <button
-            className="edit-btn"
+            className="add-new-address-btn"
             onClick={() => {
-              setTempAddress(address);
+              setTempAddress({
+                name: '',
+                street: '',
+                city: '',
+                zip: '',
+                phone: '',
+              });
               setShowAddressPopup(true);
             }}
           >
-            Edit Address
+            Add New Address
           </button>
-
-          <div className="payment-options">
-            <label>
-              <input type="radio" value="cod" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} />
-              Cash on Delivery
-            </label>
-            <br />
-            <label>
-              <input type="radio" value="online" checked={paymentMethod === 'online'} onChange={() => setPaymentMethod('online')} />
-              Pay Online
-            </label>
-          </div>
-
-          <button onClick={handleOrder}>Place Order</button>
         </div>
       ) : (
-        <button onClick={() => setShowAddressPopup(true)}>Enter Address</button>
+        <button
+          onClick={() => {
+            setTempAddress({
+              name: '',
+              street: '',
+              city: '',
+              zip: '',
+              phone: '',
+            });
+            setShowAddressPopup(true);
+          }}
+        >
+          Enter Address
+        </button>
       )}
+
+      <div className="payment-options">
+        <label>
+          <input
+            type="radio"
+            value="cod"
+            checked={paymentMethod === 'cod'}
+            onChange={() => setPaymentMethod('cod')}
+          />
+          Cash on Delivery
+        </label>
+        <br />
+        <label>
+          <input
+            type="radio"
+            value="online"
+            checked={paymentMethod === 'online'}
+            onChange={() => setPaymentMethod('online')}
+          />
+          Pay Online
+        </label>
+      </div>
+
+      <button onClick={handleOrder}>Place Order</button>
 
       {showAddressPopup && (
         <AddressPopup
