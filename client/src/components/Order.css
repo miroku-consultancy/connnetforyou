@@ -1,6 +1,6 @@
-/* Order page container */
+/* Order page main container */
 .order-page {
-  max-width: 700px;
+  max-width: 800px;
   margin: 40px auto;
   padding: 0 20px 40px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -14,7 +14,7 @@
   text-align: center;
 }
 
-/* List of items */
+/* Cart Items */
 .order-list {
   border: 1px solid #ddd;
   border-radius: 12px;
@@ -24,19 +24,18 @@
   overflow-y: auto;
 }
 
-/* Single item row */
+/* Each item */
 .order-row {
   display: flex;
   align-items: center;
   padding: 10px 5px;
   border-bottom: 1px solid #eee;
 }
-
 .order-row:last-child {
   border-bottom: none;
 }
 
-/* Item image */
+/* Image */
 .order-img {
   width: 70px;
   height: 70px;
@@ -50,29 +49,22 @@
   transform: scale(1.05);
 }
 
-/* Details next to image */
+/* Item Details */
 .order-details {
   flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
 }
-
-/* Item name centered */
 .order-details h3 {
   margin: 0 0 8px 0;
   font-weight: 600;
   text-align: center;
 }
 
-/* Quantity controls container */
+/* Quantity Controls */
 .qty-controls {
   display: flex;
   align-items: center;
   gap: 10px;
 }
-
-/* Quantity buttons: plus and minus */
 .qty-controls button {
   background-color: #28a745;
   border: none;
@@ -83,44 +75,29 @@
   font-weight: 700;
   border-radius: 50%;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.1s ease;
   user-select: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0;
-  line-height: 1;
 }
-
-/* Disabled buttons */
 .qty-controls button:disabled {
   background-color: #94d3a2;
   cursor: not-allowed;
 }
-
-/* Hover effect */
-.qty-controls button:hover:not(:disabled) {
-  background-color: #218838;
-  transform: scale(1.1);
-}
-
-/* Quantity number */
 .qty-controls span {
   font-weight: 700;
   min-width: 24px;
   text-align: center;
-  font-size: 1.1rem;
 }
 
-/* Price on the right */
+/* Price Display */
 .order-price {
   width: 90px;
   font-weight: 700;
   text-align: right;
-  font-size: 1.1rem;
 }
 
-/* Total price container */
+/* Total Display */
 .order-total {
   margin-top: 25px;
   padding: 20px;
@@ -132,83 +109,132 @@
   color: #1b5e20;
 }
 
-/* Address summary box */
-.address-summary {
+/* --- Address Section --- */
+.address-list {
   margin-top: 30px;
-  background-color: #f0f9f2;
+  padding: 15px;
+  background-color: #f5fff5;
+  border: 1px solid #cce5cc;
   border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 4px 10px rgba(0, 128, 0, 0.1);
 }
-
-.address-summary h4 {
-  margin-bottom: 10px;
-  font-weight: 600;
+.address-list h3 {
+  font-size: 1.2rem;
+  margin-bottom: 15px;
   color: #2e7d32;
 }
 
-.address-summary p {
-  margin: 0 0 15px 0;
-  font-size: 1rem;
-  line-height: 1.4;
+.address-item-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  border: 1px solid #ddd;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background-color: #fff;
+  transition: box-shadow 0.3s ease;
+}
+.address-item-wrapper:hover {
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.15);
 }
 
-/* Edit Address button */
-.edit-btn {
-  background-color: #4caf50;
-  color: white;
-  padding: 10px 16px;
+.address-item input[type='radio'] {
+  margin-right: 10px;
+}
+.address-item div {
+  line-height: 1.4;
+  font-size: 0.95rem;
+}
+
+.edit-address-btn {
+  background-color: #ffc107;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
+  padding: 6px 12px;
   cursor: pointer;
   font-weight: 600;
-  transition: background-color 0.3s ease;
-  margin-bottom: 20px;
-  display: inline-block;
+  color: #333;
+  transition: background-color 0.2s ease;
 }
-.edit-btn:hover {
-  background-color: #388e3c;
-}
-
-/* Payment options */
-.payment-options label {
-  font-size: 1rem;
-  display: block;
-  margin-bottom: 10px;
-  cursor: pointer;
+.edit-address-btn:hover {
+  background-color: #e0a800;
 }
 
-.payment-options input[type="radio"] {
-  margin-right: 8px;
-  cursor: pointer;
-}
-
-/* Place Order button */
-.address-summary > button {
-  background-color: #28a745;
-  color: white;
-  padding: 12px 0;
+.add-new-address-btn {
+  margin-top: 10px;
+  background-color: #007bff;
   border: none;
-  border-radius: 12px;
-  width: 100%;
-  font-weight: 700;
-  font-size: 1.2rem;
+  border-radius: 8px;
+  padding: 10px 20px;
+  color: white;
+  font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 6px 12px rgba(40, 167, 69, 0.4);
-  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.15s ease;
+  transition: background-color 0.3s ease;
 }
-.address-summary > button:hover {
-  background-color: #218838;
-  box-shadow: 0 8px 16px rgba(33, 136, 56, 0.6);
-  transform: translateY(-2px);
-}
-.address-summary > button:active {
-  background-color: #1e7e34;
-  box-shadow: 0 4px 8px rgba(30, 126, 52, 0.8);
-  transform: translateY(0);
+.add-new-address-btn:hover {
+  background-color: #0056b3;
 }
 
-/* Enter Address button (when no address) */
+/* --- Payment Options --- */
+.payment-options {
+  margin: 30px 0;
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.payment-options label {
+  flex: 1 1 45%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  background-color: #f8f9fa;
+  border: 2px solid #ccc;
+  border-radius: 12px;
+  padding: 14px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+.payment-options label:hover {
+  border-color: #28a745;
+  background-color: #e8f5e9;
+  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+}
+
+.payment-options input[type='radio'] {
+  accent-color: #28a745;
+  width: 20px;
+  height: 20px;
+}
+
+.payment-options input[type='radio']:checked + span::after {
+  content: "✓";
+  color: white;
+  background-color: #28a745;
+  position: absolute;
+  right: 20px;
+  top: 14px;
+  width: 24px;
+  height: 24px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.payment-options label span {
+  flex-grow: 1;
+}
+
+/* Place Order Button */
 .order-page > button {
   background-color: #28a745;
   color: white;
@@ -219,25 +245,18 @@
   border-radius: 12px;
   cursor: pointer;
   box-shadow: 0 6px 12px rgba(40, 167, 69, 0.4);
-  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.15s ease;
-  margin-top: 20px;
-  display: inline-block;
+  transition: background-color 0.3s ease, transform 0.15s ease;
   width: 100%;
-  max-width: 320px;
-  text-align: center;
+  max-width: 400px;
+  margin: 0 auto;
+  display: block;
 }
 .order-page > button:hover {
   background-color: #218838;
-  box-shadow: 0 8px 16px rgba(33, 136, 56, 0.6);
   transform: translateY(-2px);
 }
-.order-page > button:active {
-  background-color: #1e7e34;
-  box-shadow: 0 4px 8px rgba(30, 126, 52, 0.8);
-  transform: translateY(0);
-}
 
-/* Address Popup overlay */
+/* Address Popup Overlay */
 .address-popup-overlay {
   position: fixed;
   top: 0;
@@ -248,134 +267,85 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px; /* Ensures popup spacing from viewport edges */
-  box-sizing: border-box;
   z-index: 1500;
 }
 
-/* Address Popup container */
+/* Popup Content */
 .address-popup {
   background: white;
   border-radius: 16px;
   padding: 30px 40px 40px;
   width: 400px;
-  max-width: 100%;
-  max-height: 90vh; /* prevent overflow */
+  max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
   position: relative;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  margin: auto; /* horizontally centers inside overlay */
 }
 
-/* Close button inside popup */
 .address-popup .close-btn {
   position: absolute;
   top: 12px;
-  right: 12px; /* top-right corner */
-  border: none;
+  right: 12px;
   background: transparent;
   font-size: 28px;
-  font-weight: 700;
   color: #555;
+  border: none;
   cursor: pointer;
-  transition: color 0.2s ease, background-color 0.2s ease;
-  line-height: 1;
-  padding: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-}
-.address-popup .close-btn:hover {
-  color: #000;
-  background-color: #e0e0e0; /* subtle hover highlight */
 }
 
-/* Popup heading */
-.address-popup h2 {
-  margin-top: 0;
-  margin-bottom: 20px;
-  font-weight: 700;
-  color: #2e7d32;
-  text-align: center;
-}
-
-/* Form inputs */
-.address-popup form input[type="text"],
-.address-popup form input[type="tel"] {
+/* Popup Form Inputs */
+.address-popup input[type='text'],
+.address-popup input[type='tel'] {
   width: 100%;
-  padding: 12px 14px;
+  padding: 12px;
   margin-bottom: 15px;
   font-size: 1rem;
-  border: 1.8px solid #ccc;
+  border: 1.5px solid #ccc;
   border-radius: 10px;
-  transition: border-color 0.3s ease;
 }
-.address-popup form input[type="text"]:focus,
-.address-popup form input[type="tel"]:focus {
+.address-popup input:focus {
   border-color: #28a745;
   outline: none;
 }
 
-/* Save Address button */
-.address-popup form button[type="submit"] {
+/* Save Button */
+.address-popup button[type='submit'] {
   background-color: #28a745;
   color: white;
-  font-weight: 700;
-  padding: 12px 0;
+  padding: 12px;
   border: none;
   border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
   cursor: pointer;
   width: 100%;
-  font-size: 1.1rem;
-  box-shadow: 0 6px 12px rgba(40, 167, 69, 0.4);
-  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.15s ease;
-  margin-top: 10px;
 }
-.address-popup form button[type="submit"]:hover {
+.address-popup button[type='submit']:hover {
   background-color: #218838;
-  box-shadow: 0 8px 16px rgba(33, 136, 56, 0.6);
-  transform: translateY(-2px);
-}
-.address-popup form button[type="submit"]:active {
-  background-color: #1e7e34;
-  box-shadow: 0 4px 8px rgba(30, 126, 52, 0.8);
-  transform: translateY(0);
-}
-
-/* Selected item popup styles */
-.address-popup img {
-  max-width: 100%;
-  border-radius: 12px;
-  margin-bottom: 15px;
-}
-
-.address-popup p {
-  font-size: 1rem;
-  line-height: 1.5;
-  margin-bottom: 10px;
-}
-
-.address-popup strong {
-  font-weight: 700;
 }
 
 /* Responsive */
 @media (max-width: 500px) {
   .order-page {
-    padding: 0 15px 30px;
+    padding: 0 10px 30px;
   }
 
   .address-popup {
     width: 90vw;
-    padding: 20px 20px 25px;
+    padding: 20px;
   }
 
   .order-img {
     width: 60px;
     height: 60px;
+  }
+
+  .payment-options {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .payment-options label {
+    flex: 1 1 100%;
   }
 }

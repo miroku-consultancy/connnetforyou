@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useCart } from './CartContext';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from './UserContext';
-import AddressPopup from './AddressPopup';
+import AddressPopup from './AddressPopup';  // Make sure you have this component
 import './Order.css';
 
 const API_BASE_URL = 'https://connnet4you-server.onrender.com';
@@ -14,8 +14,8 @@ const Order = () => {
   const { user } = useUser();
 
   const [showAddressPopup, setShowAddressPopup] = useState(false);
-  const [addresses, setAddresses] = useState([]);  // User's saved addresses list
-  const [address, setAddress] = useState(null);    // Selected address
+  const [addresses, setAddresses] = useState([]);
+  const [address, setAddress] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('');
   const [tempAddress, setTempAddress] = useState({
     name: '',
@@ -26,16 +26,17 @@ const Order = () => {
   });
   const [selectedItem, setSelectedItem] = useState(null);
 
+  // Calculate total amount
   const total = items.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
 
-  // Fetch saved addresses on mount or when user changes
+  // Fetch saved addresses on mount or user change
   useEffect(() => {
     const fetchAddresses = async () => {
       if (!user?.id) return;
 
       try {
         const token = localStorage.getItem('authToken');
-        const res = await fetch(`${API_BASE_URL}/api/address`, {  // Backend gets user from token
+        const res = await fetch(`${API_BASE_URL}/api/address`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (!res.ok) throw new Error('Failed to fetch addresses');
@@ -56,6 +57,7 @@ const Order = () => {
     fetchAddresses();
   }, [user]);
 
+  // Save or update address
   const handleAddressSubmit = async () => {
     try {
       const token = localStorage.getItem('authToken');
@@ -64,7 +66,6 @@ const Order = () => {
         return;
       }
 
-      // Include id if editing existing address, else it's a new one
       const addressPayload = { ...tempAddress };
       if (tempAddress.id) addressPayload.id = tempAddress.id;
 
@@ -80,30 +81,22 @@ const Order = () => {
       if (!response.ok) throw new Error('Failed to save address');
       const savedAddress = await response.json();
 
-      // If editing existing address, update the address list
       if (tempAddress.id) {
-        setAddresses(prev =>
-          prev.map(addr => (addr.id === savedAddress.id ? savedAddress : addr))
-        );
+        setAddresses(prev => prev.map(addr => (addr.id === savedAddress.id ? savedAddress : addr)));
       } else {
         setAddresses(prev => [...prev, savedAddress]);
       }
 
       setAddress(savedAddress);
       setShowAddressPopup(false);
-      setTempAddress({
-        name: '',
-        street: '',
-        city: '',
-        zip: '',
-        phone: '',
-      });
+      setTempAddress({ name: '', street: '', city: '', zip: '', phone: '' });
     } catch (error) {
       console.error('Error saving address:', error);
       alert('There was an error saving your address. Please try again.');
     }
   };
 
+  // Place order handler
   const handleOrder = async () => {
     if (!paymentMethod) return alert('Please select a payment method');
     if (!address) {
@@ -154,12 +147,14 @@ const Order = () => {
     }
   };
 
+  // Change quantity handler
   const handleQtyChange = (item, delta) => {
     const newQty = Math.max(0, item.quantity + delta);
     const diff = newQty - item.quantity;
     if (diff !== 0) addToCart(item, diff);
   };
 
+  // Loading & empty states
   if (!cartLoaded) return <div className="order-page"><h2>Loading cart...</h2></div>;
   if (items.length === 0) return <div className="order-page"><h2>No items in cart to order.</h2></div>;
 
@@ -167,7 +162,7 @@ const Order = () => {
     <div className="order-page">
       <h1>🧺 Your Cart</h1>
       <div className="order-list">
-        {items.map((item) => (
+        {items.map(item => (
           <div key={item.id} className="order-row">
             <img
               src={process.env.PUBLIC_URL + item.image}
@@ -192,11 +187,10 @@ const Order = () => {
         <h2>Total: ₹{total.toFixed(2)}</h2>
       </div>
 
-      {/* Show address list if exists */}
       {addresses.length > 0 ? (
         <div className="address-list">
           <h3>Select Delivery Address</h3>
-          {addresses.map((addr) => (
+          {addresses.map(addr => (
             <div key={addr.id} className="address-item-wrapper">
               <label className="address-item">
                 <input
@@ -223,17 +217,10 @@ const Order = () => {
               </button>
             </div>
           ))}
-          {/* Add new address button */}
           <button
             className="add-new-address-btn"
             onClick={() => {
-              setTempAddress({
-                name: '',
-                street: '',
-                city: '',
-                zip: '',
-                phone: '',
-              });
+              setTempAddress({ name: '', street: '', city: '', zip: '', phone: '' });
               setShowAddressPopup(true);
             }}
           >
@@ -243,13 +230,7 @@ const Order = () => {
       ) : (
         <button
           onClick={() => {
-            setTempAddress({
-              name: '',
-              street: '',
-              city: '',
-              zip: '',
-              phone: '',
-            });
+            setTempAddress({ name: '', street: '', city: '', zip: '', phone: '' });
             setShowAddressPopup(true);
           }}
         >
@@ -267,7 +248,6 @@ const Order = () => {
           />
           Cash on Delivery
         </label>
-        <br />
         <label>
           <input
             type="radio"
@@ -292,7 +272,7 @@ const Order = () => {
 
       {selectedItem && (
         <div className="address-popup-overlay" onClick={() => setSelectedItem(null)}>
-          <div className="address-popup" onClick={(e) => e.stopPropagation()}>
+          <div className="address-popup" onClick={e => e.stopPropagation()}>
             <button className="close-btn" onClick={() => setSelectedItem(null)}>&times;</button>
             <h2>{selectedItem.name}</h2>
             <img src={process.env.PUBLIC_URL + selectedItem.image} alt={selectedItem.name} />
