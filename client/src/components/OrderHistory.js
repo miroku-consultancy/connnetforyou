@@ -12,7 +12,6 @@ const OrderHistory = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // ✅ Format INR currency
   const formatCurrency = (amount) =>
     new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -22,21 +21,18 @@ const OrderHistory = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       const token = localStorage.getItem('authToken');
-      console.log('token', token);
       if (!token) {
-  console.error('No token found');
-  navigate('/');
-  return;
-}
+        console.error('No token found');
+        navigate('/');
+        return;
+      }
 
       try {
-        const response = await fetch('https://connnet4you-server.onrender.com/api/orders/user', {
-  method: 'GET',
-  headers: { Authorization: `Bearer ${token}` }
-});
+        const response = await fetch(`${API_BASE_URL}/api/orders/user`, {
+          method: 'GET',
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
-
- console.log('response', response);
         if (!response.ok) {
           if (response.status === 401 || response.status === 403) {
             localStorage.removeItem('authToken');
@@ -69,7 +65,15 @@ const OrderHistory = () => {
   }
 
   if (orders.length === 0) {
-    return <div className="no-orders">You haven't placed any orders yet.</div>;
+    return (
+      <div className="no-orders">
+        You haven't placed any orders yet.
+        <br />
+        <button onClick={() => navigate('/')} className="home-button">
+          Go Back Home
+        </button>
+      </div>
+    );
   }
 
   return (
@@ -79,13 +83,32 @@ const OrderHistory = () => {
         <div key={order.id} className="order-card">
           <p><strong>Order ID:</strong> {order.id}</p>
           <p><strong>Date:</strong> {new Date(order.order_date).toLocaleString()}</p>
-          <ul>
+
+          <ul className="order-items">
             {order.items.map((item) => (
-              <li key={item.product_id}>
-                {item.name} × {item.quantity} = {formatCurrency(item.price * item.quantity)}
+              <li key={item.product_id} className="order-item">
+                <img
+  src={
+    item.image_url && typeof item.image_url === 'string'
+      ? item.image_url.startsWith('/')
+        ? `${API_BASE_URL}${item.image_url}`
+        : item.image_url
+      : 'https://via.placeholder.com/60'
+  }
+  alt={item.name}
+  className="item-image"
+/>
+
+                <div className="item-details">
+                  <span className="item-name">{item.name}</span>
+                  <span className="item-qty-price">
+                    {item.quantity} × {formatCurrency(item.price)}
+                  </span>
+                </div>
               </li>
             ))}
           </ul>
+
           <p><strong>Total:</strong> {formatCurrency(order.total)}</p>
         </div>
       ))}
