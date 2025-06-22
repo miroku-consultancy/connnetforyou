@@ -526,3 +526,76 @@ body {
     min-width: 80px; /* or adjust as needed */
   }
 }
+/* Make address dropdown responsive and handle long text */
+/* --- Keep existing styles --- */
+.address-select {
+  font-size: 0.95rem;
+  padding: 3px 7px;
+  border-radius: 4px;
+  border: none;
+  background-color: #81c784;
+  color: #1b5e20;
+  margin-left: 0.3rem;
+  cursor: pointer;
+  vertical-align: middle;
+
+  /* Prevent dropdown wrapping */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  display: inline-block;
+  box-sizing: border-box;
+}
+
+.address-select:hover,
+.address-select:focus {
+  background-color: #66bb6a;
+  outline: none;
+}
+
+/* Prevent user-address-banner wrapping on mobile */
+@media (max-width: 480px) {
+  .user-address-banner {
+    display: flex;
+    flex-wrap: nowrap;       /* prevent wrapping */
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;     /* keep inline */
+    overflow: hidden;
+  }
+
+  .address-select {
+    font-size: 0.85rem;
+    padding: 2px 5px;
+    min-width: 120px;        /* prevent too small */
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+/* Default: keep user-actions in a row */
+.user-actions {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+/* On mobile, stack buttons vertically */
+@media (max-width: 480px) {
+  .user-actions {
+    flex-direction: column;
+    gap: 0.5rem;   /* smaller gap between buttons vertically */
+    align-items: stretch; /* make buttons full width if you want */
+  }
+
+  /* Optional: make buttons full width on mobile */
+  .order-history-btn,
+  .logout-btn { /* assuming logout button has this class */
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
