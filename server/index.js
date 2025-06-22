@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const pool = require('./db');
 
 const authRoutes = require('./routes/auth');
@@ -46,6 +47,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/address', addressRoutes);
 app.use('/api/stripe', stripeRoutes);
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 // ✅ Default route
 app.get('/', (req, res) => {
