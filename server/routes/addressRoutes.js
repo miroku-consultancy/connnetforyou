@@ -3,7 +3,8 @@ const express = require('express');
 const router = express.Router();
 const { saveAddress } = require('../models/addressModel');
 const pool = require('../db');
-const authenticateToken = require('../middleware/authenticateToken');
+const authenticateToken = require('../middleware/authMiddleware');
+
 
 // Save a new address for the logged-in user
 router.post('/', authenticateToken, async (req, res) => {
