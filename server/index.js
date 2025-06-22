@@ -18,7 +18,10 @@ const PORT = process.env.PORT || 5000;
 const allowedOrigins = [
   'http://localhost:3000',
   'https://connect4u-client.onrender.com',
+  'https://connectfree4u.com',
+  'https://www.connectfree4u.com',
 ];
+
 
 app.use(cors({
   origin: (origin, callback) => {
