@@ -52,7 +52,7 @@ const Header = () => {
             <div className="logo-container">
                 <img src={logo} alt="Miroku Consultancy Logo" className="logo" />
                 <div className="company-name">
-                    <span>Connect4U</span>
+                    <span>ConnectFree4U</span>
                 </div>
                 {/* <button className="menu-toggle" onClick={toggleMenu} aria-label="Toggle Menu">
                     {isMenuOpen ? '✖' : '☰'}
