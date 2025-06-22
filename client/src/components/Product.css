@@ -476,7 +476,7 @@ body {
 }
 
 /* --- Responsive --- */
-@media (max-width: 100px) {
+@media (max-width: 180px) {
   .product-grid {
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   }
