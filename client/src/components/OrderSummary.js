@@ -52,11 +52,17 @@ const OrderSummary = () => {
   return (
     <div className="order-summary">
       <h1>Order Summary</h1>
+
+      {/* Display Order ID */}
+      {order.orderId && (
+        <h4>Order ID: <span>{order.orderId}</span></h4>
+      )}
+
       <h3>Ordered On: <span>{new Date(order.orderDate).toLocaleString()}</span></h3>
 
       <ul className="order-items">
         {order.items.map(item => (
-          <li key={item.id} className="order-summary-item">
+          <li key={item.product_id || item.id} className="order-summary-item">
             <img
               src={
                 item.image.startsWith('http')
@@ -85,7 +91,8 @@ const OrderSummary = () => {
         <p>
           {order.address.name}<br/>
           {order.address.street}<br/>
-          {order.address.city} – {order.address.zip}
+          {order.address.city} – {order.address.zip}<br/>
+          Phone: {order.address.phone}
         </p>
       </div>
 

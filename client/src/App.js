@@ -7,6 +7,7 @@ import EmailTokenLogin from './components/EmailTokenLogin';
 import Order from './components/Order';
 import Payment from './components/Payment';
 import OrderSummary from './components/OrderSummary';
+import OrderHistory from './components/OrderHistory';
 import Product from './components/Product';
 import ProtectedRoute from './components/ProtectedRoute';
 import Cart from './components/Cart';
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/order" element={<ProtectedRoute><Order /></ProtectedRoute>} />
             <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
             <Route path="/order-summary" element={<ProtectedRoute><OrderSummary /></ProtectedRoute>} />
+            <Route path="/order-history" element={<OrderHistory />} />
           </Routes>
         </main>
         <Cart />

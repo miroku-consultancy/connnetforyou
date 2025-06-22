@@ -49,10 +49,16 @@ const Order = () => {
     }
   };
 
-  // <-- UPDATED handleOrder function START -->
   const handleOrder = async () => {
     if (!paymentMethod) return alert('Please select a payment method');
     if (!address) return alert('Please enter your address');
+
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      alert('You must be logged in to place an order.');
+      navigate('/');
+      return;
+    }
 
     const orderData = {
       items,
@@ -65,7 +71,10 @@ const Order = () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/orders`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,  // <-- Send the auth token here
+        },
         body: JSON.stringify(orderData),
       });
 
@@ -80,7 +89,6 @@ const Order = () => {
       if (paymentMethod === 'cod') {
         navigate('/order-summary');
       } else {
-        // Pass order via state to Payment component
         navigate('/payment', { state: { order: fullOrder } });
       }
     } catch (error) {
@@ -88,7 +96,6 @@ const Order = () => {
       alert('Failed to place order. Please try again.');
     }
   };
-  // <-- UPDATED handleOrder function END -->
 
   const handleQtyChange = (item, delta) => {
     const newQty = Math.max(0, item.quantity + delta);

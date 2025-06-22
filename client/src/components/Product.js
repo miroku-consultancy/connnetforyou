@@ -110,6 +110,14 @@ const Product = () => {
             </p>
           </div>
           <LogoutButton />
+          {/* Added Order History Button */}
+          <button
+            onClick={() => navigate('/order-history')}
+            className="order-history-btn"
+            style={{ marginLeft: '1rem' }}
+          >
+            View Order History
+          </button>
         </div>
       )}
 
@@ -130,7 +138,6 @@ const Product = () => {
                   <div key={product.id} className="product-card">
                     <div className="image-container">
                       <img
-                        // IMAGE FIX: Use product.image as is if full URL or add PUBLIC_URL if relative
                         src={
                           product.image.startsWith('http')
                             ? product.image
@@ -192,7 +199,6 @@ const Product = () => {
           <ul>
             {Object.values(cart).map((item) => (
               <li key={item.id} style={{ margin: '10px 0' }}>
-                {/* Show image in popup too */}
                 <img
                   src={
                     item.image.startsWith('http')
@@ -214,10 +220,7 @@ const Product = () => {
             ))}
           </ul>
           <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-            <button
-              onClick={() => navigate('/order')}
-              className="login-btn"
-            >
+            <button onClick={() => navigate('/order')} className="login-btn">
               Proceed to Order
             </button>
           </div>
