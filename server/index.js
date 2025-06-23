@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 const pool = require('./db');
 
 const authRoutes = require('./routes/auth');
@@ -14,14 +15,20 @@ const stripeRoutes = require('./routes/stripe');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// CORS setup with allowed origins and handling OPTIONS preflight
+// ✅ Ensure /images directory exists before upload
+const imagesDir = path.join(__dirname, 'images');
+if (!fs.existsSync(imagesDir)) {
+  fs.mkdirSync(imagesDir);
+  console.log('📁 Created /images directory');
+}
+
+// ✅ CORS setup
 const allowedOrigins = [
   'http://localhost:3000',
   'https://connect4u-client.onrender.com',
   'https://connectfree4u.com',
   'https://www.connectfree4u.com',
 ];
-
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -38,12 +45,12 @@ app.use(cors({
 
 app.use(express.json());
 
-// Connect to PostgreSQL DB
+// ✅ Connect to PostgreSQL DB
 pool.connect()
   .then(() => console.log('✅ Connected to PostgreSQL database'))
   .catch(err => console.error('❌ PostgreSQL connection error:', err));
 
-// Mount all routes
+// ✅ Mount routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
@@ -51,20 +58,20 @@ app.use('/api/products', productRoutes);
 app.use('/api/address', addressRoutes);
 app.use('/api/stripe', stripeRoutes);
 
-// Serve static images
+// ✅ Serve static images
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
-// Root endpoint
+// ✅ Root test endpoint
 app.get('/', (req, res) => {
   res.send('🛒 eCommerce backend is running!');
 });
 
-// 404 handler
+// ❌ 404 handler
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-// Centralized error handler
+// 🔧 Centralized error handler
 app.use((err, req, res, next) => {
   console.error(err);
   if (err.message.includes('CORS')) {
@@ -73,7 +80,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Server error', message: err.message });
 });
 
-// Start server
+// ✅ Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
