@@ -43,11 +43,15 @@ const Product = () => {
     'Dried & Dehydrated',
   ];
 
-  const resolveImageUrl = (image) => {
-    if (!image) return '';
-    if (image.startsWith('http') || image.startsWith('/images/')) return image;
-    return `${process.env.PUBLIC_URL}/images/${image}`;
-  };
+const resolveImageUrl = (image) => {
+  if (!image) return '';
+  // If image is already a full URL, return as is
+  if (image.startsWith('http') || image.startsWith('/images/')) return image;
+
+  // Return full URL to backend images folder
+  return `https://connnet4you-server.onrender.com/images/${image}`;
+};
+
 
   useEffect(() => {
     const fetchProducts = async () => {
