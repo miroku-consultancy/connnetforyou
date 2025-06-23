@@ -14,6 +14,8 @@ import Cart from './components/Cart';
 import Header from './components/Header';
 import AddressPopup from './components/AddressPopup'; // Adjust the path if it's in a subfolder like ./pages/AddressPopup
 import { ToastContainer } from 'react-toastify';
+import AddProduct from './components/AddProduct'; // Adjust path as needed
+
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
 
@@ -32,6 +34,8 @@ const App = () => (
             <Route path="/order-summary" element={<ProtectedRoute><OrderSummary /></ProtectedRoute>} />
             <Route path="/order-history" element={<OrderHistory />} />
             <Route path="/address" element={<AddressPopup />} />
+            <Route path="/admin/add-product" element={<AddProduct />} />
+
           </Routes>
         </main>
         <Cart />

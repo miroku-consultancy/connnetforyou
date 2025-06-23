@@ -530,3 +530,16 @@ body {
   }
 }
 
+.add-product-btn {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.add-product-btn:hover {
+  background-color: #218838;
+}

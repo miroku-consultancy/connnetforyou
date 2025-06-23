@@ -32,7 +32,34 @@ const getProductById = async (id) => {
   }
 };
 
+// Add product to DB
+const addProduct = async ({
+  name,
+  description,
+  price,
+  stock,
+  barcode,
+  category,
+  subcategory,
+  shop_id,
+}) => {
+  try {
+    const result = await pool.query(
+      `INSERT INTO products
+        (name, description, price, stock, barcode, category, subcategory, shop_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       RETURNING *`,
+      [name, description, price, stock, barcode, category, subcategory, shop_id]
+    );
+    return result.rows[0];
+  } catch (err) {
+    console.error('Error adding product to DB:', err);
+    throw err;
+  }
+};
+
 module.exports = {
   getAllProducts,
   getProductById,
+  addProduct, // ✅ Make sure this is exported
 };

@@ -277,6 +277,14 @@ const Product = () => {
             >
               📜 Order History
             </button>
+            <button
+    onClick={() => navigate('/admin/add-product')}
+    className="add-product-btn"
+    title="Add a new product"
+    style={{ marginLeft: '10px' }}
+  >
+    ➕ Add Product
+  </button>
           </div>
         </div>
       )}
