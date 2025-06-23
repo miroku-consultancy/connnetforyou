@@ -58,7 +58,7 @@ const AddProduct = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('authToken');
-
+console.log('token',token)
     const formData = new FormData();
     for (const key in productData) {
       if (productData[key]) formData.append(key, productData[key]);
