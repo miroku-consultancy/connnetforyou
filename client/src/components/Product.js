@@ -43,7 +43,12 @@ const Product = () => {
     'Dried & Dehydrated',
   ];
 
-  // Fetch products on mount
+  const resolveImageUrl = (image) => {
+    if (!image) return '';
+    if (image.startsWith('http') || image.startsWith('/images/')) return image;
+    return `${process.env.PUBLIC_URL}/images/${image}`;
+  };
+
   useEffect(() => {
     const fetchProducts = async () => {
       const token = localStorage.getItem('authToken');
@@ -80,11 +85,9 @@ const Product = () => {
     fetchProducts();
   }, [navigate]);
 
-  // Fetch all addresses for logged-in user
   useEffect(() => {
     const fetchAddresses = async () => {
       const token = localStorage.getItem('authToken');
-
       if (!token || !user?.id) return;
 
       try {
@@ -95,7 +98,7 @@ const Product = () => {
         });
 
         if (response.ok) {
-          const data = await response.json(); // Array of addresses
+          const data = await response.json();
           setAddresses(data);
 
           if (data.length > 0) {
@@ -132,7 +135,6 @@ const Product = () => {
     }
   }, [user]);
 
-  // Save or update address and refresh addresses list
   const handleAddressSubmit = async () => {
     try {
       const token = localStorage.getItem('authToken');
@@ -148,10 +150,10 @@ const Product = () => {
       if (!response.ok) throw new Error('Failed to save address');
       const savedAddress = await response.json();
 
-      // Refetch addresses after save to sync with backend
       const addressesResponse = await fetch(`${API_BASE_URL}/api/address`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       if (addressesResponse.ok) {
         const updatedAddresses = await addressesResponse.json();
         setAddresses(updatedAddresses);
@@ -166,7 +168,6 @@ const Product = () => {
     }
   };
 
-  // Handle address selection from dropdown
   const handleAddressSelect = (e) => {
     const id = Number(e.target.value);
     setSelectedAddressId(id);
@@ -174,7 +175,6 @@ const Product = () => {
     if (addr) setTempAddress(addr);
   };
 
-  // Sync quantities with cart
   useEffect(() => {
     if (!cartLoaded) return;
     const initialQuantities = {};
@@ -184,7 +184,6 @@ const Product = () => {
     setQuantities(initialQuantities);
   }, [cart, cartLoaded]);
 
-  // Handle quantity change for a product
   const handleQtyChange = (product, delta) => {
     const prevQty = quantities[product.id] || 0;
     const newQty = Math.max(0, prevQty + delta);
@@ -195,7 +194,6 @@ const Product = () => {
     if (diff !== 0) addToCart(product, diff);
   };
 
-  // Filter fresh category products and group by subcategory
   const freshProducts = products.filter(
     (p) => p.category?.toLowerCase() === 'fresh'
   );
@@ -249,7 +247,6 @@ const Product = () => {
             ) : (
               <button
                 onClick={() => {
-                  // Reset tempAddress to empty for new address add
                   setTempAddress({
                     name: '',
                     street: '',
@@ -278,13 +275,13 @@ const Product = () => {
               📜 Order History
             </button>
             <button
-    onClick={() => navigate('/admin/add-product')}
-    className="add-product-btn"
-    title="Add a new product"
-    style={{ marginLeft: '10px' }}
-  >
-    ➕ Add Product
-  </button>
+              onClick={() => navigate('/admin/add-product')}
+              className="add-product-btn"
+              title="Add a new product"
+              style={{ marginLeft: '10px' }}
+            >
+              ➕ Add Product
+            </button>
           </div>
         </div>
       )}
@@ -306,11 +303,7 @@ const Product = () => {
                   <div key={product.id} className="product-card">
                     <div className="image-container">
                       <img
-                        src={
-                          product.image.startsWith('http')
-                            ? product.image
-                            : process.env.PUBLIC_URL + product.image
-                        }
+                        src={resolveImageUrl(product.image)}
                         alt={product.name}
                         className="product-image"
                       />
@@ -355,7 +348,6 @@ const Product = () => {
         </div>
       )}
 
-      {/* Cart Popup */}
       {showCartPopup && (
         <div
           className="cart-popup"
@@ -379,11 +371,7 @@ const Product = () => {
               {Object.values(cart).map((item) => (
                 <li key={item.id} style={{ margin: '10px 0' }}>
                   <img
-                    src={
-                      item.image.startsWith('http')
-                        ? item.image
-                        : process.env.PUBLIC_URL + item.image
-                    }
+                    src={resolveImageUrl(item.image)}
                     alt={item.name}
                     style={{
                       width: '40px',
@@ -407,7 +395,6 @@ const Product = () => {
         </div>
       )}
 
-      {/* Address Popup */}
       {showAddressPopup && (
         <AddressPopup
           tempAddress={tempAddress}
