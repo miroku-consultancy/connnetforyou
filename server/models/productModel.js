@@ -41,15 +41,16 @@ const addProduct = async ({
   barcode,
   category,
   subcategory,
+  image,     // Add this here
   shop_id,
 }) => {
   try {
     const result = await pool.query(
       `INSERT INTO products
-        (name, description, price, stock, barcode, category, subcategory, shop_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        (name, description, price, stock, barcode, category, subcategory, image, shop_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING *`,
-      [name, description, price, stock, barcode, category, subcategory, shop_id]
+      [name, description, price, stock, barcode, category, subcategory, image, shop_id]
     );
     return result.rows[0];
   } catch (err) {
@@ -57,6 +58,7 @@ const addProduct = async ({
     throw err;
   }
 };
+
 
 module.exports = {
   getAllProducts,

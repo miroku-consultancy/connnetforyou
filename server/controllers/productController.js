@@ -31,11 +31,9 @@ const getProduct = async (req, res) => {
 const addProduct = async (req, res) => {
   try {
     const user = req.user;
-
     if (!user || (user.role !== 'admin' && user.role !== 'vendor')) {
       return res.status(403).json({ message: 'Unauthorized' });
     }
-
     const {
       name,
       description,
@@ -50,7 +48,10 @@ const addProduct = async (req, res) => {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    const image = req.file ? req.file.filename : null; // 👈 get filename
+    console.log('req.file:', req.file); // Log to verify multer worked
+    console.log('req.body:', req.body); // See form fields
+
+    const image = req.file ? req.file.filename : null;
     const shopId = user.shop_id || null;
 
     const newProduct = await productModel.addProduct({
@@ -61,7 +62,7 @@ const addProduct = async (req, res) => {
       barcode,
       category,
       subcategory,
-      image, // 👈 add image here
+      image,
       shop_id: shopId
     });
 
@@ -71,6 +72,7 @@ const addProduct = async (req, res) => {
     res.status(500).json({ message: 'Error adding product', error: err.message });
   }
 };
+
 
 
 module.exports = {
