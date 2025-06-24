@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './Product.css';
 import { useCart } from './CartContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';  // <-- Added useParams
 import { useUser } from './UserContext';
 import LogoutButton from './LogoutButton';
 import AddressPopup from './AddressPopup';
@@ -20,10 +20,13 @@ const Product = () => {
     zip: '',
     phone: '',
   });
+  const [shopId, setShopId] = useState(null);  // <-- new state for shop id
 
   const { cart, cartLoaded, addToCart } = useCart();
   const { user, loadingUser } = useUser();
   const navigate = useNavigate();
+
+  const { shopSlug } = useParams(); // <-- get shopSlug from URL
 
   const API_BASE_URL = 'https://connnet4you-server.onrender.com';
 
@@ -43,12 +46,46 @@ const Product = () => {
   const resolveImageUrl = (image) => {
     if (!image) return '';
     if (image.startsWith('http') || image.startsWith('/images/')) return image;
-    return `https://connnet4you-server.onrender.com/images/${image}`;
+    return `${API_BASE_URL}/images/${image}`;
   };
 
+  // Fetch shop info by shopSlug to get shopId
   useEffect(() => {
-    console.log('USER:', user);
+    const fetchShopInfo = async () => {
+      if (!shopSlug) return;
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        navigate('/');
+        return;
+      }
 
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/shops/${shopSlug}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        if (!response.ok) {
+          alert('Shop not found');
+          navigate('/');
+          return;
+        }
+        const shop = await response.json();
+        console.log(shop,'shoppp')
+        setShopId(shop.id);
+      } catch (error) {
+        console.error('Error fetching shop info:', error);
+        alert('Error loading shop details');
+        navigate('/');
+      }
+    };
+
+    fetchShopInfo();
+  }, [shopSlug, navigate]);
+
+  // Fetch products when shopId is available
+  useEffect(() => {
     const fetchProducts = async () => {
       const token = localStorage.getItem('authToken');
       if (!token) {
@@ -56,10 +93,10 @@ const Product = () => {
         return;
       }
 
-      if (!user?.shop_id) return;
+      if (!shopId) return;
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/products?shopId=${user.shop_id}`, {
+        const response = await fetch(`${API_BASE_URL}/api/products?shopId=${shopId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -83,10 +120,8 @@ const Product = () => {
       }
     };
 
-    if (user?.shop_id) {
-      fetchProducts();
-    }
-  }, [user, navigate]);
+    fetchProducts();
+  }, [shopId, navigate]);
 
   useEffect(() => {
     const fetchAddresses = async () => {
@@ -204,9 +239,7 @@ const Product = () => {
     <section className="product-section">
       {!loadingUser && user && (
         <div className="user-profile-banner">
-          <span role="img" aria-label="user" className="user-icon">
-            👤
-          </span>
+          <span role="img" aria-label="user" className="user-icon">👤</span>
           <div className="user-info-container">
             <p>
               Welcome back, <strong>{user.name || user.email?.split('@')[0]}</strong>
@@ -222,8 +255,7 @@ const Product = () => {
                 >
                   {addresses.map((addr) => (
                     <option key={addr.id} value={addr.id}>
-                      {addr.name}, {addr.street}, {addr.city} - {addr.zip} (📞{' '}
-                      {addr.phone})
+                      {addr.name}, {addr.street}, {addr.city} - {addr.zip} (📞 {addr.phone})
                     </option>
                   ))}
                 </select>
@@ -285,9 +317,7 @@ const Product = () => {
           items.length > 0 && (
             <div
               key={subcategory}
-              className={`subcategory-section ${
-                index % 2 === 0 ? 'light-bg' : 'dark-bg'
-              }`}
+              className={`subcategory-section ${index % 2 === 0 ? 'light-bg' : 'dark-bg'}`}
             >
               <h2 className="subcategory-title">{subcategory}</h2>
               <div className="product-grid">
@@ -319,8 +349,8 @@ const Product = () => {
                       </div>
                     </div>
                     <h3>{product.name}</h3>
-                    <p className="product-desc">{product.description}</p>
-                    <p className="price">₹{product.price}</p>
+                    <p className="product-description">{product.description}</p>
+                    <p className="product-price">₹{product.price}</p>
                   </div>
                 ))}
               </div>
@@ -328,12 +358,68 @@ const Product = () => {
           )
       )}
 
+      {Object.keys(cart).length > 0 && (
+        <div className="floating-cart" onClick={() => setShowCartPopup(true)}>
+          🛒{' '}
+          {Object.values(cart).reduce((sum, item) => sum + item.quantity, 0)} item(s)
+          | ₹
+          {Object.values(cart)
+            .reduce((sum, item) => sum + item.quantity * item.price, 0)
+            .toFixed(2)}{' '}
+          → View Cart
+        </div>
+      )}
+
+      {showCartPopup && (
+        <div
+          className="cart-popup"
+          onClick={() => setShowCartPopup(false)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="cart-popup-content" onClick={(e) => e.stopPropagation()}>
+            <button
+              className="cart-close-btn"
+              onClick={() => setShowCartPopup(false)}
+              aria-label="Close Cart"
+            >
+              &times;
+            </button>
+            <h2>Your Cart</h2>
+            <ul>
+              {Object.values(cart).map((item) => (
+                <li key={item.id} style={{ margin: '10px 0' }}>
+                  <img
+                    src={resolveImageUrl(item.image)}
+                    alt={item.name}
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      objectFit: 'cover',
+                      borderRadius: '6px',
+                      marginRight: '10px',
+                      verticalAlign: 'middle',
+                    }}
+                  />
+                  {item.name} × {item.quantity} = ₹{item.quantity * item.price}
+                </li>
+              ))}
+            </ul>
+            <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+              <button onClick={() => navigate('/order')} className="login-btn">
+                Proceed to Order
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showAddressPopup && (
         <AddressPopup
-          address={tempAddress}
-          setAddress={setTempAddress}
+          tempAddress={tempAddress}
+          setTempAddress={setTempAddress}
           onClose={() => setShowAddressPopup(false)}
-          onSave={handleAddressSubmit}
+          onSubmit={handleAddressSubmit}
         />
       )}
     </section>
