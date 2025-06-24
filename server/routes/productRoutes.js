@@ -27,10 +27,10 @@ router.use((req, res, next) => {
 });
 
 // GET all products
-router.get('/', productController.getProducts);
+router.get('/', authMiddleware, productController.getProducts);
 
 // GET product by ID
-router.get('/:id', productController.getProduct);
+router.get('/:id', authMiddleware, productController.getProduct);
 
 // POST new product (admin/vendor only) with image upload
 router.post(
