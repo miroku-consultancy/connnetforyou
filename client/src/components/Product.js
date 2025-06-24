@@ -59,7 +59,7 @@ const Product = () => {
       if (!user?.shopId) return;
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/products?shopId=${user.shopId}`, {
+        fetch(`${API_BASE_URL}/api/products?shopId=${user.shop_id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
