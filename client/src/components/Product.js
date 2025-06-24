@@ -1,4 +1,3 @@
-// client/src/Product.js
 import React, { useEffect, useState } from 'react';
 import './Product.css';
 import { useCart } from './CartContext';
@@ -11,10 +10,9 @@ const Product = () => {
   const [products, setProducts] = useState([]);
   const [quantities, setQuantities] = useState({});
   const [showCartPopup, setShowCartPopup] = useState(false);
-
   const [addresses, setAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
-
+  const [showAddressPopup, setShowAddressPopup] = useState(false);
   const [tempAddress, setTempAddress] = useState({
     name: '',
     street: '',
@@ -22,7 +20,6 @@ const Product = () => {
     zip: '',
     phone: '',
   });
-  const [showAddressPopup, setShowAddressPopup] = useState(false);
 
   const { cart, cartLoaded, addToCart } = useCart();
   const { user, loadingUser } = useUser();
@@ -43,15 +40,11 @@ const Product = () => {
     'Dried & Dehydrated',
   ];
 
-const resolveImageUrl = (image) => {
-  if (!image) return '';
-  // If image is already a full URL, return as is
-  if (image.startsWith('http') || image.startsWith('/images/')) return image;
-
-  // Return full URL to backend images folder
-  return `https://connnet4you-server.onrender.com/images/${image}`;
-};
-
+  const resolveImageUrl = (image) => {
+    if (!image) return '';
+    if (image.startsWith('http') || image.startsWith('/images/')) return image;
+    return `https://connnet4you-server.onrender.com/images/${image}`;
+  };
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -61,8 +54,10 @@ const resolveImageUrl = (image) => {
         return;
       }
 
+      if (!user?.shopId) return;
+
       try {
-        const response = await fetch(`${API_BASE_URL}/api/products`, {
+        const response = await fetch(`${API_BASE_URL}/api/products?shopId=${user.shopId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -86,8 +81,10 @@ const resolveImageUrl = (image) => {
       }
     };
 
-    fetchProducts();
-  }, [navigate]);
+    if (user?.shopId) {
+      fetchProducts();
+    }
+  }, [user, navigate]);
 
   useEffect(() => {
     const fetchAddresses = async () => {
@@ -118,16 +115,6 @@ const resolveImageUrl = (image) => {
               phone: '',
             });
           }
-        } else {
-          setAddresses([]);
-          setSelectedAddressId(null);
-          setTempAddress({
-            name: '',
-            street: '',
-            city: '',
-            zip: '',
-            phone: '',
-          });
         }
       } catch (error) {
         console.error('Error fetching addresses:', error);
@@ -154,12 +141,12 @@ const resolveImageUrl = (image) => {
       if (!response.ok) throw new Error('Failed to save address');
       const savedAddress = await response.json();
 
-      const addressesResponse = await fetch(`${API_BASE_URL}/api/address`, {
+      const updatedRes = await fetch(`${API_BASE_URL}/api/address`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (addressesResponse.ok) {
-        const updatedAddresses = await addressesResponse.json();
+      if (updatedRes.ok) {
+        const updatedAddresses = await updatedRes.json();
         setAddresses(updatedAddresses);
         setSelectedAddressId(savedAddress.id);
         setTempAddress(savedAddress);
@@ -220,8 +207,7 @@ const resolveImageUrl = (image) => {
           </span>
           <div className="user-info-container">
             <p>
-              Welcome back,{' '}
-              <strong>{user.name || user.email?.split('@')[0]}</strong>
+              Welcome back, <strong>{user.name || user.email?.split('@')[0]}</strong>
             </p>
 
             {addresses.length > 0 ? (
@@ -359,10 +345,7 @@ const resolveImageUrl = (image) => {
           role="dialog"
           aria-modal="true"
         >
-          <div
-            className="cart-popup-content"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="cart-popup-content" onClick={(e) => e.stopPropagation()}>
             <button
               className="cart-close-btn"
               onClick={() => setShowCartPopup(false)}
