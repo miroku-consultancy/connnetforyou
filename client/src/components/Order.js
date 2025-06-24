@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useCart } from './CartContext';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from './UserContext';
-import AddressPopup from './AddressPopup';  // Make sure you have this component
+import AddressPopup from './AddressPopup';
 import './Order.css';
 
 const API_BASE_URL = 'https://connnet4you-server.onrender.com';
@@ -26,14 +26,11 @@ const Order = () => {
   });
   const [selectedItem, setSelectedItem] = useState(null);
 
-  // Calculate total amount
   const total = items.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
 
-  // Fetch saved addresses on mount or user change
   useEffect(() => {
     const fetchAddresses = async () => {
       if (!user?.id) return;
-
       try {
         const token = localStorage.getItem('authToken');
         const res = await fetch(`${API_BASE_URL}/api/address`, {
@@ -42,11 +39,8 @@ const Order = () => {
         if (!res.ok) throw new Error('Failed to fetch addresses');
         const data = await res.json();
         setAddresses(data);
-        if (data.length > 0) {
-          setAddress(data[0]);
-        } else {
-          setAddress(null);
-        }
+        if (data.length > 0) setAddress(data[0]);
+        else setAddress(null);
       } catch (error) {
         console.error('Error fetching addresses:', error);
         setAddresses([]);
@@ -57,7 +51,6 @@ const Order = () => {
     fetchAddresses();
   }, [user]);
 
-  // Save or update address
   const handleAddressSubmit = async () => {
     try {
       const token = localStorage.getItem('authToken');
@@ -96,7 +89,6 @@ const Order = () => {
     }
   };
 
-  // Place order handler
   const handleOrder = async () => {
     if (!paymentMethod) return alert('Please select a payment method');
     if (!address) {
@@ -136,10 +128,13 @@ const Order = () => {
       const fullOrder = { ...orderData, orderId: result.orderId };
       localStorage.setItem('orderSummary', JSON.stringify(fullOrder));
 
+      // Use user.shop_slug for route param, fallback to 'demo'
+      const shopSlug = user?.shop_slug || 'demo';
+
       if (paymentMethod === 'cod') {
-        navigate('/order-summary');
+        navigate(`/shop/${shopSlug}/order-summary`);
       } else {
-        navigate('/payment', { state: { order: fullOrder } });
+        navigate(`/shop/${shopSlug}/payment`, { state: { order: fullOrder } });
       }
     } catch (error) {
       console.error('Order placement failed:', error);
@@ -147,14 +142,12 @@ const Order = () => {
     }
   };
 
-  // Change quantity handler
   const handleQtyChange = (item, delta) => {
     const newQty = Math.max(0, item.quantity + delta);
     const diff = newQty - item.quantity;
     if (diff !== 0) addToCart(item, diff);
   };
 
-  // Loading & empty states
   if (!cartLoaded) return <div className="order-page"><h2>Loading cart...</h2></div>;
   if (items.length === 0) return <div className="order-page"><h2>No items in cart to order.</h2></div>;
 
