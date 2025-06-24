@@ -47,6 +47,8 @@ const Product = () => {
   };
 
   useEffect(() => {
+    console.log('USER:', user);
+
     const fetchProducts = async () => {
       const token = localStorage.getItem('authToken');
       if (!token) {
