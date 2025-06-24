@@ -10,7 +10,7 @@ const pool = new Pool({
 });
 
 // Get all products
-const getAllProducts = async () => {
+const getAllProducts = async (shopId) => {
   console.log('Model: getAllProducts called');
   try {
     const result = await pool.query('SELECT * FROM products WHERE shop_id = $1', [shopId]);
