@@ -292,14 +292,14 @@ const Product = () => {
           <div className="user-actions">
             <LogoutButton />
             <button
-              onClick={() => navigate('/order-history')}
+              onClick={() => navigate(`/shop/${shopSlug}/order-history`)}
               className="order-history-btn"
               title="View your past orders"
             >
               📜 Order History
             </button>
             <button
-              onClick={() => navigate('/admin/add-product')}
+              onClick={() => navigate(`/shop/${shopSlug}/admin/add-product`)}
               className="add-product-btn"
               title="Add a new product"
               style={{ marginLeft: '10px' }}
@@ -406,7 +406,7 @@ const Product = () => {
               ))}
             </ul>
             <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-              <button onClick={() => navigate('/order')} className="login-btn">
+              <button onClick={() => navigate('/shop/${shopSlug}/order')} className="login-btn">
                 Proceed to Order
               </button>
             </div>

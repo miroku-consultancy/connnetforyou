@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useCart } from './CartContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import './Cart.css';
 
 const Cart = () => {
   const { cart, updateQuantity } = useCart();
   const navigate = useNavigate();
+  const { shopSlug } = useParams(); // ✅ Grab current shopSlug
 
   const items = Object.values(cart);
   const [visible, setVisible] = useState(false);
@@ -50,7 +51,10 @@ const Cart = () => {
       </ul>
       <h3>Total: ₹{total.toFixed(2)}</h3>
 
-      <button className="proceed-btn" onClick={() => navigate('/order')}>
+      <button
+        className="proceed-btn"
+        onClick={() => navigate(`/shop/${shopSlug}/order`)} // ✅ navigate using shopSlug
+      >
         Proceed to Order
       </button>
     </div>

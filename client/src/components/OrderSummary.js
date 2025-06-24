@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import { useCart } from './CartContext';
 import './OrderSummary.css';
 
@@ -7,42 +7,39 @@ const OrderSummary = () => {
   const [order, setOrder] = useState(null);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { shopSlug } = useParams(); // ✅ Get shop slug from URL
   const { clearCart } = useCart();
   const navigationHandled = useRef(false);
 
   useEffect(() => {
-    // Show stripe status alerts
     if (searchParams.get('success')) {
       alert('✅ Payment successful! Thank you for your order.');
     } else if (searchParams.get('canceled')) {
       alert('❌ Payment was canceled. You can try again.');
     }
 
-    // Load saved order if exists
     const saved = localStorage.getItem('orderSummary');
     if (saved) {
       setOrder(JSON.parse(saved));
     }
 
-    // Replace history state to help catch back navigation
     window.history.replaceState({ fromSummary: true }, '');
 
     const onPopState = (e) => {
-      // Only act if we came from this page
       if (e.state?.fromSummary && !navigationHandled.current) {
         navigationHandled.current = true;
         clearCart();
-        navigate('/products', { replace: true });
+        navigate(`/shop/${shopSlug}/products`, { replace: true }); // ✅ Use shopSlug
       }
     };
 
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
-  }, [searchParams, clearCart, navigate]);
+  }, [searchParams, clearCart, navigate, shopSlug]);
 
   const handleGoToProducts = () => {
     clearCart();
-    navigate('/products');
+    navigate(`/shop/${shopSlug}/products`); // ✅ Use shopSlug
   };
 
   if (!order) {
@@ -53,7 +50,6 @@ const OrderSummary = () => {
     <div className="order-summary">
       <h1>Order Summary</h1>
 
-      {/* Display Order ID */}
       {order.orderId && (
         <h4>Order ID: <span>{order.orderId}</span></h4>
       )}
@@ -73,8 +69,8 @@ const OrderSummary = () => {
               className="summary-image"
             />
             <div>
-              <strong>{item.name}</strong><br/>
-              Qty: {item.quantity} × ₹{item.price}<br/>
+              <strong>{item.name}</strong><br />
+              Qty: {item.quantity} × ₹{item.price}<br />
               Total: ₹{(item.quantity * item.price).toFixed(2)}
             </div>
           </li>
@@ -89,9 +85,9 @@ const OrderSummary = () => {
       <div className="summary-address">
         <h4>Delivering To:</h4>
         <p>
-          {order.address.name}<br/>
-          {order.address.street}<br/>
-          {order.address.city} – {order.address.zip}<br/>
+          {order.address.name}<br />
+          {order.address.street}<br />
+          {order.address.city} – {order.address.zip}<br />
           Phone: {order.address.phone}
         </p>
       </div>
