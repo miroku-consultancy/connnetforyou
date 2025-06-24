@@ -56,10 +56,10 @@ const Product = () => {
         return;
       }
 
-      if (!user?.shopId) return;
+      if (!user?.shop_id) return;
 
       try {
-        fetch(`${API_BASE_URL}/api/products?shopId=${user.shop_id}`, {
+        const response = await fetch(`${API_BASE_URL}/api/products?shopId=${user.shop_id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -83,7 +83,7 @@ const Product = () => {
       }
     };
 
-    if (user?.shopId) {
+    if (user?.shop_id) {
       fetchProducts();
     }
   }, [user, navigate]);
@@ -319,8 +319,8 @@ const Product = () => {
                       </div>
                     </div>
                     <h3>{product.name}</h3>
-                    <p className="product-description">{product.description}</p>
-                    <p className="product-price">₹{product.price}</p>
+                    <p className="product-desc">{product.description}</p>
+                    <p className="price">₹{product.price}</p>
                   </div>
                 ))}
               </div>
@@ -328,68 +328,12 @@ const Product = () => {
           )
       )}
 
-      {Object.keys(cart).length > 0 && (
-        <div className="floating-cart" onClick={() => setShowCartPopup(true)}>
-          🛒{' '}
-          {Object.values(cart).reduce((sum, item) => sum + item.quantity, 0)} item(s)
-          | ₹
-          {Object.values(cart)
-            .reduce((sum, item) => sum + item.quantity * item.price, 0)
-            .toFixed(2)}{' '}
-          → View Cart
-        </div>
-      )}
-
-      {showCartPopup && (
-        <div
-          className="cart-popup"
-          onClick={() => setShowCartPopup(false)}
-          role="dialog"
-          aria-modal="true"
-        >
-          <div className="cart-popup-content" onClick={(e) => e.stopPropagation()}>
-            <button
-              className="cart-close-btn"
-              onClick={() => setShowCartPopup(false)}
-              aria-label="Close Cart"
-            >
-              &times;
-            </button>
-            <h2>Your Cart</h2>
-            <ul>
-              {Object.values(cart).map((item) => (
-                <li key={item.id} style={{ margin: '10px 0' }}>
-                  <img
-                    src={resolveImageUrl(item.image)}
-                    alt={item.name}
-                    style={{
-                      width: '40px',
-                      height: '40px',
-                      objectFit: 'cover',
-                      borderRadius: '6px',
-                      marginRight: '10px',
-                      verticalAlign: 'middle',
-                    }}
-                  />
-                  {item.name} × {item.quantity} = ₹{item.quantity * item.price}
-                </li>
-              ))}
-            </ul>
-            <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-              <button onClick={() => navigate('/order')} className="login-btn">
-                Proceed to Order
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {showAddressPopup && (
         <AddressPopup
-          tempAddress={tempAddress}
-          setTempAddress={setTempAddress}
+          address={tempAddress}
+          setAddress={setTempAddress}
           onClose={() => setShowAddressPopup(false)}
-          onSubmit={handleAddressSubmit}
+          onSave={handleAddressSubmit}
         />
       )}
     </section>
