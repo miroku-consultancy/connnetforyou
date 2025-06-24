@@ -278,14 +278,14 @@ const resolveImageUrl = (image) => {
             >
               📜 Order History
             </button>
-            {/* <button
+            <button
               onClick={() => navigate('/admin/add-product')}
               className="add-product-btn"
               title="Add a new product"
               style={{ marginLeft: '10px' }}
             >
               ➕ Add Product
-            </button> */}
+            </button>
           </div>
         </div>
       )}
