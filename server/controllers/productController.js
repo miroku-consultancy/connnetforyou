@@ -4,7 +4,9 @@ const productModel = require('../models/productModel');
 const getProducts = async (req, res) => {
   console.log('Controller: getProducts called');
   try {
-    const products = await productModel.getAllProducts();
+    const shopId = req.user?.shop_id; // ✅ Get shop_id from authenticated user
+    if (!shopId) return res.status(400).json({ message: 'Missing shop_id in user data' });
+    const products = await productModel.getAllProducts(shopId);
     res.json(products);
   } catch (err) {
     console.error('Error fetching products:', err);
