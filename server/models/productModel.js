@@ -11,19 +11,20 @@ const pool = new Pool({
 
 // Get all products
 const getAllProducts = async (shopId) => {
-  console.log('Model: getAllProducts called');
+  console.log('🔍 getAllProducts called with shopId:', shopId);
   try {
-    console.log('Fetching products for shopId:', shopId);
-
-    const result = await pool.query('SELECT * FROM products WHERE shop_id = $1', [shopId]);
-    console.log('Products fetched:', result.rows);
-
-    return result.rows; // ✅ FIXED: Changed from res.rows to result.rows
+    const result = await pool.query(
+      'SELECT * FROM products WHERE shop_id = $1',
+      [shopId]
+    );
+    console.log('📦 Products fetched from DB:', result.rows);
+    return result.rows;  // Ensure you're returning rows, not res.rows
   } catch (err) {
-    console.error('Error fetching products from DB', err);
+    console.error('❌ Error fetching products from DB', err);
     throw err;
   }
 };
+
 
 
 // Get product by ID
