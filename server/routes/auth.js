@@ -66,7 +66,7 @@ router.post('/login-with-token', async (req, res) => {
     });
 
     // Clear OTP after login
-    await pool.query('UPDATE public.users SET otp = NULL, otp_expires_at = NULL WHERE id = $1', [user.id]);
+    await pool.query('UPDATE public.users SET otp = NULL, otp_expires_at = NULL, last_login_at = NOW() WHERE id = $1', [user.id]);
 
     res.json({
       message: 'Login successful',
