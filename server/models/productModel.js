@@ -14,12 +14,13 @@ const getAllProducts = async (shopId) => {
   console.log('Model: getAllProducts called');
   try {
     const result = await pool.query('SELECT * FROM products WHERE shop_id = $1', [shopId]);
-    return res.rows;
+    return result.rows; // ✅ FIXED: Changed from res.rows to result.rows
   } catch (err) {
     console.error('Error fetching products from DB', err);
     throw err;
   }
 };
+
 
 // Get product by ID
 const getProductById = async (id) => {
