@@ -1,4 +1,3 @@
-// src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { CartProvider } from './components/CartContext';
@@ -12,9 +11,9 @@ import Product from './components/Product';
 import ProtectedRoute from './components/ProtectedRoute';
 import Cart from './components/Cart';
 import Header from './components/Header';
-import AddressPopup from './components/AddressPopup'; // Adjust the path if it's in a subfolder like ./pages/AddressPopup
+import AddressPopup from './components/AddressPopup';
+import AddProduct from './components/AddProduct';
 import { ToastContainer } from 'react-toastify';
-import AddProduct from './components/AddProduct'; // Adjust path as needed
 
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
@@ -26,20 +25,24 @@ const App = () => (
         <Header />
         <main>
           <Routes>
-            <Route path="/" element={<EmailTokenLogin />} />
-            <Route path="/summary" element={<Navigate to="/order-summary" replace />} />
-            <Route path="/products" element={<ProtectedRoute><Product /></ProtectedRoute>} />
-            <Route path="/order" element={<ProtectedRoute><Order /></ProtectedRoute>} />
-            <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
-            <Route path="/order-summary" element={<ProtectedRoute><OrderSummary /></ProtectedRoute>} />
-            <Route path="/order-history" element={<OrderHistory />} />
-            <Route path="/address" element={<AddressPopup />} />
-            <Route path="/admin/add-product" element={<AddProduct />} />
+            {/* 🔒 Default Route Redirect */}
+            <Route path="/" element={<Navigate to="/shop/demo/login" replace />} />
 
+            {/* 🛍️ Vendor Scoped Routes */}
+            <Route path="/shop/:shopSlug/login" element={<EmailTokenLogin />} />
+            <Route path="/shop/:shopSlug/products" element={<ProtectedRoute><Product /></ProtectedRoute>} />
+            <Route path="/shop/:shopSlug/order" element={<ProtectedRoute><Order /></ProtectedRoute>} />
+            <Route path="/shop/:shopSlug/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
+            <Route path="/shop/:shopSlug/order-summary" element={<ProtectedRoute><OrderSummary /></ProtectedRoute>} />
+            <Route path="/shop/:shopSlug/order-history" element={<OrderHistory />} />
+            <Route path="/shop/:shopSlug/address" element={<AddressPopup />} />
+            <Route path="/shop/:shopSlug/admin/add-product" element={<AddProduct />} />
           </Routes>
         </main>
+
         <Cart />
         <footer><p>&copy; 2024 Connect4U. All rights reserved.</p></footer>
+
         <ToastContainer
           position="top-right"
           autoClose={3000}

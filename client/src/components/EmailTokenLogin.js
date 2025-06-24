@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import {jwtDecode} from 'jwt-decode'; // Correct import without {}
+import { useNavigate, useParams } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 import { toast } from 'react-toastify';
-import { useUser } from './UserContext'; // Adjust path as needed
+import { useUser } from './UserContext';
 import './EmailTokenLogin.css';
 
 const EmailTokenLogin = () => {
@@ -11,8 +11,8 @@ const EmailTokenLogin = () => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { shopSlug } = useParams(); // 🧠 Extract from /shop/:shopSlug/login
 
-  // Get refreshUser function from UserContext
   const { refreshUser } = useUser();
 
   useEffect(() => {
@@ -21,7 +21,7 @@ const EmailTokenLogin = () => {
       try {
         const decoded = jwtDecode(token);
         if (decoded.exp * 1000 > Date.now()) {
-          navigate('/products');
+          navigate(`/shop/${shopSlug}/products`);
         } else {
           localStorage.removeItem('authToken');
           localStorage.removeItem('userId');
@@ -31,7 +31,7 @@ const EmailTokenLogin = () => {
         localStorage.removeItem('userId');
       }
     }
-  }, [navigate]);
+  }, [navigate, shopSlug]);
 
   const sendOtp = async () => {
     setLoading(true);
@@ -39,7 +39,7 @@ const EmailTokenLogin = () => {
       const res = await fetch('https://connnet4you-server.onrender.com/api/auth/send-token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, shop_slug: shopSlug }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -60,18 +60,17 @@ const EmailTokenLogin = () => {
       const res = await fetch('https://connnet4you-server.onrender.com/api/auth/login-with-token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, token: otp }),
+        body: JSON.stringify({ email, token: otp, shop_slug: shopSlug }),
       });
       const data = await res.json();
       if (res.ok) {
         localStorage.setItem('authToken', data.token);
         localStorage.setItem('userId', data.user.id);
 
-        // IMPORTANT: refresh user context here!
         refreshUser();
 
         toast.success('🎉 Login successful!');
-        navigate('/products');
+        navigate(`/shop/${shopSlug}/products`);
       } else {
         toast.error(data.error || 'Invalid OTP');
       }

@@ -11,6 +11,7 @@ const orderRoutes = require('./routes/orderRoutes');
 const productRoutes = require('./routes/productRoutes');
 const addressRoutes = require('./routes/addressRoutes');
 const stripeRoutes = require('./routes/stripe');
+const shopRoutes = require('./routes/shopRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -57,6 +58,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/address', addressRoutes);
 app.use('/api/stripe', stripeRoutes);
+app.use('/api/shops', shopRoutes); 
 
 // ✅ Serve static images
 app.use('/images', express.static(path.join(__dirname, 'images')));
