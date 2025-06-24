@@ -1,20 +1,14 @@
 import React, { useState } from 'react';
 import { useUser } from './UserContext';
 import { useNavigate } from 'react-router-dom';
-import './AddProduct.css'; // Add this if you want custom styling
+import BarcodeScanner from './BarcodeScanner';
+import './AddProduct.css';
 
 const categoryOptions = {
   Fresh: [
-    'Fresh Fruits',
-    'Mangoes & Melons',
-    'Plants & Gardening',
-    'Fresh Vegetables',
-    'Exotics & Premium',
-    'Leafy, Herbs & Seasonings',
-    'Organics & Hydroponics',
-    'Flowers & Leaves',
-    'Cuts & Sprouts',
-    'Dried & Dehydrated',
+    'Fresh Fruits', 'Mangoes & Melons', 'Plants & Gardening', 'Fresh Vegetables',
+    'Exotics & Premium', 'Leafy, Herbs & Seasonings', 'Organics & Hydroponics',
+    'Flowers & Leaves', 'Cuts & Sprouts', 'Dried & Dehydrated',
   ],
   Dairy: ['Milk', 'Cheese', 'Yogurt'],
   Bakery: ['Breads', 'Cakes', 'Cookies'],
@@ -24,6 +18,7 @@ const categoryOptions = {
 const AddProduct = () => {
   const { user } = useUser();
   const navigate = useNavigate();
+  const [showScanner, setShowScanner] = useState(false);
   const [productData, setProductData] = useState({
     name: '',
     description: '',
@@ -58,7 +53,6 @@ const AddProduct = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('authToken');
-console.log('token',token)
     const formData = new FormData();
     for (const key in productData) {
       if (productData[key]) formData.append(key, productData[key]);
@@ -91,38 +85,16 @@ console.log('token',token)
       <h2>Add New Product</h2>
       <form onSubmit={handleSubmit} className="add-product-form" encType="multipart/form-data">
         <label htmlFor="name">Product Name <span className="required">*</span></label>
-        <input
-          type="text"
-          name="name"
-          value={productData.name}
-          onChange={handleInputChange}
-          required
-        />
+        <input type="text" name="name" value={productData.name} onChange={handleInputChange} required />
 
         <label htmlFor="description">Description</label>
-        <textarea
-          name="description"
-          value={productData.description}
-          onChange={handleInputChange}
-        />
+        <textarea name="description" value={productData.description} onChange={handleInputChange} />
 
         <label htmlFor="price">Price <span className="required">*</span></label>
-        <input
-          type="number"
-          name="price"
-          value={productData.price}
-          onChange={handleInputChange}
-          required
-        />
+        <input type="number" name="price" value={productData.price} onChange={handleInputChange} required />
 
         <label htmlFor="stock">Stock <span className="required">*</span></label>
-        <input
-          type="number"
-          name="stock"
-          value={productData.stock}
-          onChange={handleInputChange}
-          required
-        />
+        <input type="number" name="stock" value={productData.stock} onChange={handleInputChange} required />
 
         <label htmlFor="barcode">Barcode (Optional)</label>
         <input
@@ -130,7 +102,35 @@ console.log('token',token)
           name="barcode"
           value={productData.barcode}
           onChange={handleInputChange}
+          placeholder="Scan or enter barcode manually"
         />
+
+        <div style={{ marginTop: '10px' }}>
+          <button
+            type="button"
+            onClick={() => setShowScanner(!showScanner)}
+            style={{
+              marginBottom: '10px',
+              padding: '8px 12px',
+              backgroundColor: '#4caf50',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+          >
+            {showScanner ? '📷 Close Scanner' : '📷 Scan Barcode'}
+          </button>
+
+          {showScanner && (
+            <BarcodeScanner
+              onScanSuccess={(scannedCode) => {
+                setProductData((prev) => ({ ...prev, barcode: scannedCode }));
+                setShowScanner(false);
+              }}
+            />
+          )}
+        </div>
 
         <label htmlFor="category">Category <span className="required">*</span></label>
         <select
@@ -140,16 +140,14 @@ console.log('token',token)
             setProductData((prev) => ({
               ...prev,
               category: e.target.value,
-              subcategory: '', // reset subcategory
+              subcategory: '',
             }))
           }
           required
         >
           <option value="">-- Select Category --</option>
           {Object.keys(categoryOptions).map((cat) => (
-            <option key={cat} value={cat}>
-              {cat}
-            </option>
+            <option key={cat} value={cat}>{cat}</option>
           ))}
         </select>
 
@@ -163,9 +161,7 @@ console.log('token',token)
           <option value="">-- Select Subcategory --</option>
           {productData.category &&
             categoryOptions[productData.category]?.map((sub) => (
-              <option key={sub} value={sub}>
-                {sub}
-              </option>
+              <option key={sub} value={sub}>{sub}</option>
             ))}
         </select>
 
