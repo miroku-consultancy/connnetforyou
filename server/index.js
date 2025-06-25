@@ -66,13 +66,14 @@ app.use('/images', express.static(path.join(__dirname, 'images')));
 
 // =======================
 // React frontend serving with /shop basename
-// Serve React static files from /shop/static
-app.use('/shop/static', express.static(path.join(__dirname, 'build', 'static')));
+// Serve everything in /build under the /shop path
+app.use('/shop', express.static(path.join(__dirname, 'build')));
 
-// Serve React index.html for all /shop/* routes (React Router support)
+// Let React handle all routing inside /shop/*
 app.get('/shop/*', (req, res) => {
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
+
 // =======================
 
 // ❌ Catch-all for unexpected server errors
