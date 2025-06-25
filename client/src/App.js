@@ -21,12 +21,12 @@ import './App.css';
 const App = () => (
   <CartProvider>
     <UserProvider>
-      <Router>
+      <Router basename="/shop">
         <Header />
         <main>
           <Routes>
             {/* 🔒 Default Route Redirect */}
-            <Route path="/" element={<Navigate to="/shop/demo/login" replace />} />
+            <Route path="/" element={<Navigate to="/demo/login" replace />} />
 
             {/* 🛍️ Vendor Scoped Routes */}
             <Route path="/shop/:shopSlug/login" element={<EmailTokenLogin />} />
