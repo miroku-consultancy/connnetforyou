@@ -34,7 +34,7 @@ const addProduct = async (req, res) => {
   try {
     const user = req.user;
     if (!user || (user.role !== 'admin' && user.role !== 'vendor')) {
-      return res.status(403).json({ message: 'Unauthorized' });
+      return res.status(403).json({ message: 'You are not a store owner' });
     }
     const {
       name,

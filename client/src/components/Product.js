@@ -41,6 +41,8 @@ const Product = () => {
     'Flowers & Leaves',
     'Cuts & Sprouts',
     'Dried & Dehydrated',
+    'Sweets',
+    'Snacks'
   ];
 
   const resolveImageUrl = (image) => {
@@ -223,8 +225,12 @@ const Product = () => {
   };
 
   const freshProducts = products.filter(
-    (p) => p.category?.toLowerCase() === 'fresh'
-  );
+  (p) => {
+    const category = p.category?.toLowerCase();
+    return category === 'fresh' || category === 'sweets';
+  }
+);
+
 
   const groupedProducts = SUBCATEGORIES.map((subcategory) => ({
     subcategory,
