@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { CartProvider } from './components/CartContext';
 import { UserProvider } from './components/UserContext';
 import EmailTokenLogin from './components/EmailTokenLogin';
