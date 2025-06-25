@@ -72,8 +72,10 @@ app.use('/shop', express.static(path.join(__dirname, 'build')));
 
 // Handle all React routes under /shop
 app.get('/shop/*', (req, res) => {
+  console.log('🌐 React route hit:', req.originalUrl);
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
+
 
 
 // =======================
