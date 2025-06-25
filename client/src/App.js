@@ -29,14 +29,14 @@ const App = () => (
             <Route path="/" element={<Navigate to="/demo/login" replace />} />
 
             {/* 🛍️ Vendor Scoped Routes */}
-            <Route path="/shop/:shopSlug/login" element={<EmailTokenLogin />} />
-            <Route path="/shop/:shopSlug/products" element={<ProtectedRoute><Product /></ProtectedRoute>} />
-            <Route path="/shop/:shopSlug/order" element={<ProtectedRoute><Order /></ProtectedRoute>} />
-            <Route path="/shop/:shopSlug/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
-            <Route path="/shop/:shopSlug/order-summary" element={<ProtectedRoute><OrderSummary /></ProtectedRoute>} />
-            <Route path="/shop/:shopSlug/order-history" element={<OrderHistory />} />
-            <Route path="/shop/:shopSlug/address" element={<AddressPopup />} />
-            <Route path="/shop/:shopSlug/admin/add-product" element={<AddProduct />} />
+            <Route path="/:shopSlug/login" element={<EmailTokenLogin />} />
+            <Route path="/:shopSlug/products" element={<ProtectedRoute><Product /></ProtectedRoute>} />
+            <Route path="/:shopSlug/order" element={<ProtectedRoute><Order /></ProtectedRoute>} />
+            <Route path="/:shopSlug/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
+            <Route path="/:shopSlug/order-summary" element={<ProtectedRoute><OrderSummary /></ProtectedRoute>} />
+            <Route path="/:shopSlug/order-history" element={<OrderHistory />} />
+            <Route path="/:shopSlug/address" element={<AddressPopup />} />
+            <Route path="/:shopSlug/admin/add-product" element={<AddProduct />} />
           </Routes>
         </main>
 
