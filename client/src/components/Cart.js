@@ -53,7 +53,7 @@ const Cart = () => {
 
       <button
         className="proceed-btn"
-        onClick={() => navigate(`/shop/${shopSlug}/order`)} // ✅ navigate using shopSlug
+        onClick={() => navigate(`/${shopSlug}/order`)} // ✅ navigate using shopSlug
       >
         Proceed to Order
       </button>
