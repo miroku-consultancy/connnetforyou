@@ -65,16 +65,14 @@ app.use('/api/shops', shopRoutes);
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
 // =======================
-// React frontend serving with /shop basename
-// Serve everything in /build under the /shop path
-// Serve React static assets under /shop
-app.use('/shop', express.static(path.join(__dirname, 'build')));
+// Serve React static build from root
+app.use(express.static(path.join(__dirname, 'build')));
 
-// Handle all React routes under /shop
-app.get('/shop/*', (req, res) => {
-  console.log('🌐 React route hit:', req.originalUrl);
+// Catch-all to support client-side routing
+app.get('/*', (req, res) => {
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
+
 
 
 

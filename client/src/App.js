@@ -21,7 +21,7 @@ import './App.css';
 const App = () => (
   <CartProvider>
     <UserProvider>
-      <Router basename="/shop">
+      <Router>
         <Header />
         <main>
           <Routes>
