@@ -29,7 +29,7 @@ const OrderSummary = () => {
       if (e.state?.fromSummary && !navigationHandled.current) {
         navigationHandled.current = true;
         clearCart();
-        navigate(`/shop/${shopSlug}/products`, { replace: true }); // ✅ Use shopSlug
+        navigate(`${shopSlug}/products`, { replace: true }); // ✅ Use shopSlug
       }
     };
 
@@ -39,7 +39,7 @@ const OrderSummary = () => {
 
   const handleGoToProducts = () => {
     clearCart();
-    navigate(`/shop/${shopSlug}/products`); // ✅ Use shopSlug
+    navigate(`${shopSlug}/products`); // ✅ Use shopSlug
   };
 
   if (!order) {

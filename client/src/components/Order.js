@@ -132,9 +132,9 @@ const Order = () => {
       const shopSlug = user?.shop_slug || 'demo';
 
       if (paymentMethod === 'cod') {
-        navigate(`/shop/${shopSlug}/order-summary`);
+        navigate(`${shopSlug}/order-summary`);
       } else {
-        navigate(`/shop/${shopSlug}/payment`, { state: { order: fullOrder } });
+        navigate(`${shopSlug}/payment`, { state: { order: fullOrder } });
       }
     } catch (error) {
       console.error('Order placement failed:', error);

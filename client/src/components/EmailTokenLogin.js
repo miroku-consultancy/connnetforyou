@@ -11,7 +11,7 @@ const EmailTokenLogin = () => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { shopSlug } = useParams(); // 🧠 Extract from /shop/:shopSlug/login
+  const { shopSlug } = useParams(); // 🧠 Extract from :shopSlug/login
 
   const { refreshUser } = useUser();
 
@@ -21,7 +21,7 @@ const EmailTokenLogin = () => {
       try {
         const decoded = jwtDecode(token);
         if (decoded.exp * 1000 > Date.now()) {
-          navigate(`/shop/${shopSlug}/products`);
+          navigate(`${shopSlug}/products`);
         } else {
           localStorage.removeItem('authToken');
           localStorage.removeItem('userId');
@@ -70,7 +70,7 @@ const EmailTokenLogin = () => {
         refreshUser();
 
         toast.success('🎉 Login successful!');
-        navigate(`/shop/${shopSlug}/products`);
+        navigate(`${shopSlug}/products`);
       } else {
         toast.error(data.error || 'Invalid OTP');
       }
