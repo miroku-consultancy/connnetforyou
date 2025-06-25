@@ -56,11 +56,12 @@ app.use('/api/shops', shopRoutes);
 app.use('/images', express.static(imagesDir));
 app.use(express.static(path.join(__dirname, 'build')));
 
-// 🔁 Catch-all for client routes with logging
-app.get('/*', (req, res) => {
-  console.log('✅ Express handling:', req.originalUrl);
+// This regex route ensures ALL URLs (not just shallow ones) return index.html:
+app.get(/.*/, (req, res) => {
+  console.log('✅ Express serving:', req.originalUrl);
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
+
 
 // Error handler
 app.use((err, req, res, next) => {
