@@ -25,10 +25,7 @@ const App = () => (
         <Header />
         <main>
           <Routes>
-            {/* 🔒 Default Route Redirect */}
             <Route path="/" element={<Navigate to="/demo/login" replace />} />
-
-            {/* 🛍️ Vendor Scoped Routes */}
             <Route path="/:shopSlug/login" element={<EmailTokenLogin />} />
             <Route path="/:shopSlug/products" element={<ProtectedRoute><Product /></ProtectedRoute>} />
             <Route path="/:shopSlug/order" element={<ProtectedRoute><Order /></ProtectedRoute>} />
@@ -39,7 +36,6 @@ const App = () => (
             <Route path="/:shopSlug/admin/add-product" element={<AddProduct />} />
           </Routes>
         </main>
-
         <Cart />
         <footer><p>&copy; 2024 Connect4U. All rights reserved.</p></footer>
 

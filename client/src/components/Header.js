@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';  // <-- Import Link here
 import './Header.css';
 import logo from '../assets/images/logo.png';
-import apiUrl from '../config/apiConfig'; // Make sure this is a full valid URL like http://localhost:5000/api/data
+import apiUrl from '../config/apiConfig';
 
 const Header = () => {
     const [expandedIndex, setExpandedIndex] = useState(null);
@@ -18,17 +19,13 @@ const Header = () => {
                 }
 
                 const data = await response.json();
-                console.log('Fetched nav data:', data); // Debugging line
-
                 if (data && Array.isArray(data.navItems)) {
                     setNavItems(data.navItems);
                 } else {
-                    console.warn("navItems missing or not an array in API response");
                     setNavItems([]);
                 }
             } catch (error) {
-                console.error('Failed to fetch nav items:', error);
-                setNavItems([]); // Fallback to avoid map on undefined
+                setNavItems([]);
             }
         };
 
@@ -43,10 +40,6 @@ const Header = () => {
         setExpandedIndex(null);
     };
 
-    const toggleMenu = () => {
-        setIsMenuOpen(!isMenuOpen);
-    };
-
     return (
         <header className="header">
             <div className="logo-container">
@@ -54,9 +47,6 @@ const Header = () => {
                 <div className="company-name">
                     <span>ConnectFree4U</span>
                 </div>
-                {/* <button className="menu-toggle" onClick={toggleMenu} aria-label="Toggle Menu">
-                    {isMenuOpen ? '✖' : '☰'}
-                </button> */}
             </div>
 
             <nav className={`nav ${isMenuOpen ? 'open' : ''}`}>
@@ -67,13 +57,13 @@ const Header = () => {
                             onMouseEnter={() => handleMouseEnter(index)}
                             onMouseLeave={handleMouseLeave}
                         >
-                            <a
-                                href={item.id}
+                            <Link
+                                to={item.id}    // <-- use Link and to prop here
                                 className="dropdown-toggle"
                                 aria-label={`Toggle ${item.name} dropdown`}
                             >
                                 {item.name}
-                            </a>
+                            </Link>
                             {expandedIndex === index && (
                                 <div className="dropdown-content">
                                     {Array.isArray(item.description) && item.description.map((desc, descIndex) => (
