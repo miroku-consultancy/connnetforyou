@@ -227,7 +227,7 @@ const Product = () => {
   const freshProducts = products.filter(
   (p) => {
     const category = p.category?.toLowerCase();
-    return category === 'fresh' || category === 'sweets';
+    return category === 'fresh' || category === 'sweets' || category === 'snacks';
   }
 );
 
