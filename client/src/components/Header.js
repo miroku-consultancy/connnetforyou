@@ -101,7 +101,7 @@ const Header = () => {
       {/* Right side: Branding */}
       <div className="right-box">
         <span className="powered-by">
-          ⚡ Powered by <strong>ConnectFREE4U</strong>
+           Powered by <strong>ConnectFREE4U</strong>
         </span>
       </div>
     </header>
