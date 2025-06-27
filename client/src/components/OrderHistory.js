@@ -18,11 +18,16 @@ const OrderHistory = () => {
       currency: 'INR',
     }).format(amount);
 
+ const resolveImageUrl = (image) => {
+  if (!image) return 'https://via.placeholder.com/60';
+  if (image.startsWith('http') || image.startsWith('/images/')) return image;
+  return `${API_BASE_URL}/images/${image}`;
+};
+
   useEffect(() => {
     const fetchOrders = async () => {
       const token = localStorage.getItem('authToken');
       if (!token) {
-        console.error('No token found');
         navigate('/');
         return;
       }
@@ -39,13 +44,12 @@ const OrderHistory = () => {
             navigate('/');
             return;
           }
-          throw new Error(`Failed to fetch order history: ${response.statusText}`);
+          throw new Error(`Failed to fetch orders: ${response.statusText}`);
         }
 
         const data = await response.json();
         setOrders(data);
       } catch (err) {
-        console.error('Error fetching order history:', err);
         setError('Failed to load order history. Please try again later.');
       } finally {
         setLoading(false);
@@ -55,13 +59,8 @@ const OrderHistory = () => {
     fetchOrders();
   }, [navigate]);
 
-  if (loadingUser || loading) {
-    return <div className="loading">Loading your order history...</div>;
-  }
-
-  if (error) {
-    return <div className="error">{error}</div>;
-  }
+  if (loadingUser || loading) return <div className="loading">Loading your order history...</div>;
+  if (error) return <div className="error">{error}</div>;
 
   if (orders.length === 0) {
     return (
@@ -78,7 +77,6 @@ const OrderHistory = () => {
   return (
     <section className="order-history-page">
       <h2>Your Order History 📜</h2>
-
       {orders.map((order) => (
         <div key={order.id} className="order-card">
           <p><strong>Order ID:</strong> {order.id}</p>
@@ -86,11 +84,8 @@ const OrderHistory = () => {
 
           <ul className="order-items">
             {order.items.map((item) => {
-              const imageSrc = item.image_url
-                ? item.image_url.startsWith('/')
-                  ? `${API_BASE_URL}${item.image_url}`
-                  : item.image_url
-                : 'https://via.placeholder.com/60';
+              console.log('Order Item:', item); // 👈 Debug log
+              const imageSrc = resolveImageUrl(item.image_url || item.image);
 
               return (
                 <li key={item.product_id} className="order-item">
@@ -99,8 +94,8 @@ const OrderHistory = () => {
                     alt={item.name}
                     className="item-image"
                     onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = 'https://via.placeholder.com/60';
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = 'https://via.placeholder.com/60';
                     }}
                   />
                   <div className="item-details">
