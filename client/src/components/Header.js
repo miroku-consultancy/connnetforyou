@@ -20,7 +20,7 @@ const Header = () => {
       .catch(err => console.error('Nav fetch error:', err));
   }, []);
 
-  // Fetch shop info
+  // Fetch shop data based on slug
   useEffect(() => {
     if (!shopSlug) {
       setShop(null);
@@ -39,13 +39,14 @@ const Header = () => {
       });
   }, [shopSlug]);
 
-  // Logo path: shop-specific or fallback
+  // Build image path
   const shopLogoSrc = shop?.slug
     ? `/images/shops/${shop.slug}.jpg`
-    : '/images/default-logo.png';
+    : '/images/shops/logo.png';
 
   return (
     <header className="header">
+      {/* Left side: Shop logo & info */}
       <div className="left-box">
         <img
           src={shopLogoSrc}
@@ -53,7 +54,7 @@ const Header = () => {
           className="logo"
           onError={e => {
             e.currentTarget.onerror = null;
-            e.currentTarget.src = '/images/default-logo.jpg';
+            e.currentTarget.src = '/images/shops/logo.png';
           }}
         />
         <div className="shop-info">
@@ -62,15 +63,18 @@ const Header = () => {
               <span className="shop-name">{shop.name}</span>
               {shop.address && <span className="shop-address">{shop.address}</span>}
               {shop.phone && (
-                <span className="shop-phone">📞 <a href={`tel:${shop.phone}`}>{shop.phone}</a></span>
+                <span className="shop-phone">
+                  📞 <a href={`tel:${shop.phone}`}>{shop.phone}</a>
+                </span>
               )}
             </>
           ) : (
-            <span className="shop-loading">Loading shop info…</span>
+            <span>Loading shop info…</span>
           )}
         </div>
       </div>
 
+      {/* Center: Navigation */}
       <nav className="nav">
         <ul className="nav-list">
           {navItems.map((itm, idx) => (
@@ -94,9 +98,10 @@ const Header = () => {
         </ul>
       </nav>
 
+      {/* Right side: Branding */}
       <div className="right-box">
         <span className="powered-by">
-          Powered by <strong>ConnectFREE4U</strong>
+          ⚡ Powered by <strong>ConnectFREE4U</strong>
         </span>
       </div>
     </header>
