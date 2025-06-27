@@ -8,8 +8,8 @@ const API_BASE_URL = 'https://connnet4you-server.onrender.com';
 const Header = () => {
   const location = useLocation();
 
-  // Extract shopSlug from URL path, assuming format /:shopSlug/...
-  const shopSlug = location.pathname.split('/')[1];
+  // Extract shopSlug from URL path (assuming structure: /:shopSlug/...)
+  const shopSlug = location.pathname.split('/')[1] || null;
 
   const [expandedIndex, setExpandedIndex] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -22,11 +22,7 @@ const Header = () => {
         const response = await fetch(`${API_BASE_URL}/api/navigation`);
         if (!response.ok) throw new Error('Failed to fetch navigation');
         const data = await response.json();
-        if (data && Array.isArray(data.navItems)) {
-          setNavItems(data.navItems);
-        } else {
-          setNavItems([]);
-        }
+        setNavItems(Array.isArray(data.navItems) ? data.navItems : []);
       } catch (error) {
         setNavItems([]);
         console.error('Error fetching nav items:', error);

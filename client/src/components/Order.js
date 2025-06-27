@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from './CartContext';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useUser } from './UserContext';
 import AddressPopup from './AddressPopup';
 import './Order.css';
@@ -12,11 +12,7 @@ const Order = () => {
   const items = Object.values(cart);
   const navigate = useNavigate();
   const { user } = useUser();
-  const location = useLocation();
-
-  // Extract shopSlug from URL path, fallback to 'demo'
-  const shopSlugFromUrl = location.pathname.split('/')[1];
-  const shopSlug = user?.shop_slug || shopSlugFromUrl || 'demo';
+  const { shopSlug: paramShopSlug } = useParams();
 
   const [showAddressPopup, setShowAddressPopup] = useState(false);
   const [addresses, setAddresses] = useState([]);
@@ -31,6 +27,14 @@ const Order = () => {
   });
   const [selectedItem, setSelectedItem] = useState(null);
 
+  const effectiveShopSlug = user?.shop_slug || paramShopSlug || 'demo';
+
+  const resolveImageUrl = (image) => {
+    if (!image) return '';
+    if (image.startsWith('http') || image.startsWith('/images/')) return image;
+    return `${API_BASE_URL}/images/${image}`;
+  };
+
   const total = items.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
 
   useEffect(() => {
@@ -39,7 +43,7 @@ const Order = () => {
       try {
         const token = localStorage.getItem('authToken');
         const res = await fetch(`${API_BASE_URL}/api/address`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error('Failed to fetch addresses');
         const data = await res.json();
@@ -80,9 +84,11 @@ const Order = () => {
       const savedAddress = await response.json();
 
       if (tempAddress.id) {
-        setAddresses(prev => prev.map(addr => (addr.id === savedAddress.id ? savedAddress : addr)));
+        setAddresses((prev) =>
+          prev.map((addr) => (addr.id === savedAddress.id ? savedAddress : addr))
+        );
       } else {
-        setAddresses(prev => [...prev, savedAddress]);
+        setAddresses((prev) => [...prev, savedAddress]);
       }
 
       setAddress(savedAddress);
@@ -105,7 +111,7 @@ const Order = () => {
     const token = localStorage.getItem('authToken');
     if (!token) {
       alert('You must be logged in to place an order.');
-      navigate('/login');  // Redirect to login on missing token
+      navigate('/login');
       return;
     }
 
@@ -134,9 +140,9 @@ const Order = () => {
       localStorage.setItem('orderSummary', JSON.stringify(fullOrder));
 
       if (paymentMethod === 'cod') {
-        navigate(`/${shopSlug}/order-summary`);
+        navigate(`/${effectiveShopSlug}/order-summary`);
       } else {
-        navigate(`/${shopSlug}/payment`, { state: { order: fullOrder } });
+        navigate(`/${effectiveShopSlug}/payment`, { state: { order: fullOrder } });
       }
     } catch (error) {
       console.error('Order placement failed:', error);
@@ -157,10 +163,10 @@ const Order = () => {
     <div className="order-page">
       <h1>🧺 Your Cart</h1>
       <div className="order-list">
-        {items.map(item => (
+        {items.map((item) => (
           <div key={item.id} className="order-row">
             <img
-              src={process.env.PUBLIC_URL + item.image}
+              src={resolveImageUrl(item.image)}
               alt={item.name}
               className="order-img"
               onClick={() => setSelectedItem(item)}
@@ -185,7 +191,7 @@ const Order = () => {
       {addresses.length > 0 ? (
         <div className="address-list">
           <h3>Select Delivery Address</h3>
-          {addresses.map(addr => (
+          {addresses.map((addr) => (
             <div key={addr.id} className="address-item-wrapper">
               <label className="address-item">
                 <input
@@ -219,7 +225,7 @@ const Order = () => {
               setShowAddressPopup(true);
             }}
           >
-            Add New Address
+            ➕ Add New Address
           </button>
         </div>
       ) : (
@@ -229,7 +235,7 @@ const Order = () => {
             setShowAddressPopup(true);
           }}
         >
-          Enter Address
+          ➕ Enter Address
         </button>
       )}
 
@@ -254,7 +260,7 @@ const Order = () => {
         </label>
       </div>
 
-      <button onClick={handleOrder}>Place Order</button>
+      <button onClick={handleOrder}>✅ Place Order</button>
 
       {showAddressPopup && (
         <AddressPopup
@@ -267,10 +273,10 @@ const Order = () => {
 
       {selectedItem && (
         <div className="address-popup-overlay" onClick={() => setSelectedItem(null)}>
-          <div className="address-popup" onClick={e => e.stopPropagation()}>
+          <div className="address-popup" onClick={(e) => e.stopPropagation()}>
             <button className="close-btn" onClick={() => setSelectedItem(null)}>&times;</button>
             <h2>{selectedItem.name}</h2>
-            <img src={process.env.PUBLIC_URL + selectedItem.image} alt={selectedItem.name} />
+            <img src={resolveImageUrl(selectedItem.image)} alt={selectedItem.name} />
             <p>{selectedItem.description || 'No description available.'}</p>
             <p><strong>Price:</strong> ₹{Number(selectedItem.price).toFixed(2)}</p>
           </div>

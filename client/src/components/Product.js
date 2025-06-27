@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './Product.css';
 import { useCart } from './CartContext';
-import { useNavigate, useParams } from 'react-router-dom';  // <-- Added useParams
+import { useNavigate, useParams } from 'react-router-dom';
 import { useUser } from './UserContext';
 import LogoutButton from './LogoutButton';
 import AddressPopup from './AddressPopup';
@@ -20,13 +20,20 @@ const Product = () => {
     zip: '',
     phone: '',
   });
-  const [shopId, setShopId] = useState(null);  // <-- new state for shop id
+  const [shopId, setShopId] = useState(null);
 
   const { cart, cartLoaded, addToCart } = useCart();
   const { user, loadingUser } = useUser();
   const navigate = useNavigate();
 
-  const { shopSlug } = useParams(); // <-- get shopSlug from URL
+  const { shopSlug } = useParams();
+
+  // Helper function to sanitize shopSlug
+  const getSafeShopSlug = (slug) => {
+    if (!slug || slug === 'undefined' || slug === 'null') return null;
+    return slug;
+  };
+  const safeShopSlug = getSafeShopSlug(shopSlug);
 
   const API_BASE_URL = 'https://connnet4you-server.onrender.com';
 
@@ -51,10 +58,18 @@ const Product = () => {
     return `${API_BASE_URL}/images/${image}`;
   };
 
+  // Redirect if invalid shopSlug
+  useEffect(() => {
+    if (!safeShopSlug) {
+      alert('Invalid shop URL.');
+      navigate('/');
+    }
+  }, [safeShopSlug, navigate]);
+
   // Fetch shop info by shopSlug to get shopId
   useEffect(() => {
     const fetchShopInfo = async () => {
-      if (!shopSlug) return;
+      if (!safeShopSlug) return;
       const token = localStorage.getItem('authToken');
       if (!token) {
         navigate('/');
@@ -62,7 +77,7 @@ const Product = () => {
       }
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/shops/${shopSlug}`, {
+        const response = await fetch(`${API_BASE_URL}/api/shops/${safeShopSlug}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -74,7 +89,6 @@ const Product = () => {
           return;
         }
         const shop = await response.json();
-        console.log(shop,'shoppp')
         setShopId(shop.id);
       } catch (error) {
         console.error('Error fetching shop info:', error);
@@ -84,7 +98,7 @@ const Product = () => {
     };
 
     fetchShopInfo();
-  }, [shopSlug, navigate]);
+  }, [safeShopSlug, navigate]);
 
   // Fetch products when shopId is available
   useEffect(() => {
@@ -225,12 +239,11 @@ const Product = () => {
   };
 
   const freshProducts = products.filter(
-  (p) => {
-    const category = p.category?.toLowerCase();
-    return category === 'fresh' || category === 'sweets' || category === 'snacks';
-  }
-);
-
+    (p) => {
+      const category = p.category?.toLowerCase();
+      return category === 'fresh' || category === 'sweets' || category === 'snacks';
+    }
+  );
 
   const groupedProducts = SUBCATEGORIES.map((subcategory) => ({
     subcategory,
@@ -298,14 +311,14 @@ const Product = () => {
           <div className="user-actions">
             <LogoutButton />
             <button
-              onClick={() => navigate(`/${shopSlug}/order-history`)}
+              onClick={() => navigate(`/${safeShopSlug}/order-history`)}
               className="order-history-btn"
               title="View your past orders"
             >
               📜 Order History
             </button>
             <button
-              onClick={() => navigate(`/${shopSlug}/admin/add-product`)}
+              onClick={() => navigate(`/${safeShopSlug}/admin/add-product`)}
               className="add-product-btn"
               title="Add a new product"
               style={{ marginLeft: '10px' }}
@@ -412,7 +425,7 @@ const Product = () => {
               ))}
             </ul>
             <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-              <button onClick={() => navigate('/${shopSlug}/order')} className="login-btn">
+              <button onClick={() => navigate(`/${safeShopSlug}/order`)} className="login-btn">
                 Proceed to Order
               </button>
             </div>
