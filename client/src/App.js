@@ -25,7 +25,7 @@ const App = () => (
         <Header />
         <main>
           <Routes>
-            <Route path="/" element={<Navigate to="/demo/login" replace />} />
+            <Route path="/" element={<Navigate to="/SanjayVegStore/login" replace />} />
             <Route path="/:shopSlug/login" element={<EmailTokenLogin />} />
             <Route path="/:shopSlug/products" element={<ProtectedRoute><Product /></ProtectedRoute>} />
             <Route path="/:shopSlug/order" element={<ProtectedRoute><Order /></ProtectedRoute>} />
