@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import './Header.css';
-import logo from '../assets/images/logo.png';
+import defaultLogo from '../assets/images/logo.png';
 
 const API_BASE_URL = 'https://connnet4you-server.onrender.com';
 
@@ -9,54 +9,44 @@ const Header = () => {
   const location = useLocation();
   const shopSlug = location.pathname.split('/')[1] || null;
 
-  const [expandedIndex, setExpandedIndex] = useState(null);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [navItems, setNavItems] = useState([]);
   const [shop, setShop] = useState(null);
+  const [expandedIndex, setExpandedIndex] = useState(null);
 
+  // Fetch navigation
   useEffect(() => {
-    const fetchNavItems = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/navigation`);
-        if (!response.ok) throw new Error('Failed to fetch navigation');
-        const data = await response.json();
-        setNavItems(Array.isArray(data.navItems) ? data.navItems : []);
-      } catch (error) {
-        setNavItems([]);
-        console.error('Error fetching nav items:', error);
-      }
-    };
-    fetchNavItems();
+    fetch(`${API_BASE_URL}/api/navigation`)
+      .then(res => res.ok ? res.json() : Promise.reject())
+      .then(data => setNavItems(data.navItems || []))
+      .catch(console.error);
   }, []);
 
+  // Fetch shop info
   useEffect(() => {
     if (!shopSlug) return setShop(null);
-    const fetchShop = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/shops/${shopSlug}`);
-        if (!res.ok) {
-          const fallback = res.status === 404
-            ? { name: 'Shop Not Found', address: '' }
-            : { name: 'Error fetching shop', address: '' };
-          return setShop(fallback);
-        }
-        const shopData = await res.json();
-        setShop(shopData);
-      } catch (error) {
-        setShop({ name: 'Error fetching shop', address: '' });
-        console.error('Failed to fetch shop info:', error);
-      }
-    };
-    fetchShop();
+    fetch(`${API_BASE_URL}/api/shops/${shopSlug}`)
+      .then(res => {
+        if (res.ok) return res.json();
+        if (res.status === 404) return { name: 'Shop Not Found', slug: null };
+        return Promise.reject();
+      })
+      .then(setShop)
+      .catch(() => setShop({ name: 'Error fetching shop', slug: null }));
   }, [shopSlug]);
 
-  const handleMouseEnter = (index) => setExpandedIndex(index);
-  const handleMouseLeave = () => setExpandedIndex(null);
+  const shopLogoSrc = shop?.slug
+    ? `${process.env.PUBLIC_URL}/images/shops/${shop.slug}.jpg`
+    : defaultLogo;
 
   return (
     <header className="header">
       <div className="left-box">
-        <img src={logo} alt="Logo" className="logo" />
+        <img
+          src={shopLogoSrc}
+          alt={`${shop?.name || 'Shop'} logo`}
+          className="logo"
+          onError={e => { e.currentTarget.src = defaultLogo; }}
+        />
         <div className="shop-info">
           {shop ? (
             <>
@@ -74,21 +64,20 @@ const Header = () => {
         </div>
       </div>
 
-      <nav className={`nav ${isMenuOpen ? 'open' : ''}`}>
+      <nav className="nav">
         <ul className="nav-list">
-          {navItems.map((item, index) => (
+          {navItems.map((itm, idx) => (
             <li
-              key={item.name}
-              onMouseEnter={() => handleMouseEnter(index)}
-              onMouseLeave={handleMouseLeave}
+              key={idx}
+              onMouseEnter={() => setExpandedIndex(idx)}
+              onMouseLeave={() => setExpandedIndex(null)}
             >
-              <Link to={item.id} className="dropdown-toggle">{item.name}</Link>
-              {expandedIndex === index && (
+              <Link to={itm.id} className="dropdown-toggle">{itm.name}</Link>
+              {expandedIndex === idx && itm.description?.length > 0 && (
                 <div className="dropdown-content">
-                  {Array.isArray(item.description) &&
-                    item.description.map((desc, idx) => (
-                      <div key={idx} className="dropdown-item">{desc}</div>
-                    ))}
+                  {itm.description.map((d, i2) => (
+                    <div key={i2} className="dropdown-item">{d}</div>
+                  ))}
                 </div>
               )}
             </li>
@@ -97,7 +86,9 @@ const Header = () => {
       </nav>
 
       <div className="right-box">
-        <span className="powered-by">Powered by <strong>ConnectFREE4U</strong></span>
+        <span className="powered-by">
+          Powered by <strong>ConnectFREE4U</strong>
+        </span>
       </div>
     </header>
   );
