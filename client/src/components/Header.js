@@ -21,7 +21,6 @@ const Header = () => {
 
   useEffect(() => {
     if (!shopSlug) return setShop(null);
-
     fetch(`${API_BASE_URL}/api/shops/${shopSlug}`)
       .then(res => {
         if (res.ok) return res.json();
@@ -32,12 +31,9 @@ const Header = () => {
       .catch(() => setShop({ name: 'Error fetching shop', slug: null, address: '', phone: '' }));
   }, [shopSlug]);
 
-  const handleMouseEnter = i => setExpandedIndex(i);
-  const handleMouseLeave = () => setExpandedIndex(null);
-
   const shopLogoSrc = shop?.slug
-    ? `${process.env.PUBLIC_URL}/images/shops/${shop.slug}.jpg`
-    : `${process.env.PUBLIC_URL}/images/shops/logo.png`;
+    ? `/images/shops/${shop.slug}.jpg`
+    : `/images/default-logo.jpg`;
 
   return (
     <header className="header">
@@ -46,7 +42,10 @@ const Header = () => {
           src={shopLogoSrc}
           alt={`${shop?.name || 'Shop'} logo`}
           className="logo"
-          onError={e => { e.currentTarget.onerror = null; e.currentTarget.src = `${process.env.PUBLIC_URL}/images/logo.jpg`; }}
+          onError={e => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = '/images/default-logo.jpg';
+          }}
         />
         <div className="shop-info">
           {shop ? (
@@ -70,10 +69,12 @@ const Header = () => {
           {navItems.map((itm, idx) => (
             <li
               key={idx}
-              onMouseEnter={() => handleMouseEnter(idx)}
-              onMouseLeave={handleMouseLeave}
+              onMouseEnter={() => setExpandedIndex(idx)}
+              onMouseLeave={() => setExpandedIndex(null)}
             >
-              <Link to={itm.id} className="dropdown-toggle">{itm.name}</Link>
+              <Link to={`/${shopSlug}${itm.id}`} className="dropdown-toggle">
+                {itm.name}
+              </Link>
               {expandedIndex === idx && itm.description?.length > 0 && (
                 <div className="dropdown-content">
                   {itm.description.map((d, i2) => (
