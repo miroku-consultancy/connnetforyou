@@ -41,7 +41,7 @@ const Header = () => {
 
   // Build image path
   const shopLogoSrc = shop?.slug
-    ? `/images/shops/${shop.slug}.jpg`
+    ? `/images/shops/${shop.slug}.JPG`
     : '/images/shops/logo.png';
 
   return (
