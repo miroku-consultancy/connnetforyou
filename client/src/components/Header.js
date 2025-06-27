@@ -37,7 +37,7 @@ const Header = () => {
 
   const shopLogoSrc = shop?.slug
     ? `${process.env.PUBLIC_URL}/images/shops/${shop.slug}.jpg`
-    : `${process.env.PUBLIC_URL}/images/logo.jpg`;
+    : `${process.env.PUBLIC_URL}/images/shops/logo.png`;
 
   return (
     <header className="header">
