@@ -7,8 +7,6 @@ const API_BASE_URL = 'https://connnet4you-server.onrender.com';
 
 const Header = () => {
   const location = useLocation();
-
-  // Extract shopSlug from URL path (assuming structure: /:shopSlug/...)
   const shopSlug = location.pathname.split('/')[1] || null;
 
   const [expandedIndex, setExpandedIndex] = useState(null);
@@ -32,21 +30,15 @@ const Header = () => {
   }, []);
 
   useEffect(() => {
-    if (!shopSlug) {
-      setShop(null);
-      return;
-    }
-
+    if (!shopSlug) return setShop(null);
     const fetchShop = async () => {
       try {
         const res = await fetch(`${API_BASE_URL}/api/shops/${shopSlug}`);
         if (!res.ok) {
-          if (res.status === 404) {
-            setShop({ name: 'Shop Not Found', address: '' });
-          } else {
-            setShop({ name: 'Error fetching shop', address: '' });
-          }
-          return;
+          const fallback = res.status === 404
+            ? { name: 'Shop Not Found', address: '' }
+            : { name: 'Error fetching shop', address: '' };
+          return setShop(fallback);
         }
         const shopData = await res.json();
         setShop(shopData);
@@ -55,7 +47,6 @@ const Header = () => {
         console.error('Failed to fetch shop info:', error);
       }
     };
-
     fetchShop();
   }, [shopSlug]);
 
@@ -64,45 +55,9 @@ const Header = () => {
 
   return (
     <header className="header">
-      <div className="logo-container">
+      <div className="left-box">
         <img src={logo} alt="Logo" className="logo" />
-        <div className="company-name">
-          <span>ConnectFree4U</span>
-        </div>
-      </div>
-
-      <nav className={`nav ${isMenuOpen ? 'open' : ''}`}>
-        <ul className="nav-list">
-          {navItems.map((item, index) => (
-            <li
-              key={item.name}
-              onMouseEnter={() => handleMouseEnter(index)}
-              onMouseLeave={handleMouseLeave}
-            >
-              <Link
-                to={item.id}
-                className="dropdown-toggle"
-                aria-label={`Toggle ${item.name} dropdown`}
-              >
-                {item.name}
-              </Link>
-              {expandedIndex === index && (
-                <div className="dropdown-content">
-                  {Array.isArray(item.description) &&
-                    item.description.map((desc, idx) => (
-                      <div key={idx} className="dropdown-item">
-                        {desc}
-                      </div>
-                    ))}
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
-      </nav>
-
-      <div className="header-right-box">
-        <div className="header-right">
+        <div className="shop-info">
           {shop ? (
             <>
               <span className="shop-name">{shop.name}</span>
@@ -117,6 +72,32 @@ const Header = () => {
             <span>Loading shop info...</span>
           )}
         </div>
+      </div>
+
+      <nav className={`nav ${isMenuOpen ? 'open' : ''}`}>
+        <ul className="nav-list">
+          {navItems.map((item, index) => (
+            <li
+              key={item.name}
+              onMouseEnter={() => handleMouseEnter(index)}
+              onMouseLeave={handleMouseLeave}
+            >
+              <Link to={item.id} className="dropdown-toggle">{item.name}</Link>
+              {expandedIndex === index && (
+                <div className="dropdown-content">
+                  {Array.isArray(item.description) &&
+                    item.description.map((desc, idx) => (
+                      <div key={idx} className="dropdown-item">{desc}</div>
+                    ))}
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <div className="right-box">
+        <span className="powered-by">Powered by <strong>ConnectFREE4U</strong></span>
       </div>
     </header>
   );
