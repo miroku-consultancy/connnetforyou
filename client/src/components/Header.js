@@ -1,84 +1,100 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';  // <-- Import Link here
+import { Link, useParams } from 'react-router-dom';
 import './Header.css';
 import logo from '../assets/images/logo.png';
-import apiUrl from '../config/apiConfig';
+
+const API_BASE_URL = 'https://connnet4you-server.onrender.com';  // Your backend URL
 
 const Header = () => {
-    const [expandedIndex, setExpandedIndex] = useState(null);
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [navItems, setNavItems] = useState([]);
+  const [expandedIndex, setExpandedIndex] = useState(null);
+  const [navItems, setNavItems] = useState([]);
+  const [shopInfo, setShopInfo] = useState({ name: '', address: '' });
+  const { shopSlug } = useParams();
 
-    useEffect(() => {
-        const fetchNavItems = async () => {
-            try {
-                const response = await fetch(apiUrl);
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                if (data && Array.isArray(data.navItems)) {
-                    setNavItems(data.navItems);
-                } else {
-                    setNavItems([]);
-                }
-            } catch (error) {
-                setNavItems([]);
-            }
-        };
-
-        fetchNavItems();
-    }, []);
-
-    const handleMouseEnter = (index) => {
-        setExpandedIndex(index);
+  useEffect(() => {
+    const fetchNavItems = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/navigation`);
+        if (!response.ok) throw new Error('Failed to fetch navigation');
+        const data = await response.json();
+        setNavItems(Array.isArray(data.navItems) ? data.navItems : []);
+      } catch {
+        setNavItems([]);
+      }
     };
 
-    const handleMouseLeave = () => {
-        setExpandedIndex(null);
+    fetchNavItems();
+  }, []);
+
+  useEffect(() => {
+    const fetchShopInfo = async () => {
+      if (!shopSlug) return;
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/shops/${shopSlug}`);
+        if (!res.ok) {
+          setShopInfo({ name: 'Shop Not Found', address: '' });
+          return;
+        }
+        const data = await res.json();
+        setShopInfo({
+          name: data.name || '',
+          address: data.address || '',
+        });
+      } catch (error) {
+        console.error('Error fetching shop info:', error);
+        setShopInfo({ name: 'Error Loading Shop', address: '' });
+      }
     };
 
-    return (
-        <header className="header">
-            <div className="logo-container">
-                <img src={logo} alt="Miroku Consultancy Logo" className="logo" />
-                <div className="company-name">
-                    <span>ConnectFree4U</span>
+    fetchShopInfo();
+  }, [shopSlug]);
+
+  const handleMouseEnter = (index) => setExpandedIndex(index);
+  const handleMouseLeave = () => setExpandedIndex(null);
+
+  return (
+    <header className="header">
+      <div className="logo-container">
+        <img src={logo} alt="Logo" className="logo" />
+        <div className="company-name">
+          <span>ConnectFree4U</span>
+        </div>
+      </div>
+
+      <nav className="nav">
+        <ul className="nav-list">
+          {navItems.map((item, index) => (
+            <li
+              key={item.name}
+              onMouseEnter={() => handleMouseEnter(index)}
+              onMouseLeave={handleMouseLeave}
+            >
+              <Link to={item.id} className="dropdown-toggle" aria-label={`Toggle ${item.name} dropdown`}>
+                {item.name}
+              </Link>
+              {expandedIndex === index && (
+                <div className="dropdown-content">
+                  {Array.isArray(item.description) && item.description.map((desc, i) => (
+                    <div key={i} className="dropdown-item">{desc}</div>
+                  ))}
                 </div>
-            </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      </nav>
 
-            <nav className={`nav ${isMenuOpen ? 'open' : ''}`}>
-                <ul className="nav-list">
-                    {Array.isArray(navItems) && navItems.map((item, index) => (
-                        <li
-                            key={item.name}
-                            onMouseEnter={() => handleMouseEnter(index)}
-                            onMouseLeave={handleMouseLeave}
-                        >
-                            <Link
-                                to={item.id}    // <-- use Link and to prop here
-                                className="dropdown-toggle"
-                                aria-label={`Toggle ${item.name} dropdown`}
-                            >
-                                {item.name}
-                            </Link>
-                            {expandedIndex === index && (
-                                <div className="dropdown-content">
-                                    {Array.isArray(item.description) && item.description.map((desc, descIndex) => (
-                                        <div key={descIndex} className="dropdown-item">
-                                            {desc}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </li>
-                    ))}
-                </ul>
-            </nav>
-        </header>
-    );
+      <div className="header-right">
+        {shopInfo.name && (
+          <>
+            <span className="shop-name">{shopInfo.name}</span>
+            {shopInfo.address && <span className="shop-address">📍 {shopInfo.address}</span>}
+          </>
+        )}
+      </div>
+    </header>
+  );
 };
 
 export default Header;
