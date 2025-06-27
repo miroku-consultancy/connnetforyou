@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from './CartContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useUser } from './UserContext';
 import AddressPopup from './AddressPopup';
 import './Order.css';
@@ -12,6 +12,11 @@ const Order = () => {
   const items = Object.values(cart);
   const navigate = useNavigate();
   const { user } = useUser();
+  const location = useLocation();
+
+  // Extract shopSlug from URL path, fallback to 'demo'
+  const shopSlugFromUrl = location.pathname.split('/')[1];
+  const shopSlug = user?.shop_slug || shopSlugFromUrl || 'demo';
 
   const [showAddressPopup, setShowAddressPopup] = useState(false);
   const [addresses, setAddresses] = useState([]);
@@ -100,7 +105,7 @@ const Order = () => {
     const token = localStorage.getItem('authToken');
     if (!token) {
       alert('You must be logged in to place an order.');
-      navigate('/');
+      navigate('/login');  // Redirect to login on missing token
       return;
     }
 
@@ -127,9 +132,6 @@ const Order = () => {
 
       const fullOrder = { ...orderData, orderId: result.orderId };
       localStorage.setItem('orderSummary', JSON.stringify(fullOrder));
-
-      // Use user.shop_slug for route param, fallback to 'demo'
-      const shopSlug = user?.shop_slug || 'demo';
 
       if (paymentMethod === 'cod') {
         navigate(`/${shopSlug}/order-summary`);
