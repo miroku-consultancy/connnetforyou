@@ -105,20 +105,22 @@ const Header = () => {
         </ul>
       </nav>
 
-      <div className="header-right">
-        {shop ? (
-          <>
-            <span className="shop-name">{shop.name}</span>
-            {shop.address && <span className="shop-address">{shop.address}</span>}
-            {shop.phone && (
-              <span className="shop-phone">
-                📞 <a href={`tel:${shop.phone}`}>{shop.phone}</a>
-              </span>
-            )}
-          </>
-        ) : (
-          <span>Loading shop info...</span>
-        )}
+      <div className="header-right-box">
+        <div className="header-right">
+          {shop ? (
+            <>
+              <span className="shop-name">{shop.name}</span>
+              {shop.address && <span className="shop-address">{shop.address}</span>}
+              {shop.phone && (
+                <span className="shop-phone">
+                  📞 <a href={`tel:${shop.phone}`}>{shop.phone}</a>
+                </span>
+              )}
+            </>
+          ) : (
+            <span>Loading shop info...</span>
+          )}
+        </div>
       </div>
     </header>
   );
