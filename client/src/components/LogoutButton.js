@@ -1,17 +1,23 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useCart } from './CartContext'; // ✅ Import clearCart from context
-import './LogoutButton.css'; // Optional styling
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useCart } from './CartContext';
+import './LogoutButton.css';
 
 const LogoutButton = () => {
   const navigate = useNavigate();
-  const { clearCart } = useCart(); // ✅ Use clearCart
+  const location = useLocation();
+  const { clearCart } = useCart();
 
   const handleLogout = () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('userId');
-    clearCart(); // ✅ Clear the cart on logout
-    navigate('/'); // ✅ Redirect to login or home page
+    clearCart();
+
+    // Extract shopSlug from URL (assumes URL like /shopSlug/...)
+    const shopSlug = location.pathname.split('/')[1];
+
+    // Redirect back to the shop page or fallback to home
+    navigate(shopSlug ? `/${shopSlug}` : '/');
   };
 
   return (
