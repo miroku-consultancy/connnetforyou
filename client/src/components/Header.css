@@ -1,268 +1,240 @@
 .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    background-color: #4caf50;
-    /* Deep purple */
-    color: #FBC02D;
-    /* Soft yellow */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #4caf50; /* Green */
+  color: #FBC02D;
 }
 
 .company-name {
-    font-size: 18px;
-    /* Adjust font size as needed */
-    color: #FBC02D;
-    /* Soft yellow */
-    font-weight: bold;
-    /* Make the font bold for emphasis */
-    text-align: left;
-    /* Align text to the left */
-    margin-top: 10px;
-    /* Add some space above the name */
-    margin-left: 15px;
-    /* Add left margin to create space from the logo */
+  font-size: 18px;
+  color: #FBC02D;
+  font-weight: bold;
+  text-align: left;
+  margin-top: 10px;
+  margin-left: 15px;
 }
 
 .logo-container {
-    display: flex;
-    align-items: center;
-    /* Center logo and text vertically */
-    flex-grow: 1;
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
 }
 
 .logo {
-    width: 90px;
-    /* Adjust according to your logo size */
-    height: auto;
-
+  width: 90px;
+  height: auto;
 }
 
 .logo-text {
-    display: flex;
-    flex-direction: column;
-    /* Stack short and long name vertically */
-    margin-left: 10px;
-    /* Space between logo and text */
+  display: flex;
+  flex-direction: column;
+  margin-left: 10px;
 }
 
 .short-name {
-    margin: 0;
-    /* Remove default margin */
-    font-size: 24px;
-    /* Adjust as necessary */
-    font-weight: bold;
-    font-family: 'Pacifico', cursive;
-    /* Use the imported font */
+  margin: 0;
+  font-size: 24px;
+  font-weight: bold;
+  font-family: 'Pacifico', cursive;
 }
 
 .long-name {
-    margin: 0;
-    /* Remove default margin */
-    font-size: 14px;
-    /* Adjust as necessary */
-    color: #FFD700;
-    /* Color for long name */
+  margin: 0;
+  font-size: 14px;
+  color: #FFD700;
 }
 
 nav {
-    flex: 2;
+  flex: 2;
 }
 
 .nav-list {
-    list-style: none;
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    position: relative;
-    /* Added for absolute positioning of dropdown */
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  position: relative;
 }
 
 .nav-list li {
-    position: relative;
-    /* Required for dropdown positioning */
+  position: relative;
 }
 
-
 .nav-list button {
-    background: none;
-    border: none;
-    color: white;
-    /* Light text color */
-    font-weight: 500;
-    cursor: pointer;
-    padding: 10px 15px;
-    /* Add padding for better touch area */
-    text-align: left;
-    /* Align text to the left */
-    transition: all 0.3s ease;
+  background: none;
+  border: none;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 10px 15px;
+  text-align: left;
+  transition: all 0.3s ease;
 }
 
 .nav-list button:hover,
 .nav-list button:focus {
-    background-color: rgba(255, 215, 0, 0.2);
-    /* Light gold background on hover */
+  background-color: rgba(255, 215, 0, 0.2);
 }
 
-/* Dropdown Content */
 .dropdown-content {
-    display: none;
-    /* Hidden by default */
-    position: absolute;
-    background-color: #444;
-    /* Slightly lighter dark background for dropdown */
-    color: white;
-    padding: 10px;
-    border-radius: 4px;
-    top: 100%;
-    /* Position below the nav item */
-    left: 50%;
-    transform: translateX(-50%);
-    /* Center it */
-    white-space: nowrap;
-    /* Prevent text wrapping */
-    z-index: 1;
-    /* Ensure it appears above other elements */
+  display: none;
+  position: absolute;
+  background-color: #444;
+  color: white;
+  padding: 10px;
+  border-radius: 4px;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  z-index: 1;
 }
 
 .nav-list li:hover .dropdown-content {
-    display: block;
-    /* Show on hover */
+  display: block;
 }
 
-/* Media Query for Responsive Design */
 @media (max-width: 768px) {
-    .header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 
-    .nav-list {
-        flex-direction: column;
-        gap: 10px;
-    }
+  .nav-list {
+    flex-direction: column;
+    gap: 10px;
+  }
 
-    .nav-list button {
-        padding: 10px;
-        /* Add padding for touch targets */
-    }
+  .nav-list button {
+    padding: 10px;
+  }
 }
 
 .logo-container {
-    display: flex;
-    align-items: center;
-    /* Center vertically */
-    width: 100%;
-    /* Ensure it takes full width */
-    margin-right: 10px;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-right: 10px;
 }
 
 .short-name {
-    font-size: 48px;
-    /* Adjust font size */
-    font-weight: bold;
-    font-family: 'Pacifico', cursive;
-    /* Cursive font for short name */
-    margin-right: 20px;
-    /* Add some space between short name and long name */
+  font-size: 48px;
+  font-weight: bold;
+  font-family: 'Pacifico', cursive;
+  margin-right: 20px;
 }
 
 .long-name {
-    font-size: 16px;
-    /* Adjust size for long name */
-    color: #ffe600;
-    /* Color for long name */
-    font-weight: normal;
-    /* Normal weight for long name */
-    text-align: left;
-    /* Align text to the left */
+  font-size: 16px;
+  color: #ffe600;
+  font-weight: normal;
+  text-align: left;
 }
 
-
-
-
 .long-name span {
-    display: block;
-    /* Each span will be on a new line */
+  display: block;
 }
 
 .menu-toggle {
-    display: none;
-    /* Hide by default, show on small screens */
-    background-color: #333;
-    /* Match with header background */
-    border: none;
-    color: #fff;
-    /* Change color to fit your theme */
-    font-size: 24px;
-    cursor: pointer;
-    margin-left: auto;
-    width: 70px; /* Set a fixed width */
-    height: 50px; /* Set a fixed height */
-    /* Push button to the right */
+  display: none;
+  background-color: #333;
+  border: none;
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
+  margin-left: auto;
+  width: 70px;
+  height: 50px;
 }
 
-/* Show the toggle button on small screens */
 @media (max-width: 768px) {
-    .menu-toggle {
-        display: block;
-        padding: 0;
-        /* Show menu toggle button */
-        /* margin-left: auto;  */
-    }
+  .menu-toggle {
+    display: block;
+    padding: 0;
+  }
 
-    .nav {
-        display: none;
-        /* Hide navigation by default */
-    }
+  .nav {
+    display: none;
+  }
 
-    .nav.open {
-        display: block;
-        /* Show navigation when menu is open */
-        width: 100%;
-        /* Full width for dropdown */
-    }
+  .nav.open {
+    display: block;
+    width: 100%;
+  }
 
-    .nav-list {
-        flex-direction: column;
-        /* Stack items vertically */
-        align-items: center;
-        /* Center items */
-        width: 100%;
-        /* Full width for dropdown */
-    }
+  .nav-list {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
 
-    .nav-list li {
-        margin-right: 0;
-        /* Remove margin on smaller screens */
-        margin-bottom: 10px;
-        /* Add spacing between stacked items */
-        width: 100%;
-        /* Make list items full width */
-        text-align: center;
-        /* Center text for better appearance */
-    }
+  .nav-list li {
+    margin-right: 0;
+    margin-bottom: 10px;
+    width: 100%;
+    text-align: center;
+  }
 }
+
+/* Updated styles below for white shop info */
+
 .header-right {
   margin-left: auto;
   padding: 8px 16px;
-  background-color: #f3f3f3;
-  color: #333;
+  background-color: transparent;
+  color: white;
   border-radius: 5px;
   font-weight: bold;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 220px;
+  gap: 4px;
+  font-size: 14px;
 }
 
-
 .shop-name {
-    font-size: 16px;
+  font-size: 18px;
+  color: white;
+  margin-bottom: 2px;
+}
+
+.shop-address {
+  font-weight: normal;
+  color: white;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.shop-phone {
+  font-weight: normal;
+  font-size: 13px;
+  color: white;
+}
+
+.shop-phone a {
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.shop-phone a:hover {
+  text-decoration: underline;
 }
 
 @media (max-width: 768px) {
-    .header-right {
-        margin-top: 10px;
-        margin-left: 0;
-        align-self: flex-start;
-    }
+  .header-right {
+    margin-top: 10px;
+    margin-left: 0;
+    align-self: flex-start;
+    min-width: auto;
+    font-size: 13px;
+    align-items: flex-start;
+  }
+
+  .shop-name {
+    font-size: 16px;
+  }
 }

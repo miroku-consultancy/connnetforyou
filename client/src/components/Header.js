@@ -1,19 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import './Header.css';
 import logo from '../assets/images/logo.png';
 
 const API_BASE_URL = 'https://connnet4you-server.onrender.com';
 
 const Header = () => {
+  const location = useLocation();
+
+  // Extract shopSlug from URL path, assuming format /:shopSlug/...
+  const shopSlug = location.pathname.split('/')[1];
+
   const [expandedIndex, setExpandedIndex] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [navItems, setNavItems] = useState([]);
   const [shop, setShop] = useState(null);
-  const { shopSlug } = useParams();
 
   useEffect(() => {
-    // Fetch navigation items (no auth required)
     const fetchNavItems = async () => {
       try {
         const response = await fetch(`${API_BASE_URL}/api/navigation`);
@@ -33,11 +36,14 @@ const Header = () => {
   }, []);
 
   useEffect(() => {
-    if (!shopSlug) return;
+    if (!shopSlug) {
+      setShop(null);
+      return;
+    }
 
     const fetchShop = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/shops/${shopSlug}`); // No auth header here
+        const res = await fetch(`${API_BASE_URL}/api/shops/${shopSlug}`);
         if (!res.ok) {
           if (res.status === 404) {
             setShop({ name: 'Shop Not Found', address: '' });
@@ -99,12 +105,16 @@ const Header = () => {
         </ul>
       </nav>
 
-      {/* Show shop name and address */}
       <div className="header-right">
         {shop ? (
           <>
             <span className="shop-name">{shop.name}</span>
             {shop.address && <span className="shop-address">{shop.address}</span>}
+            {shop.phone && (
+              <span className="shop-phone">
+                📞 <a href={`tel:${shop.phone}`}>{shop.phone}</a>
+              </span>
+            )}
           </>
         ) : (
           <span>Loading shop info...</span>
