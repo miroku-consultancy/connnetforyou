@@ -1,44 +1,61 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useUser } from './UserContext'; // your user context hook
+
+const API_BASE = 'https://connnet4you-server.onrender.com';
 
 const ShopNotifications = () => {
+  const { user, loadingUser } = useUser();
   const [notifications, setNotifications] = useState([]);
   const [error, setError] = useState(null);
-  const API_BASE = 'https://connnet4you-server.onrender.com'; // consider using env vars
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    const shopId = localStorage.getItem('shopId'); // must be stored during login
+    if (loadingUser) return; // wait for user info
 
-    if (!token || !shopId) {
-      console.warn('Missing auth token or shop ID');
+    if (!user || !user.shop_id) {
+      // No user or shop_id, redirect to home or login page
+      navigate('/');
       return;
     }
 
-    // 1. Initial fetch of past notifications
-    const fetchInitial = async () => {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      navigate('/');
+      return;
+    }
+
+    // Fetch past notifications
+    const fetchInitialNotifications = async () => {
       try {
-        const response = await fetch(`${API_BASE}/api/notifications/history`, {
+        const res = await fetch(`${API_BASE}/api/notifications/history`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (!response.ok) {
-          throw new Error(`Initial fetch failed: ${response.status}`);
+        if (!res.ok) {
+          if (res.status === 401 || res.status === 403) {
+            localStorage.removeItem('authToken');
+            navigate('/');
+            return;
+          }
+          throw new Error(`Failed to fetch notifications: ${res.statusText}`);
         }
 
-        const data = await response.json();
+        const data = await res.json();
         setNotifications(data);
       } catch (err) {
-        console.error('Initial fetch error:', err.message);
+        console.error('Failed to load notifications:', err);
         setError('Failed to load notifications');
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchInitial();
+    fetchInitialNotifications();
 
-    // 2. Open SSE connection for real-time updates
-    const eventSource = new EventSource(
-      `${API_BASE}/api/notifications/subscribe?shopId=${shopId}`
-    );
+    // Open SSE connection, pass token and shop_id as query params
+    const eventSource = new EventSource(`${API_BASE}/api/notifications/stream?token=${token}`);
 
     eventSource.onmessage = (event) => {
       const data = JSON.parse(event.data);
@@ -46,16 +63,17 @@ const ShopNotifications = () => {
     };
 
     eventSource.onerror = (err) => {
-      console.error('❌ SSE error:', err);
+      console.error('SSE connection error:', err);
       eventSource.close();
-      setError('Connection to live updates lost');
+      setError('Lost connection to live notifications');
     };
 
     return () => {
       eventSource.close();
     };
-  }, []);
+  }, [loadingUser, user, navigate]);
 
+  if (loadingUser || loading) return <div>Loading notifications...</div>;
   if (error) return <div className="error">{error}</div>;
 
   return (
@@ -65,8 +83,8 @@ const ShopNotifications = () => {
         <p>No notifications yet.</p>
       ) : (
         <ul>
-          {notifications.map((note, index) => (
-            <li key={note.id || index}>
+          {notifications.map((note, idx) => (
+            <li key={note.id || idx}>
               <p>{note.message}</p>
               <small>
                 {note.created_at

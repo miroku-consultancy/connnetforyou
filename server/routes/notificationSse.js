@@ -1,15 +1,11 @@
 const express = require('express');
-const auth = require('../middleware/authMiddleware');
+const jwt = require('jsonwebtoken');
 const pool = require('../db');
 
 const sseRouter = express.Router();
 
-// Track SSE connections per shop
 const clients = new Map();
 
-/**
- * Utility to send a notification to all SSE clients of a shop
- */
 function sendToClients(shopId, data) {
   const subscribers = clients.get(shopId);
   if (subscribers) {
@@ -18,26 +14,39 @@ function sendToClients(shopId, data) {
   }
 }
 
-/**
- * SSE endpoint - Keeps the connection open and streams notifications
- */
-sseRouter.get('/stream', auth, (req, res) => {
-  const { shop_id, role } = req.user;
-
-  if (role !== 'vendor' || !shop_id) {
-    return res.status(403).end();
+// Replace your old /stream route with this:
+sseRouter.get('/stream', (req, res) => {
+  const token = req.query.token;
+  if (!token) {
+    return res.status(401).end('Unauthorized: Missing token');
   }
 
-  // Setup headers for SSE
+  let decoded;
+  try {
+    // Replace 'your_jwt_secret' with your actual JWT secret or env var
+    decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
+  } catch (err) {
+    console.error('JWT verification failed:', err.message);
+    return res.status(401).end('Unauthorized: Invalid token');
+  }
+
+  const { shop_id, role } = decoded;
+
+  if (role !== 'vendor' || !shop_id) {
+    return res.status(403).end('Forbidden: Not a vendor or missing shop_id');
+  }
+
+  // Setup SSE headers
   res.writeHead(200, {
     Connection: 'keep-alive',
     'Cache-Control': 'no-cache',
     'Content-Type': 'text/event-stream',
   });
-  res.write(`data: ${JSON.stringify(payload)}\n\n`);
 
+  // Optional initial comment to keep connection alive
+  res.write(`: connected\n\n`);
 
-  // Register client
+  // Register client for this shop
   if (!clients.has(shop_id)) clients.set(shop_id, []);
   clients.get(shop_id).push(res);
 
@@ -49,28 +58,6 @@ sseRouter.get('/stream', auth, (req, res) => {
     clients.set(shop_id, updatedClients);
     console.log(`❌ Shop ${shop_id} disconnected from SSE`);
   });
-});
-
-/**
- * Optional: Fetch past notifications (for dashboard display)
- */
-sseRouter.get('/history', auth, async (req, res) => {
-  const { shop_id, role } = req.user;
-
-  if (role !== 'vendor' || !shop_id) {
-    return res.status(403).json({ error: 'Access denied' });
-  }
-
-  try {
-    const result = await pool.query(
-      'SELECT id, message, is_read, created_at FROM notifications WHERE shop_id = $1 ORDER BY created_at DESC',
-      [shop_id]
-    );
-    res.json(result.rows);
-  } catch (err) {
-    console.error('Error fetching notification history:', err.message);
-    res.status(500).json({ error: 'Failed to fetch history' });
-  }
 });
 
 module.exports = {
