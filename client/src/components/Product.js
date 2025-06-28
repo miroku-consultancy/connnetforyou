@@ -317,6 +317,16 @@ const Product = () => {
             >
               📜 Order History
             </button>
+
+            {/* ADDED THIS BUTTON: */}
+            <button
+              onClick={() => navigate(`/${safeShopSlug}/shop-orders`)}
+              className="shop-orders-btn"
+              title="View Shop Orders"
+            >
+              🛍️ Shop Orders
+            </button>
+
             <button
               onClick={() => navigate(`/${safeShopSlug}/admin/add-product`)}
               className="add-product-btn"
