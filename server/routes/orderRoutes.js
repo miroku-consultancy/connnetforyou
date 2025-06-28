@@ -1,5 +1,5 @@
 const express = require('express');
-const { createOrder, getOrdersByUser } = require('../models/orderModel');
+const { createOrder, getOrdersByUser, getOrdersByShop } = require('../models/orderModel'); // updated
 const authMiddleware = require('../middleware/authMiddleware');
 const { sendShopNotification } = require('../utils/notificationService'); // updated util
 
@@ -62,38 +62,18 @@ router.get('/shop/:shopId', authMiddleware, async (req, res) => {
   const user = req.user;
 
   try {
-    // Check if user is owner of this shop
     if (user.role !== 'shop_owner' || user.shop_id !== parseInt(shopId)) {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    const ordersResult = await pool.query(
-      `SELECT o.id, o.total, o.payment_method, o.order_date, u.name as customer_name
-       FROM orders o
-       JOIN users u ON o.user_id = u.id
-       WHERE o.shop_id = $1
-       ORDER BY o.order_date DESC`,
-      [shopId]
-    );
-
-    // Get order items for each order
-    const orders = await Promise.all(
-      ordersResult.rows.map(async (order) => {
-        const itemsResult = await pool.query(
-          `SELECT product_id, name, price, quantity, image
-           FROM order_items WHERE order_id = $1`,
-          [order.id]
-        );
-        return { ...order, items: itemsResult.rows };
-      })
-    );
-
+    const orders = await getOrdersByShop(shopId);
     res.json(orders);
   } catch (error) {
     console.error('Error fetching shop orders:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
+
 
 
 module.exports = router;

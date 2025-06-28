@@ -80,4 +80,38 @@ async function getOrdersByUser(userId) {
   }
 }
 
-module.exports = { createOrder, getOrdersByUser };
+// Get orders for a specific shop (based on order_items.shop_id)
+async function getOrdersByShop(shopId) {
+  const client = await pool.connect();
+  try {
+    const ordersResult = await client.query(
+      `SELECT DISTINCT o.id, o.total, o.payment_method, o.order_date, u.name AS customer_name
+       FROM orders o
+       JOIN users u ON o.user_id = u.id
+       JOIN order_items oi ON oi.order_id = o.id
+       WHERE oi.shop_id = $1
+       ORDER BY o.order_date DESC`,
+      [shopId]
+    );
+
+    const orders = [];
+
+    for (const order of ordersResult.rows) {
+      const itemsResult = await client.query(
+        `SELECT product_id, name, price, quantity, image
+         FROM order_items
+         WHERE order_id = $1 AND shop_id = $2`,
+        [order.id, shopId]
+      );
+      orders.push({ ...order, items: itemsResult.rows });
+    }
+
+    return orders;
+  } finally {
+    client.release();
+  }
+}
+
+
+module.exports = { createOrder, getOrdersByUser, getOrdersByShop };
+

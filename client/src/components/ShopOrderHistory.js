@@ -2,25 +2,25 @@ import React, { useEffect, useState } from 'react';
 
 const API_BASE_URL = 'https://connnet4you-server.onrender.com';
 
+// Helper to decode JWT token payload
+const parseJwt = (token) => {
+  try {
+    return JSON.parse(atob(token.split('.')[1]));
+  } catch {
+    return null;
+  }
+};
+
 const ShopOrderHistory = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Helper function to decode JWT token payload
-  const parseJwt = (token) => {
-    try {
-      return JSON.parse(atob(token.split('.')[1]));
-    } catch (e) {
-      return null;
-    }
-  };
-
   useEffect(() => {
     const fetchShopOrders = async () => {
       const token = localStorage.getItem('authToken');
       if (!token) {
-        setError('No auth token, please login');
+        setError('No authentication token. Please log in.');
         setLoading(false);
         return;
       }
@@ -29,7 +29,7 @@ const ShopOrderHistory = () => {
       const shopId = decoded?.shop_id;
 
       if (!shopId) {
-        setError('No shop selected');
+        setError('Shop ID missing in your account.');
         setLoading(false);
         return;
       }
@@ -39,12 +39,18 @@ const ShopOrderHistory = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (!res.ok) throw new Error('Failed to fetch shop orders');
-
-        const data = await res.json();
-        setOrders(data);
+        if (res.status === 401 || res.status === 403) {
+          setError('Unauthorized. Please log in again.');
+        } else if (res.status === 404) {
+          setError('No orders found for this shop.');
+        } else if (!res.ok) {
+          setError('Error fetching shop orders.');
+        } else {
+          const data = await res.json();
+          setOrders(data);
+        }
       } catch (err) {
-        setError(err.message);
+        setError('Network error, please try again.');
       } finally {
         setLoading(false);
       }
@@ -55,7 +61,7 @@ const ShopOrderHistory = () => {
 
   if (loading) return <p>Loading orders...</p>;
   if (error) return <p style={{ color: 'red' }}>{error}</p>;
-  if (orders.length === 0) return <p>No orders yet.</p>;
+  if (orders.length === 0) return <p>No orders yet for your shop.</p>;
 
   return (
     <div>
@@ -63,11 +69,9 @@ const ShopOrderHistory = () => {
       {orders.map((order) => (
         <div key={order.id} style={{ border: '1px solid #ccc', marginBottom: 20, padding: 10 }}>
           <p><strong>Order ID:</strong> {order.id}</p>
-          <p><strong>Customer:</strong> {order.customer_name}</p>
           <p><strong>Date:</strong> {new Date(order.order_date).toLocaleString()}</p>
           <p><strong>Payment:</strong> {order.payment_method}</p>
           <p><strong>Total:</strong> ₹{order.total}</p>
-
           <ul>
             {order.items.map(item => (
               <li key={item.product_id}>
