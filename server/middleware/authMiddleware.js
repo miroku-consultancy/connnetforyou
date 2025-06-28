@@ -12,15 +12,13 @@ const pool = new Pool({
 
 module.exports = async (req, res, next) => {
   const authHeader = req.get('Authorization');
-
-  if (!authHeader) {
-    console.error('Authorization header missing');
-    return res.status(401).json({ error: 'No token provided' });
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    console.error('Authorization header missing or malformed');
+    return res.status(401).json({ error: 'No token provided or bad format' });
   }
 
-  const parts = authHeader.split(' ');
-  const token = parts[1];
-
+  const token = authHeader.split(' ')[1];
   if (!token) {
     console.error('Token missing');
     return res.status(401).json({ error: 'Token missing' });
@@ -29,7 +27,6 @@ module.exports = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Fetch full user (with role/shop) from DB
     const result = await pool.query(
       'SELECT id, email, name, role, shop_id FROM users WHERE id = $1',
       [decoded.id]
@@ -39,10 +36,13 @@ module.exports = async (req, res, next) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    req.user = result.rows[0]; // ✅ Now includes role and shop_id
+    req.user = result.rows[0]; // includes role, shop_id
     next();
   } catch (err) {
     console.error('Token verification failed:', err.message);
+    if (err.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Token expired' });
+    }
     return res.status(403).json({ error: 'Invalid or expired token' });
   }
 };

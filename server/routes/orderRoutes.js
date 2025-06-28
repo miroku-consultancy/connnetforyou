@@ -62,9 +62,10 @@ router.get('/shop/:shopId', authMiddleware, async (req, res) => {
   const user = req.user;
 
   try {
-    if (user.role !== 'shop_owner' || user.shop_id !== parseInt(shopId)) {
+    if (user.role !== 'vendor' || user.shop_id !== parseInt(shopId)) {
       return res.status(403).json({ error: 'Access denied' });
     }
+
 
     const orders = await getOrdersByShop(shopId);
     res.json(orders);

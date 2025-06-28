@@ -88,10 +88,16 @@ router.post('/login-with-token', async (req, res) => {
 
     // 3. Generate token
     const jwtToken = jwt.sign(
-      { id: user.id, email: user.email, shop_id: user.shop_id },
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' }
-    );
+  {
+    id: user.id,
+    email: user.email,
+    shop_id: user.shop_id,
+    role: user.role // ✅ Include role here!
+  },
+  process.env.JWT_SECRET,
+  { expiresIn: '1h' }
+);
+
 
     // 4. Clear OTP and update login timestamp
     await pool.query(
