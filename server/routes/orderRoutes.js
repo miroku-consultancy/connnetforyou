@@ -27,7 +27,8 @@ router.post('/', authMiddleware, async (req, res) => {
     });
 
     // Notify all unique shops involved in the order
-    const shopIds = [...new Set(items.map(item => item.shopId))];
+    const shopIds = [...new Set(items.map(item => item.shopId ?? item.shop_id).filter(Boolean))];
+
 
     for (const shopId of shopIds) {
       await sendShopNotification({

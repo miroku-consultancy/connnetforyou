@@ -25,8 +25,13 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
 
     const orderId = orderRes.rows[0].id;
 
-    // Insert each item with shopId
+    // Insert each item, normalize shop_id key
     for (const item of items) {
+      const shop_id = item.shop_id ?? item.shopId;
+      if (!shop_id) {
+        throw new Error(`Missing shop_id for item ${item.name}`);
+      }
+
       await client.query(
         `INSERT INTO order_items (order_id, product_id, name, price, quantity, image, shop_id)
          VALUES ($1, $2, $3, $4, $5, $6, $7)`,
@@ -37,7 +42,7 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
           item.price,
           item.quantity,
           item.image,
-          item.shopId // Make sure your frontend sends this
+          shop_id
         ]
       );
     }
@@ -112,6 +117,4 @@ async function getOrdersByShop(shopId) {
   }
 }
 
-
 module.exports = { createOrder, getOrdersByUser, getOrdersByShop };
-
