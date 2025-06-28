@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useUser } from './UserContext';  // 👈 Import user context
 import './Header.css';
 
 const API_BASE_URL = 'https://connnet4you-server.onrender.com';
@@ -8,8 +7,6 @@ const API_BASE_URL = 'https://connnet4you-server.onrender.com';
 const Header = () => {
   const location = useLocation();
   const shopSlug = location.pathname.split('/')[1] || null;
-
-  const { user } = useUser();  // 👈 Access logged-in user info
 
   const [navItems, setNavItems] = useState([]);
   const [shop, setShop] = useState(null);
@@ -98,15 +95,6 @@ const Header = () => {
               )}
             </li>
           ))}
-
-          {/* Shop Owner Dashboard Link */}
-          {user?.role === 'shop' && shopSlug && (
-            <li>
-              <Link to={`/${shopSlug}/admin/dashboard`} className="dashboard-link">
-                Dashboard
-              </Link>
-            </li>
-          )}
         </ul>
       </nav>
 
