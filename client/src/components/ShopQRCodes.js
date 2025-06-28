@@ -9,6 +9,14 @@ const shops = [
 
 const baseUrl = "https://www.connectfree4u.com/#/";
 
+// Function to remove hyphens and maybe add spaces for display
+// Replace hyphens with spaces AND split camelCase words with spaces
+const displayName = (shop) => 
+  shop
+    .replace(/-/g, ' ')                            // replace hyphens with spaces
+    .replace(/([a-z])([A-Z])/g, '$1 $2');         // insert space before uppercase letter preceded by lowercase
+
+
 const ShopQRCodes = () => {
   return (
     <div
@@ -47,7 +55,7 @@ const ShopQRCodes = () => {
             }}
           >
             <h3 style={{ marginBottom: '15px', color: '#333', fontFamily: 'Arial, sans-serif' }}>
-              {shop}
+              {displayName(shop)}
             </h3>
             <QRCodeCanvas value={url} size={180} bgColor="#ffffff" fgColor="#2d3436" />
             <p
