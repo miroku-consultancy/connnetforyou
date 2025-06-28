@@ -7,15 +7,18 @@ const router = express.Router();
 
 console.log('[OrderRoute] Loaded');
 
-// Middleware for logging requests to this router
+// Middleware for logging each request to this router
 router.use((req, res, next) => {
   console.log(`[OrderRoute] ${req.method} ${req.originalUrl}`);
   next();
 });
 
-// POST /api/orders – create new order
+/**
+ * POST /api/orders – Create a new order
+ */
 router.post('/', authMiddleware, async (req, res) => {
   console.log('[OrderRoute] POST /api/orders called');
+
   const { items, total, address, paymentMethod, orderDate } = req.body;
   const userId = req.user.id;
 
@@ -31,9 +34,10 @@ router.post('/', authMiddleware, async (req, res) => {
       orderDate,
       userId
     });
+
     console.log(`[OrderRoute] Order created with ID: ${orderId}`);
 
-    // Notify all unique shops involved in the order
+    // Notify all unique shop IDs involved in this order
     const shopIds = [...new Set(items.map(item => item.shopId ?? item.shop_id).filter(Boolean))];
     console.log('[OrderRoute] Unique shop IDs for notification:', shopIds);
 
@@ -53,11 +57,12 @@ router.post('/', authMiddleware, async (req, res) => {
   }
 });
 
-// GET /api/orders/user – fetch orders for the logged-in user
+/**
+ * GET /api/orders/user – Get orders placed by the current user
+ */
 router.get('/user', authMiddleware, async (req, res) => {
-  console.log('[OrderRoute] GET /api/orders/user called');
   const userId = req.user.id;
-  console.log(`[OrderRoute] Fetching orders for user ID: ${userId}`);
+  console.log(`[OrderRoute] GET /api/orders/user called by user ${userId}`);
 
   try {
     const orders = await getOrdersByUser(userId);
@@ -69,25 +74,28 @@ router.get('/user', authMiddleware, async (req, res) => {
   }
 });
 
-// GET /api/orders/shop/:shopId – fetch orders for a specific shop (vendor only)
+/**
+ * GET /api/orders/shop/:shopId – Get orders for a specific shop (vendor only)
+ */
 router.get('/shop/:shopId', authMiddleware, async (req, res) => {
   const { shopId } = req.params;
   const user = req.user;
+
   console.log(`[OrderRoute] GET /api/orders/shop/${shopId} called by user ID: ${user.id}`);
 
   try {
-    // Only vendors who own the shop can access
+    // Only vendors who own this shop can access
     if (user.role !== 'vendor' || user.shop_id !== parseInt(shopId)) {
-      console.warn(`[OrderRoute] Access denied for user ID ${user.id} on shop ${shopId}`);
+      console.warn(`[OrderRoute] Access denied for user ${user.id} to shop ${shopId}`);
       return res.status(403).json({ error: 'Access denied' });
     }
 
     const orders = await getOrdersByShop(shopId);
     console.log(`[OrderRoute] Retrieved ${orders.length} orders for shop ${shopId}`);
     res.json(orders);
-  } catch (error) {
-    console.error('[OrderRoute] Error fetching shop orders:', error);
-    res.status(500).json({ error: 'Server error' });
+  } catch (err) {
+    console.error('[OrderRoute] Error fetching shop orders:', err);
+    res.status(500).json({ error: 'Failed to fetch shop orders' });
   }
 });
 
