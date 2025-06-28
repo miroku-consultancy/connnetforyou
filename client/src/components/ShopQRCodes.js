@@ -11,14 +11,58 @@ const baseUrl = "https://www.connectfree4u.com/#/";
 
 const ShopQRCodes = () => {
   return (
-    <div style={{ display: 'flex', gap: '40px' }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',  // vertical layout
+        alignItems: 'center',
+        gap: '30px',
+        padding: '20px',
+        backgroundColor: '#f9f9f9',
+        minHeight: '100vh',
+      }}
+    >
       {shops.map(shop => {
         const url = `${baseUrl}${shop}/login`;
         return (
-          <div key={shop} style={{ textAlign: 'center' }}>
-            <h3>{shop}</h3>
-            <QRCodeCanvas value={url} size={150} />
-            {/* <p style={{ maxWidth: 150, wordWrap: 'break-word' }}>{url}</p> */}
+          <div
+            key={shop}
+            style={{
+              backgroundColor: '#fff',
+              padding: '20px',
+              borderRadius: '15px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+              width: '220px',
+              textAlign: 'center',
+              transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+              cursor: 'pointer',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.transform = 'scale(1.05)';
+              e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15)';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+            }}
+          >
+            <h3 style={{ marginBottom: '15px', color: '#333', fontFamily: 'Arial, sans-serif' }}>
+              {shop}
+            </h3>
+            <QRCodeCanvas value={url} size={180} bgColor="#ffffff" fgColor="#2d3436" />
+            <p
+              style={{
+                marginTop: '15px',
+                fontSize: '12px',
+                color: '#555',
+                wordWrap: 'break-word',
+                fontFamily: 'monospace',
+                userSelect: 'text',
+              }}
+              title={url}
+            >
+              {url}
+            </p>
           </div>
         );
       })}
