@@ -1,15 +1,18 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import { useCart } from './CartContext';
+import { useUser } from './UserContext';
+import ShopNotifications from './ShopNotifications';
 import './OrderSummary.css';
 
 const OrderSummary = () => {
   const [order, setOrder] = useState(null);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { shopSlug } = useParams(); // ✅ Get shop slug from URL
+  const { shopSlug } = useParams();
   const { clearCart } = useCart();
   const navigationHandled = useRef(false);
+  const { user } = useUser(); // Get current user
 
   useEffect(() => {
     if (searchParams.get('success')) {
@@ -29,7 +32,7 @@ const OrderSummary = () => {
       if (e.state?.fromSummary && !navigationHandled.current) {
         navigationHandled.current = true;
         clearCart();
-        navigate(`/${shopSlug}/products`, { replace: true }); // ✅ Use shopSlug
+        navigate(`/${shopSlug}/products`, { replace: true });
       }
     };
 
@@ -39,7 +42,7 @@ const OrderSummary = () => {
 
   const handleGoToProducts = () => {
     clearCart();
-    navigate(`/${shopSlug}/products`); // ✅ Use shopSlug
+    navigate(`/${shopSlug}/products`);
   };
 
   if (!order) {
@@ -95,6 +98,14 @@ const OrderSummary = () => {
       <button className="go-to-products-btn" onClick={handleGoToProducts}>
         🛒 Go to Products
       </button>
+
+      {/* Show notifications only for vendors */}
+      {user?.role === 'vendor' && (
+        <div style={{ marginTop: '2rem' }}>
+          <h2>📢 Notifications</h2>
+          <ShopNotifications />
+        </div>
+      )}
     </div>
   );
 };
