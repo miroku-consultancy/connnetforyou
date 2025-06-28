@@ -8,8 +8,10 @@ const router = express.Router();
 router.get('/', auth, async (req, res) => {
   const { shop_id, role } = req.user;
 
-  if (role !== 'shop' || !shop_id) {
-    return res.status(403).json({ error: 'Only shop accounts can access notifications' });
+  console.log('[Notifications] Authenticated user:', req.user); // For debugging
+
+  if (role !== 'vendor' || !shop_id) {
+    return res.status(403).json({ error: 'Only vendor accounts can access notifications' });
   }
 
   try {
