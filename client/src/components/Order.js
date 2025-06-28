@@ -3,7 +3,7 @@ import { useCart } from './CartContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useUser } from './UserContext';
 import AddressPopup from './AddressPopup';
-import ShopNotifications from './ShopNotifications';  // adjust path as needed
+// import ShopNotifications from './ShopNotifications';  // adjust path as needed
 import './Order.css';
 
 const API_BASE_URL = 'https://connnet4you-server.onrender.com';
@@ -168,7 +168,7 @@ const Order = () => {
     <div className="order-page">
       <h1>🧺 Your Cart</h1>
 
-      <ShopNotifications refreshSignal={refreshNotifications} />
+      {/* <ShopNotifications refreshSignal={refreshNotifications} /> */}
 
       <div className="order-list">
         {items.map((item) => (
