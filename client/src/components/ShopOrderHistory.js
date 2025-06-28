@@ -7,6 +7,15 @@ const ShopOrderHistory = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Helper function to decode JWT token payload
+  const parseJwt = (token) => {
+    try {
+      return JSON.parse(atob(token.split('.')[1]));
+    } catch (e) {
+      return null;
+    }
+  };
+
   useEffect(() => {
     const fetchShopOrders = async () => {
       const token = localStorage.getItem('authToken');
@@ -16,15 +25,16 @@ const ShopOrderHistory = () => {
         return;
       }
 
-      try {
-        // Assume you store shopId in localStorage or get from user context
-        const shopId = localStorage.getItem('shopId');
-        if (!shopId) {
-          setError('No shop selected');
-          setLoading(false);
-          return;
-        }
+      const decoded = parseJwt(token);
+      const shopId = decoded?.shop_id;
 
+      if (!shopId) {
+        setError('No shop selected');
+        setLoading(false);
+        return;
+      }
+
+      try {
         const res = await fetch(`${API_BASE_URL}/api/orders/shop/${shopId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
