@@ -1,30 +1,24 @@
 const express = require('express');
-const auth = require('../middleware/authMiddleware'); // your JWT auth middleware
-const db = require('../db'); // your PostgreSQL pool or db setup
-
 const router = express.Router();
+const pool = require('../db');
 
-// GET /api/notifications - Get notifications for the current shop/vendor
-router.get('/', auth, async (req, res) => {
-  const { shop_id, role } = req.user;
-
-  console.log('[Notifications] Authenticated user:', req.user);
-
-  // Only allow vendors with a shop_id to access notifications
-  if (role !== 'vendor' || !shop_id) {
-    return res.status(403).json({ error: 'Only vendor accounts can access notifications' });
-  }
-
+// GET /api/shops/:slug
+router.get('/:slug', async (req, res) => {
+  const { slug } = req.params;
   try {
-    const result = await db.query(
-      'SELECT id, message, is_read, created_at FROM notifications WHERE shop_id = $1 ORDER BY created_at DESC',
-      [shop_id]
+    const result = await pool.query(
+      'SELECT * FROM shops WHERE LOWER(slug) = LOWER($1)',
+      [slug]
     );
-    res.json(result.rows);
+    const shop = result.rows[0];
+    if (!shop) return res.status(404).json({ error: 'Shop not found' });
+    res.json(shop);
   } catch (err) {
-    console.error('Error fetching notifications:', err.message);
-    res.status(500).json({ error: 'Failed to fetch notifications' });
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
   }
 });
+
+
 
 module.exports = router;
