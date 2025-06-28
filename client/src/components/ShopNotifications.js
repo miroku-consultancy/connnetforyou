@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 const ShopNotifications = () => {
   const [notifications, setNotifications] = useState([]);
   const [error, setError] = useState(null);
-
+const API_BASE = 'https://connnet4you-server.onrender.com'; // Or use an environment variable
   useEffect(() => {
     const fetchNotifications = async () => {
       const token = localStorage.getItem('authToken');
@@ -13,7 +13,7 @@ const ShopNotifications = () => {
       }
 
       try {
-        const response = await fetch('/api/notifications', {
+          const response = await fetch(`${API_BASE}/api/notifications`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
