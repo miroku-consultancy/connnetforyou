@@ -4,12 +4,13 @@ const db = require('../db');
 
 const router = express.Router();
 
-// GET /api/notifications - Get notifications for the current shop
+// GET /api/notifications - Get notifications for the current shop/vendor
 router.get('/', auth, async (req, res) => {
   const { shop_id, role } = req.user;
 
-  console.log('[Notifications] Authenticated user:', req.user); // For debugging
+  console.log('[Notifications] Authenticated user:', req.user);
 
+  // Adjust this role check to whatever role your app uses for vendors/shops
   if (role !== 'vendor' || !shop_id) {
     return res.status(403).json({ error: 'Only vendor accounts can access notifications' });
   }

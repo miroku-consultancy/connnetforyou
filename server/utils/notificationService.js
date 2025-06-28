@@ -1,17 +1,29 @@
-const db = require('../db'); // Adjust based on your actual DB setup
+useEffect(() => {
+  const fetchNotifications = async () => {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      console.warn('No auth token found. User may not be logged in.');
+      return;
+    }
 
-async function sendShopNotification({ shopId, message }) {
-  try {
-    await db.query(
-      'INSERT INTO notifications (shop_id, message) VALUES ($1, $2)',
-      [shopId, message]
-    );
-    console.log(`[Notification] Sent to shop ${shopId}`);
-  } catch (err) {
-    console.error('[Notification Error]:', err);
-  }
-}
+    try {
+      const response = await fetch('/api/notifications', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-module.exports = {
-  sendShopNotification
-};
+      if (!response.ok) {
+        const text = await response.text();
+        console.error('Fetch failed:', text);
+        throw new Error(`Failed to fetch notifications: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setNotifications(data);
+    } catch (err) {
+      console.error('Notification fetch error:', err.message);
+      setError('Failed to load notifications');
+    }
+  };
+
+  fetchNotifications();
+}, []);
