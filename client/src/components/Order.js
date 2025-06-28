@@ -3,6 +3,7 @@ import { useCart } from './CartContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useUser } from './UserContext';
 import AddressPopup from './AddressPopup';
+import ShopNotifications from './ShopNotifications';  // adjust path as needed
 import './Order.css';
 
 const API_BASE_URL = 'https://connnet4you-server.onrender.com';
@@ -13,6 +14,7 @@ const Order = () => {
   const navigate = useNavigate();
   const { user } = useUser();
   const { shopSlug: paramShopSlug } = useParams();
+  const [refreshNotifications, setRefreshNotifications] = useState(0);
 
   const [showAddressPopup, setShowAddressPopup] = useState(false);
   const [addresses, setAddresses] = useState([]);
@@ -136,6 +138,9 @@ const Order = () => {
       if (!response.ok) throw new Error('Failed to place order');
       const result = await response.json();
 
+      // Refresh notifications on successful order
+      setRefreshNotifications((prev) => prev + 1);
+
       const fullOrder = { ...orderData, orderId: result.orderId };
       localStorage.setItem('orderSummary', JSON.stringify(fullOrder));
 
@@ -162,6 +167,9 @@ const Order = () => {
   return (
     <div className="order-page">
       <h1>🧺 Your Cart</h1>
+
+      <ShopNotifications refreshSignal={refreshNotifications} />
+
       <div className="order-list">
         {items.map((item) => (
           <div key={item.id} className="order-row">
