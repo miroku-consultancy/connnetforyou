@@ -14,6 +14,9 @@ import Header from './components/Header';
 import AddressPopup from './components/AddressPopup';
 import AddProduct from './components/AddProduct';
 import { ToastContainer } from 'react-toastify';
+import QrLoginPage from './components/QrLoginPage';
+import ShopQRCodes from './components/ShopQRCodes';
+
 
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
@@ -34,6 +37,8 @@ const App = () => (
             <Route path="/:shopSlug/order-history" element={<OrderHistory />} />
             <Route path="/:shopSlug/address" element={<AddressPopup />} />
             <Route path="/:shopSlug/admin/add-product" element={<AddProduct />} />
+            <Route path="/qr-login" element={<QrLoginPage />} />
+            <Route path="/qr-codes" element={<ShopQRCodes />} />
           </Routes>
         </main>
         <Cart />
