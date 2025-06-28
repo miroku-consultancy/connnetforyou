@@ -2,6 +2,7 @@ import React from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { CartProvider } from './components/CartContext';
 import { UserProvider } from './components/UserContext';
+
 import EmailTokenLogin from './components/EmailTokenLogin';
 import Order from './components/Order';
 import Payment from './components/Payment';
@@ -13,10 +14,12 @@ import Cart from './components/Cart';
 import Header from './components/Header';
 import AddressPopup from './components/AddressPopup';
 import AddProduct from './components/AddProduct';
-import { ToastContainer } from 'react-toastify';
 import QrLoginPage from './components/QrLoginPage';
 import ShopQRCodes from './components/ShopQRCodes';
+import ShopDashboard from './components/ShopDashboard'; // NEW: Shop owner dashboard
+import ShopOrderHistory from './components/ShopOrderHistory'; // NEW: Shop orders history page
 
+import { ToastContainer } from 'react-toastify';
 
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
@@ -37,12 +40,24 @@ const App = () => (
             <Route path="/:shopSlug/order-history" element={<OrderHistory />} />
             <Route path="/:shopSlug/address" element={<AddressPopup />} />
             <Route path="/:shopSlug/admin/add-product" element={<AddProduct />} />
+            <Route path="/:shopSlug/admin/dashboard" element={<ProtectedRoute><ShopDashboard /></ProtectedRoute>} /> {/* Shop dashboard */}
+            <Route
+              path="/:shopSlug/shop-orders"
+              element={
+                <ProtectedRoute>
+                  <ShopOrderHistory />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/qr-login" element={<QrLoginPage />} />
             <Route path="/qr-codes" element={<ShopQRCodes />} />
           </Routes>
         </main>
+
         <Cart />
-        <footer><p>&copy; 2024 Connect4U. All rights reserved.</p></footer>
+        <footer>
+          <p>&copy; 2024 Connect4U. All rights reserved.</p>
+        </footer>
 
         <ToastContainer
           position="top-right"

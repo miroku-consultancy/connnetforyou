@@ -12,8 +12,10 @@ const productRoutes = require('./routes/productRoutes');
 const addressRoutes = require('./routes/addressRoutes');
 const stripeRoutes = require('./routes/stripe');
 const shopRoutes = require('./routes/shopRoutes');
+const notificationRoute = require('./routes/notificationRoute');
 
-const app = express();
+const app = express();  // <-- Initialize app here
+
 const PORT = process.env.PORT || 5000;
 
 // Create images folder if missing
@@ -29,6 +31,7 @@ const allowedOrigins = [
   'https://connectfree4u.com',
   'https://www.connectfree4u.com',
 ];
+
 app.use(cors({
   origin: (origin, cb) => {
     if (!origin || allowedOrigins.includes(origin)) cb(null, true);
@@ -38,12 +41,7 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// PostgreSQL connection
-pool.connect()
-  .then(() => console.log('✅ Connected to PostgreSQL database'))
-  .catch(err => console.error('❌ DB connection error:', err));
-
-// API routes
+// Register routes here AFTER app initialization
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
@@ -51,17 +49,17 @@ app.use('/api/products', productRoutes);
 app.use('/api/address', addressRoutes);
 app.use('/api/stripe', stripeRoutes);
 app.use('/api/shops', shopRoutes);
+app.use('/api/notifications', notificationRoute);  // Moved here
 
 // Static assets
 app.use('/images', express.static(imagesDir));
 app.use(express.static(path.join(__dirname, 'build')));
 
-// This regex route ensures ALL URLs (not just shallow ones) return index.html:
+// This regex route ensures ALL URLs return index.html:
 app.get(/.*/, (req, res) => {
   console.log('✅ Express serving:', req.originalUrl);
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
-
 
 // Error handler
 app.use((err, req, res, next) => {
@@ -71,6 +69,11 @@ app.use((err, req, res, next) => {
   }
   res.status(500).json({ error: 'Server error', message: err.message });
 });
+
+// PostgreSQL connection
+pool.connect()
+  .then(() => console.log('✅ Connected to PostgreSQL database'))
+  .catch(err => console.error('❌ DB connection error:', err));
 
 // Start server
 app.listen(PORT, () => {

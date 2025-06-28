@@ -543,3 +543,17 @@ body {
 .add-product-btn:hover {
   background-color: #218838;
 }
+.shop-orders-bt {
+  background-color: #28a745;      /* Green background */
+  color: white;                  /* White text */
+  border: none;                  /* No border */
+  padding: 10px 20px;            /* Some padding */
+  border-radius: 5px;            /* Rounded corners */
+  font-size: 16px;               /* Readable text size */
+  cursor: pointer;               /* Pointer cursor on hover */
+  transition: background-color 0.3s ease;
+}
+
+.shop-orders-bt:hover {
+  background-color: #218838;     /* Darker green on hover */
+}

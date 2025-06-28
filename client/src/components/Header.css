@@ -201,3 +201,7 @@
     width: 100%;
   }
 }
+.dashboard-link {
+  font-weight: bold;
+  color: #2196f3;
+}
