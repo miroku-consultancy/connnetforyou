@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUser } from './UserContext'; // your user context hook
+import { useUser } from './UserContext';
 
 const API_BASE = 'https://connnet4you-server.onrender.com';
 
@@ -12,40 +12,44 @@ const ShopNotifications = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (loadingUser) return; // wait for user info
-
-    if (!user || !user.shop_id) {
-      // No user or shop_id, redirect to home or login page
-      navigate('/');
-      return;
-    }
+    if (loadingUser) return;
 
     const token = localStorage.getItem('authToken');
-    if (!token) {
+    if (!token || !user || !user.shop_id) {
+      console.warn('No valid user or token. Redirecting...');
       navigate('/');
       return;
     }
 
-    // Fetch past notifications
     const fetchInitialNotifications = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/notifications/history`, {
-          headers: { Authorization: `Bearer ${token}` },
+        const response = await fetch(`${API_BASE}/api/notifications/history`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
 
-        if (!res.ok) {
-          if (res.status === 401 || res.status === 403) {
+        const text = await response.text(); // get raw text
+        console.log('🔍 Notification history response text:', text);
+
+        if (!response.ok) {
+          if (response.status === 401 || response.status === 403) {
             localStorage.removeItem('authToken');
             navigate('/');
             return;
           }
-          throw new Error(`Failed to fetch notifications: ${res.statusText}`);
+          throw new Error(`Failed to fetch: ${response.statusText}`);
         }
 
-        const data = await res.json();
-        setNotifications(data);
+        try {
+          const data = JSON.parse(text);
+          setNotifications(data);
+        } catch (parseError) {
+          console.error('❌ JSON parse error:', parseError.message);
+          throw new Error('Invalid JSON received from server');
+        }
       } catch (err) {
-        console.error('Failed to load notifications:', err);
+        console.error('⚠️ Notification fetch error:', err.message);
         setError('Failed to load notifications');
       } finally {
         setLoading(false);
@@ -54,18 +58,23 @@ const ShopNotifications = () => {
 
     fetchInitialNotifications();
 
-    // Open SSE connection, pass token and shop_id as query params
-    const eventSource = new EventSource(`${API_BASE}/api/notifications/stream?token=${token}`);
+    // Open SSE stream with token
+    const sseUrl = `${API_BASE}/api/notifications/stream?token=${token}`;
+    const eventSource = new EventSource(sseUrl);
 
     eventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      setNotifications((prev) => [data, ...prev]);
+      try {
+        const data = JSON.parse(event.data);
+        setNotifications((prev) => [data, ...prev]);
+      } catch (err) {
+        console.error('❌ Error parsing SSE message:', err.message);
+      }
     };
 
     eventSource.onerror = (err) => {
-      console.error('SSE connection error:', err);
+      console.error('📡 SSE connection error:', err);
       eventSource.close();
-      setError('Lost connection to live notifications');
+      setError('Connection to live notifications lost');
     };
 
     return () => {
