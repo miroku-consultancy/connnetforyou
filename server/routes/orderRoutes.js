@@ -1,13 +1,19 @@
 const express = require('express');
-const { createOrder, getOrdersByUser, getOrdersByShop } = require('../models/orderModel');
+const {
+  createOrder,
+  getOrdersByUser,
+  getOrdersByShop
+} = require('../models/orderModel');
+
 const authMiddleware = require('../middleware/authMiddleware');
 const { sendShopNotification } = require('../utils/notificationService');
+const { sendToClients } = require('./notificationSse'); // SSE handler
 
 const router = express.Router();
 
 console.log('[OrderRoute] Loaded');
 
-// Middleware for logging each request to this router
+// Middleware for logging each request
 router.use((req, res, next) => {
   console.log(`[OrderRoute] ${req.method} ${req.originalUrl}`);
   next();
@@ -23,7 +29,13 @@ router.post('/', authMiddleware, async (req, res) => {
   const userId = req.user.id;
 
   console.log(`[OrderRoute] User ID: ${userId}`);
-  console.log('[OrderRoute] Order Data:', { items, total, address, paymentMethod, orderDate });
+  console.log('[OrderRoute] Order Data:', {
+    items,
+    total,
+    address,
+    paymentMethod,
+    orderDate
+  });
 
   try {
     const orderId = await createOrder({
@@ -37,17 +49,23 @@ router.post('/', authMiddleware, async (req, res) => {
 
     console.log(`[OrderRoute] Order created with ID: ${orderId}`);
 
-    // Notify all unique shop IDs involved in this order
+    // Notify all unique shops involved in the order
     const shopIds = [...new Set(items.map(item => item.shopId ?? item.shop_id).filter(Boolean))];
     console.log('[OrderRoute] Unique shop IDs for notification:', shopIds);
 
     for (const shopId of shopIds) {
+      const message = `You have received a new order (ID: ${orderId}).`;
+
       console.log(`[OrderRoute] Sending notification to shop ${shopId}`);
-      await sendShopNotification({
-        shopId,
-        message: `You have received a new order (ID: ${orderId}).`
+      await sendShopNotification({ shopId, message });
+
+      // Send via SSE to connected clients (if any)
+      sendToClients(shopId, {
+        id: Date.now(), // temp ID if DB one isn't available
+        message: `You have received a new order (ID: ${orderId}).`,
+        created_at: new Date().toISOString(),
+        is_read: false,
       });
-      console.log(`[OrderRoute] Notification sent to shop ${shopId}`);
     }
 
     res.status(201).json({ message: 'Order placed successfully', orderId });

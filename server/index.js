@@ -12,7 +12,9 @@ const productRoutes = require('./routes/productRoutes');
 const addressRoutes = require('./routes/addressRoutes');
 const stripeRoutes = require('./routes/stripe');
 const shopRoutes = require('./routes/shopRoutes');
-const notificationRoutes = require('./routes/notificationRoutes');
+//const notificationRoutes = require('./routes/notificationRoutes');
+const { sseRouter } = require('./routes/notificationSse');
+
 
 const app = express();  // <-- Initialize app here
 
@@ -49,8 +51,8 @@ app.use('/api/products', productRoutes);
 app.use('/api/address', addressRoutes);
 app.use('/api/stripe', stripeRoutes);
 app.use('/api/shops', shopRoutes);
-app.use('/api/notifications', notificationRoutes);  // Moved here
-
+//app.use('/api/notifications', notificationRoutes);  // Moved here
+app.use('/api/notifications', sseRouter);
 // Static assets
 app.use('/images', express.static(imagesDir));
 app.use(express.static(path.join(__dirname, 'build')));
