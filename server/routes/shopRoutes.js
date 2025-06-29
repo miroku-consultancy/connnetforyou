@@ -12,6 +12,7 @@ router.get('/vendor', async (req, res) => {
 
     const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
+    console.log('Decoded JWT:', decoded);
 
     if (decoded.role !== 'vendor') {
       return res.status(403).json({ error: 'Unauthorized vendor access' });
@@ -19,7 +20,10 @@ router.get('/vendor', async (req, res) => {
 
     const shopId = decoded.shop_id;
 
+    console.log('Fetching shop for shopId:', shopId);
     const result = await pool.query('SELECT * FROM shops WHERE id = $1', [shopId]);
+    console.log('DB result rows:', result.rows);
+
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Shop not found' });
