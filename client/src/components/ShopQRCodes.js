@@ -5,7 +5,8 @@ const shops = [
   "Kanji-Sweets",
   "SanjayVegStore",
   "Ganga-Medical-hall",
-  "ALNazeerMuradabadiChickenBIryani"
+  "ALNazeerMuradabadiChickenBIryani",
+  "Janta7DaysChineseFastFood"
 ];
 
 const baseUrl = "https://www.connectfree4u.com/#/";
