@@ -2,18 +2,19 @@ const express = require('express');
 const {
   createOrder,
   getOrdersByUser,
-  getOrdersByShop
+  getOrdersByShop,
 } = require('../models/orderModel');
 
 const authMiddleware = require('../middleware/authMiddleware');
 const { sendShopNotification } = require('../utils/notificationService');
 const { sendToClients } = require('./notificationSse'); // SSE handler
+const pool = require('../db');
 
 const router = express.Router();
 
 console.log('[OrderRoute] Loaded');
 
-// Middleware for logging each request
+// Logging middleware
 router.use((req, res, next) => {
   console.log(`[OrderRoute] ${req.method} ${req.originalUrl}`);
   next();
@@ -28,15 +29,6 @@ router.post('/', authMiddleware, async (req, res) => {
   const { items, total, address, paymentMethod, orderDate } = req.body;
   const userId = req.user.id;
 
-  console.log(`[OrderRoute] User ID: ${userId}`);
-  console.log('[OrderRoute] Order Data:', {
-    items,
-    total,
-    address,
-    paymentMethod,
-    orderDate
-  });
-
   try {
     const orderId = await createOrder({
       items,
@@ -44,27 +36,37 @@ router.post('/', authMiddleware, async (req, res) => {
       address,
       paymentMethod,
       orderDate,
-      userId
+      userId,
     });
 
     console.log(`[OrderRoute] Order created with ID: ${orderId}`);
 
-    // Notify all unique shops involved in the order
+    // Get user name from DB
+    const userResult = await pool.query('SELECT name FROM users WHERE id = $1', [userId]);
+    const userName = userResult.rows[0]?.name || 'A user';
+
+    // Format address string for message
+    const addressText = typeof address === 'string'
+      ? address
+      : address?.street || address?.line1 || address?.address || '';
+
+    // Notify all unique shops involved
     const shopIds = [...new Set(items.map(item => item.shopId ?? item.shop_id).filter(Boolean))];
-    console.log('[OrderRoute] Unique shop IDs for notification:', shopIds);
 
     for (const shopId of shopIds) {
-      const message = `You have received a new order (ID: ${orderId}).`;
+      const message = `${userName} has placed an order${addressText ? ` at ${addressText}` : ''}.`;
 
-      console.log(`[OrderRoute] Sending notification to shop ${shopId}`);
+      // Save in DB
       await sendShopNotification({ shopId, message });
 
-      // Send via SSE to connected clients (if any)
+      // Real-time push via SSE
       sendToClients(shopId, {
-        id: Date.now(), // temp ID if DB one isn't available
-        message: `You have received a new order (ID: ${orderId}).`,
+        id: Date.now(),
+        message,
         created_at: new Date().toISOString(),
         is_read: false,
+        user_name: userName,
+        address: addressText,
       });
     }
 
@@ -76,43 +78,36 @@ router.post('/', authMiddleware, async (req, res) => {
 });
 
 /**
- * GET /api/orders/user – Get orders placed by the current user
+ * GET /api/orders/user – Orders by logged-in user
  */
 router.get('/user', authMiddleware, async (req, res) => {
   const userId = req.user.id;
-  console.log(`[OrderRoute] GET /api/orders/user called by user ${userId}`);
 
   try {
     const orders = await getOrdersByUser(userId);
-    console.log(`[OrderRoute] Retrieved ${orders.length} orders for user ${userId}`);
     res.json(orders);
   } catch (err) {
-    console.error('[OrderRoute] Failed to fetch order history:', err);
+    console.error('[OrderRoute] Fetch user orders error:', err);
     res.status(500).json({ error: 'Could not fetch order history' });
   }
 });
 
 /**
- * GET /api/orders/shop/:shopId – Get orders for a specific shop (vendor only)
+ * GET /api/orders/shop/:shopId – Orders for a specific shop (vendor only)
  */
 router.get('/shop/:shopId', authMiddleware, async (req, res) => {
   const { shopId } = req.params;
   const user = req.user;
 
-  console.log(`[OrderRoute] GET /api/orders/shop/${shopId} called by user ID: ${user.id}`);
-
   try {
-    // Only vendors who own this shop can access
     if (user.role !== 'vendor' || user.shop_id !== parseInt(shopId)) {
-      console.warn(`[OrderRoute] Access denied for user ${user.id} to shop ${shopId}`);
       return res.status(403).json({ error: 'Access denied' });
     }
 
     const orders = await getOrdersByShop(shopId);
-    console.log(`[OrderRoute] Retrieved ${orders.length} orders for shop ${shopId}`);
     res.json(orders);
   } catch (err) {
-    console.error('[OrderRoute] Error fetching shop orders:', err);
+    console.error('[OrderRoute] Fetch shop orders error:', err);
     res.status(500).json({ error: 'Failed to fetch shop orders' });
   }
 });
