@@ -51,7 +51,7 @@ const Product = () => {
     'Sweets',
     'Snacks',
     'Biryani',
-    'Fastfood'
+    'fastfood'
   ];
 
   const resolveImageUrl = (image) => {
