@@ -71,8 +71,10 @@ const ShopNotifications = () => {
         setNotifications((prev) => [data, ...prev]);
 
         const userName = data.user_name || 'A user';
-        const address = data.address ? ` at ${data.address}` : '';
-        const message = `${userName} has placed an order${address}.`;
+        const address = data.address || '';
+        const phone = data.phone || '';
+        const message = `${userName} placed an order at ${address}${phone ? ` (📞 ${phone})` : ''}.`;
+
 
         if (Notification.permission === 'granted') {
           const notification = new Notification('🛒 New Order Received', {
