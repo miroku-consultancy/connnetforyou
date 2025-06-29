@@ -18,6 +18,7 @@ import QrLoginPage from './components/QrLoginPage';
 import ShopQRCodes from './components/ShopQRCodes';
 import ShopDashboard from './components/ShopDashboard'; // NEW: Shop owner dashboard
 import ShopOrderHistory from './components/ShopOrderHistory'; // NEW: Shop orders history page
+import VendorDashboard from './components/VendorDashboard';
 
 import { ToastContainer } from 'react-toastify';
 
