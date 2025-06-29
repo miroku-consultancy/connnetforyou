@@ -4,23 +4,6 @@ const pool = require('../db');
 
 const router = express.Router();
 
-// Existing: GET shop by slug
-router.get('/:slug', async (req, res) => {
-  const { slug } = req.params;
-  try {
-    const result = await pool.query(
-      'SELECT * FROM shops WHERE LOWER(slug) = LOWER($1)',
-      [slug]
-    );
-    const shop = result.rows[0];
-    if (!shop) return res.status(404).json({ error: 'Shop not found' });
-    res.json(shop);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
 // ✅ NEW: GET /api/shops/vendor
 router.get('/vendor', async (req, res) => {
   try {
@@ -48,5 +31,24 @@ router.get('/vendor', async (req, res) => {
     res.status(500).json({ error: 'Server error', message: err.message });
   }
 });
+
+// Existing: GET shop by slug
+router.get('/:slug', async (req, res) => {
+  const { slug } = req.params;
+  try {
+    const result = await pool.query(
+      'SELECT * FROM shops WHERE LOWER(slug) = LOWER($1)',
+      [slug]
+    );
+    const shop = result.rows[0];
+    if (!shop) return res.status(404).json({ error: 'Shop not found' });
+    res.json(shop);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+
 
 module.exports = router;
