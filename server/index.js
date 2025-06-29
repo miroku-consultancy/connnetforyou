@@ -12,8 +12,8 @@ const productRoutes = require('./routes/productRoutes');
 const addressRoutes = require('./routes/addressRoutes');
 const stripeRoutes = require('./routes/stripe');
 const shopRoutes = require('./routes/shopRoutes');
-// const notificationRoutes = require('./routes/notificationRoutes'); // Commented out, replaced by SSE router
 const { sseRouter } = require('./routes/notificationSse');
+const notificationRoutes = require('./routes/notificationRoutes'); // ✅ ADD THIS
 
 const app = express();
 
@@ -53,8 +53,10 @@ app.use('/api/products', productRoutes);
 app.use('/api/address', addressRoutes);
 app.use('/api/stripe', stripeRoutes);
 app.use('/api/shops', shopRoutes);
-// Use SSE router for notifications (handles both history and live stream)
-app.use('/api/notifications', sseRouter);
+
+// Use both SSE and normal notifications
+app.use('/api/notifications', notificationRoutes); // ✅ Handles GET /api/notifications
+app.use('/api/notifications', sseRouter);          // ✅ Handles /api/notifications/stream
 
 // Serve static assets (images and frontend build)
 app.use('/images', express.static(imagesDir));
