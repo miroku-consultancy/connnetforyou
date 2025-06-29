@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import { useCart } from './CartContext';
 import { useUser } from './UserContext';
-import ShopNotifications from './ShopNotifications';
 import './OrderSummary.css';
 
 const OrderSummary = () => {
@@ -98,14 +97,6 @@ const OrderSummary = () => {
       <button className="go-to-products-btn" onClick={handleGoToProducts}>
         🛒 Go to Products
       </button>
-
-      {/* Show notifications only for vendors */}
-      {user?.role === 'vendor' && (
-        <div style={{ marginTop: '2rem' }}>
-          <h2>📢 Notifications</h2>
-          <ShopNotifications />
-        </div>
-      )}
     </div>
   );
 };

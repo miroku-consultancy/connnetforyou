@@ -41,6 +41,7 @@ const App = () => (
             <Route path="/:shopSlug/address" element={<AddressPopup />} />
             <Route path="/:shopSlug/admin/add-product" element={<AddProduct />} />
             <Route path="/:shopSlug/admin/dashboard" element={<ProtectedRoute><ShopDashboard /></ProtectedRoute>} /> {/* Shop dashboard */}
+            <Route path="/vendor/dashboard" element={<VendorDashboard />} />
             <Route
               path="/:shopSlug/shop-orders"
               element={

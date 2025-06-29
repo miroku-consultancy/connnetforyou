@@ -12,21 +12,21 @@ const productRoutes = require('./routes/productRoutes');
 const addressRoutes = require('./routes/addressRoutes');
 const stripeRoutes = require('./routes/stripe');
 const shopRoutes = require('./routes/shopRoutes');
-//const notificationRoutes = require('./routes/notificationRoutes');
+// const notificationRoutes = require('./routes/notificationRoutes'); // Commented out, replaced by SSE router
 const { sseRouter } = require('./routes/notificationSse');
 
-
-const app = express();  // <-- Initialize app here
+const app = express();
 
 const PORT = process.env.PORT || 5000;
 
-// Create images folder if missing
+// Ensure /images directory exists
 const imagesDir = path.join(__dirname, 'images');
 if (!fs.existsSync(imagesDir)) {
   fs.mkdirSync(imagesDir);
   console.log('📁 Created /images directory');
 }
 
+// Allowed origins for CORS
 const allowedOrigins = [
   'http://localhost:3000',
   'https://connect4u-client.onrender.com',
@@ -34,16 +34,18 @@ const allowedOrigins = [
   'https://www.connectfree4u.com',
 ];
 
+// Configure CORS middleware
 app.use(cors({
-  origin: (origin, cb) => {
-    if (!origin || allowedOrigins.includes(origin)) cb(null, true);
-    else cb(new Error('Not allowed by CORS'));
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) callback(null, true);
+    else callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
 }));
+
 app.use(express.json());
 
-// Register routes here AFTER app initialization
+// Register API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
@@ -51,33 +53,36 @@ app.use('/api/products', productRoutes);
 app.use('/api/address', addressRoutes);
 app.use('/api/stripe', stripeRoutes);
 app.use('/api/shops', shopRoutes);
-//app.use('/api/notifications', notificationRoutes);  // Moved here
+// Use SSE router for notifications (handles both history and live stream)
 app.use('/api/notifications', sseRouter);
-// Static assets
+
+// Serve static assets (images and frontend build)
 app.use('/images', express.static(imagesDir));
 app.use(express.static(path.join(__dirname, 'build')));
 
-// This regex route ensures ALL URLs return index.html:
+// Send index.html for all other routes (React Router support)
 app.get(/.*/, (req, res) => {
   console.log('✅ Express serving:', req.originalUrl);
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
 
-// Error handler
+// Error handler middleware
 app.use((err, req, res, next) => {
   console.error(err.stack || err);
-  if (err.message.includes('CORS')) {
+  if (err.message && err.message.includes('CORS')) {
     return res.status(403).json({ error: 'CORS error', message: err.message });
   }
   res.status(500).json({ error: 'Server error', message: err.message });
 });
 
-// PostgreSQL connection
+// Connect to PostgreSQL database and start the server
 pool.connect()
-  .then(() => console.log('✅ Connected to PostgreSQL database'))
-  .catch(err => console.error('❌ DB connection error:', err));
-
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+  .then(() => {
+    console.log('✅ Connected to PostgreSQL database');
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+    });
+  })
+  .catch(err => {
+    console.error('❌ DB connection error:', err);
+  });

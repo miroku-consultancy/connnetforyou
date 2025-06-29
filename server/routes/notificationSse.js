@@ -6,6 +6,11 @@ const sseRouter = express.Router();
 
 const clients = new Map();
 
+/**
+ * Broadcast notification data to all SSE subscribers for a given shop.
+ * @param {string|number} shopId
+ * @param {object} data Notification object to send
+ */
 function sendToClients(shopId, data) {
   const subscribers = clients.get(shopId);
   if (subscribers) {
@@ -14,7 +19,7 @@ function sendToClients(shopId, data) {
   }
 }
 
-// Replace your old /stream route with this:
+// SSE stream endpoint for real-time notifications
 sseRouter.get('/stream', (req, res) => {
   const token = req.query.token;
   if (!token) {
@@ -23,7 +28,7 @@ sseRouter.get('/stream', (req, res) => {
 
   let decoded;
   try {
-    // Replace 'your_jwt_secret' with your actual JWT secret or env var
+    // Use your JWT secret from env or fallback
     decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
   } catch (err) {
     console.error('JWT verification failed:', err.message);
@@ -36,23 +41,23 @@ sseRouter.get('/stream', (req, res) => {
     return res.status(403).end('Forbidden: Not a vendor or missing shop_id');
   }
 
-  // Setup SSE headers
+  // Setup SSE headers to keep connection alive
   res.writeHead(200, {
     Connection: 'keep-alive',
     'Cache-Control': 'no-cache',
     'Content-Type': 'text/event-stream',
   });
 
-  // Optional initial comment to keep connection alive
+  // Initial comment to establish connection
   res.write(`: connected\n\n`);
 
-  // Register client for this shop
+  // Register this client for the shop's SSE subscribers
   if (!clients.has(shop_id)) clients.set(shop_id, []);
   clients.get(shop_id).push(res);
 
   console.log(`📡 Shop ${shop_id} connected to SSE`);
 
-  // Remove client on disconnect
+  // Clean up when client disconnects
   req.on('close', () => {
     const updatedClients = (clients.get(shop_id) || []).filter(r => r !== res);
     clients.set(shop_id, updatedClients);

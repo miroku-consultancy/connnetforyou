@@ -23,7 +23,7 @@ const ShopNotifications = () => {
 
     const fetchInitialNotifications = async () => {
       try {
-        const response = await fetch(`${API_BASE}/api/notifications/history`, {
+        const response = await fetch(`${API_BASE}/api/notifications`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
