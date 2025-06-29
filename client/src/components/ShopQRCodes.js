@@ -4,7 +4,8 @@ import { QRCodeCanvas } from 'qrcode.react';
 const shops = [
   "Kanji-Sweets",
   "SanjayVegStore",
-  "Ganga-Medical-hall"
+  "Ganga-Medical-hall",
+  "AlNazeerStore"
 ];
 
 const baseUrl = "https://www.connectfree4u.com/#/";
