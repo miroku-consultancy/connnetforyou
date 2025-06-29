@@ -7,14 +7,14 @@ const {
 
 const authMiddleware = require('../middleware/authMiddleware');
 const { sendShopNotification } = require('../utils/notificationService');
-const { sendToClients } = require('./notificationSse');
+const { sendToClients } = require('./notificationSse'); // SSE handler
 const pool = require('../db');
 
 const router = express.Router();
 
 console.log('[OrderRoute] Loaded');
 
-// Middleware to log each request
+// Logging middleware
 router.use((req, res, next) => {
   console.log(`[OrderRoute] ${req.method} ${req.originalUrl}`);
   next();
@@ -41,44 +41,32 @@ router.post('/', authMiddleware, async (req, res) => {
 
     console.log(`[OrderRoute] Order created with ID: ${orderId}`);
 
-    // Get user name and phone from DB
-    const userResult = await pool.query(
-      'SELECT name, phone FROM users WHERE id = $1',
-      [userId]
-    );
-
+    // Get user name from DB
+    const userResult = await pool.query('SELECT name FROM users WHERE id = $1', [userId]);
     const userName = userResult.rows[0]?.name || 'A user';
-    const userPhone = userResult.rows[0]?.phone || '';
 
-    // Format address (city, zip, etc.)
-    const addressParts = [
-      address?.street || address?.line1 || '',
-      address?.city,
-      address?.zip,
-      address?.state,
-    ].filter(Boolean);
+    // Format address string for message
+    const addressText = typeof address === 'string'
+      ? address
+      : address?.street || address?.line1 || address?.address || '';
 
-    const addressText = addressParts.join(', ');
-
-    // Unique shop IDs involved in the order
+    // Notify all unique shops involved
     const shopIds = [...new Set(items.map(item => item.shopId ?? item.shop_id).filter(Boolean))];
 
     for (const shopId of shopIds) {
-      // Message with user details
-      const message = `${userName} placed a new order (ID: ${orderId}) at ${addressText}${userPhone ? ` (📞 ${userPhone})` : ''}.`;
+      const message = `${userName} has placed an order${addressText ? ` at ${addressText}` : ''}.`;
 
-      // Save notification in DB
+      // Save in DB
       await sendShopNotification({ shopId, message });
 
-      // Push real-time notification via SSE
+      // Real-time push via SSE
       sendToClients(shopId, {
-        id: Date.now(), // Temporary ID
+        id: Date.now(),
         message,
         created_at: new Date().toISOString(),
         is_read: false,
         user_name: userName,
         address: addressText,
-        phone: userPhone,
       });
     }
 
@@ -90,7 +78,7 @@ router.post('/', authMiddleware, async (req, res) => {
 });
 
 /**
- * GET /api/orders/user – Orders placed by current user
+ * GET /api/orders/user – Orders by logged-in user
  */
 router.get('/user', authMiddleware, async (req, res) => {
   const userId = req.user.id;
