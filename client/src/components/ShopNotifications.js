@@ -59,6 +59,15 @@ const ShopNotifications = () => {
 
     fetchInitialNotifications();
 
+    // Request permission for browser notifications if not already granted or denied
+    if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+      Notification.requestPermission().then(permission => {
+        if (permission === 'granted') {
+          console.log('Browser notifications permission granted');
+        }
+      });
+    }
+
     // SSE connection
     const sseUrl = `${API_BASE}/api/notifications/stream?token=${token}`;
     const eventSource = new EventSource(sseUrl);
@@ -67,6 +76,14 @@ const ShopNotifications = () => {
       try {
         const data = JSON.parse(event.data);
         setNotifications((prev) => [data, ...prev]);
+
+        // Show browser notification if permission granted
+        if (Notification.permission === 'granted') {
+          new Notification('New Notification', {
+            body: data.message,
+            icon: '/favicon.ico', // optional icon path
+          });
+        }
       } catch (err) {
         console.error('❌ Error parsing SSE message:', err.message);
       }
