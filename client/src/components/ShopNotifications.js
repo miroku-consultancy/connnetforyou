@@ -1,3 +1,4 @@
+// ShopNotifications.js
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from './UserContext';
@@ -16,7 +17,7 @@ const ShopNotifications = () => {
 
     const token = localStorage.getItem('authToken');
     if (!token || !user || !user.shop_id) {
-      console.warn('No valid user or token. Redirecting...');
+      console.warn('⛔ No valid user or token. Redirecting...');
       navigate('/');
       return;
     }
@@ -29,8 +30,8 @@ const ShopNotifications = () => {
           },
         });
 
-        const text = await response.text(); // get raw text
-        console.log('🔍 Notification history response text:', text);
+        const text = await response.text();
+        console.log('🔍 Notification response:', text);
 
         if (!response.ok) {
           if (response.status === 401 || response.status === 403) {
@@ -58,7 +59,7 @@ const ShopNotifications = () => {
 
     fetchInitialNotifications();
 
-    // Open SSE stream with token
+    // SSE connection
     const sseUrl = `${API_BASE}/api/notifications/stream?token=${token}`;
     const eventSource = new EventSource(sseUrl);
 
@@ -74,7 +75,7 @@ const ShopNotifications = () => {
     eventSource.onerror = (err) => {
       console.error('📡 SSE connection error:', err);
       eventSource.close();
-      setError('Connection to live notifications lost');
+      setError('Live connection lost. Please refresh.');
     };
 
     return () => {
