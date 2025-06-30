@@ -139,28 +139,71 @@ async function getOrdersByShop(shopId) {
   try {
     const result = await pool.query(
       `SELECT 
-  o.id AS order_id,
-  o.order_date,
-  o.payment_method,
-  o.total,
-  oi.product_id,
-  oi.name,
-  oi.price,
-  oi.quantity,
-  oi.unit_type
-FROM orders o
-JOIN order_items oi ON o.id = oi.order_id
-WHERE oi.shop_id = $1
-ORDER BY o.order_date DESC
-`,
+        o.id AS order_id,
+        o.order_date,
+        o.payment_method,
+        o.total,
+        o.name AS customer_name,
+        o.phone AS customer_phone,
+        oi.product_id,
+        oi.name AS product_name,
+        oi.price,
+        oi.quantity,
+        oi.unit_type
+      FROM orders o
+      JOIN order_items oi ON o.id = oi.order_id
+      WHERE oi.shop_id = $1
+      ORDER BY o.order_date DESC, o.id`,
       [shopId]
     );
-    return result.rows;
+
+    // Group orders by order_id
+    const ordersMap = new Map();
+
+    result.rows.forEach(row => {
+      const {
+        order_id,
+        order_date,
+        payment_method,
+        total,
+        customer_name,
+        customer_phone,
+        product_id,
+        product_name,
+        price,
+        quantity,
+        unit_type
+      } = row;
+
+      if (!ordersMap.has(order_id)) {
+        ordersMap.set(order_id, {
+          id: order_id,
+          order_date,
+          payment_method,
+          total,
+          customer_name,
+          customer_phone,
+          items: [],
+        });
+      }
+
+      ordersMap.get(order_id).items.push({
+        product_id,
+        name: product_name,
+        price,
+        quantity,
+        unit_type,
+      });
+    });
+
+    return Array.from(ordersMap.values());
   } catch (err) {
     console.error('[getOrdersByShop] Error fetching shop orders:', err.message);
     throw err;
   }
 }
+
+
 
 module.exports = {
   createOrder,
