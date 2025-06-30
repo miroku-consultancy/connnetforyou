@@ -25,34 +25,16 @@ const Product = () => {
   const { cart, cartLoaded, addToCart } = useCart();
   const { user, loadingUser } = useUser();
   const navigate = useNavigate();
-
   const { shopSlug } = useParams();
 
-  // Helper function to sanitize shopSlug
+  const API_BASE_URL = 'https://connnet4you-server.onrender.com';
+
   const getSafeShopSlug = (slug) => {
     if (!slug || slug === 'undefined' || slug === 'null') return null;
     return slug;
   };
+
   const safeShopSlug = getSafeShopSlug(shopSlug);
-
-  const API_BASE_URL = 'https://connnet4you-server.onrender.com';
-
-  const SUBCATEGORIES = [
-    'Fresh Fruits',
-    'Mangoes & Melons',
-    'Plants & Gardening',
-    'Fresh Vegetables',
-    'Exotics & Premium',
-    'Leafy, Herbs & Seasonings',
-    'Organics & Hydroponics',
-    'Flowers & Leaves',
-    'Cuts & Sprouts',
-    'Dried & Dehydrated',
-    'Sweets',
-    'Snacks',
-    'Biryani',
-    'fastfood'
-  ];
 
   const resolveImageUrl = (image) => {
     if (!image) return '';
@@ -60,7 +42,6 @@ const Product = () => {
     return `${API_BASE_URL}/images/${image}`;
   };
 
-  // Redirect if invalid shopSlug
   useEffect(() => {
     if (!safeShopSlug) {
       alert('Invalid shop URL.');
@@ -68,7 +49,6 @@ const Product = () => {
     }
   }, [safeShopSlug, navigate]);
 
-  // Fetch shop info by shopSlug to get shopId
   useEffect(() => {
     const fetchShopInfo = async () => {
       if (!safeShopSlug) return;
@@ -102,16 +82,10 @@ const Product = () => {
     fetchShopInfo();
   }, [safeShopSlug, navigate]);
 
-  // Fetch products when shopId is available
   useEffect(() => {
     const fetchProducts = async () => {
       const token = localStorage.getItem('authToken');
-      if (!token) {
-        navigate('/');
-        return;
-      }
-
-      if (!shopId) return;
+      if (!token || !shopId) return;
 
       try {
         const response = await fetch(`${API_BASE_URL}/api/products?shopId=${shopId}`, {
@@ -148,9 +122,7 @@ const Product = () => {
 
       try {
         const response = await fetch(`${API_BASE_URL}/api/address`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         if (response.ok) {
@@ -240,17 +212,18 @@ const Product = () => {
     if (diff !== 0) addToCart(product, diff);
   };
 
-  const freshProducts = products.filter(
-    (p) => {
-      const category = p.category?.toLowerCase();
-      return category === 'fresh' || category === 'sweets' || category === 'snacks' || category === 'biryani' || category === 'fastfood';
-    }
-  );
+  // 💡 Dynamically group by subcategory
+  const freshProducts = products.filter((p) => !!p.subcategory);
+  const groupedProductsMap = freshProducts.reduce((acc, product) => {
+    const sub = product.subcategory || 'Uncategorized';
+    if (!acc[sub]) acc[sub] = [];
+    acc[sub].push(product);
+    return acc;
+  }, {});
 
-  const groupedProducts = SUBCATEGORIES.map((subcategory) => ({
-    subcategory,
-    items: freshProducts.filter((p) => p.subcategory === subcategory),
-  }));
+  const groupedProducts = Object.entries(groupedProductsMap)
+    .map(([subcategory, items]) => ({ subcategory, items }))
+    .sort((a, b) => a.subcategory.localeCompare(b.subcategory));
 
   if (!cartLoaded || products.length === 0) {
     return <div className="loading">Loading fresh picks...</div>;
@@ -315,24 +288,18 @@ const Product = () => {
             <button
               onClick={() => navigate(`/${safeShopSlug}/order-history`)}
               className="order-history-btn"
-              title="View your past orders"
             >
               📜 Order History
             </button>
-
-            {/* ADDED THIS BUTTON: */}
             <button
               onClick={() => navigate(`/${safeShopSlug}/shop-orders`)}
               className="shop-orders-btn"
-              title="View Shop Orders"
             >
               🛍️ Shop Orders
             </button>
-
             <button
               onClick={() => navigate(`/${safeShopSlug}/admin/add-product`)}
               className="add-product-btn"
-              title="Add a new product"
               style={{ marginLeft: '10px' }}
             >
               ➕ Add Product
@@ -341,53 +308,49 @@ const Product = () => {
         </div>
       )}
 
-      <h1 className="page-title">Explore Fresh Picks </h1>
+      <h1 className="page-title">Explore Fresh Picks</h1>
 
-      {groupedProducts.map(
-        ({ subcategory, items }, index) =>
-          items.length > 0 && (
-            <div
-              key={subcategory}
-              className={`subcategory-section ${index % 2 === 0 ? 'light-bg' : 'dark-bg'}`}
-            >
-              <h2 className="subcategory-title">{subcategory}</h2>
-              <div className="product-grid">
-                {items.map((product) => (
-                  <div key={product.id} className="product-card">
-                    <div className="image-container">
-                      <img
-                        src={resolveImageUrl(product.image)}
-                        alt={product.name}
-                        className="product-image"
-                      />
-                      <div className="qty-controls-overlay">
-                        <button
-                          className="qty-btn"
-                          onClick={() => handleQtyChange(product, -1)}
-                          disabled={(quantities[product.id] || 0) <= 0}
-                        >
-                          −
-                        </button>
-                        <span className="qty-number">
-                          {quantities[product.id] || 0}
-                        </span>
-                        <button
-                          className="qty-btn"
-                          onClick={() => handleQtyChange(product, 1)}
-                        >
-                          +
-                        </button>
-                      </div>
+      {groupedProducts.map(({ subcategory, items }, index) => (
+        items.length > 0 && (
+          <div key={subcategory} className={`subcategory-section ${index % 2 === 0 ? 'light-bg' : 'dark-bg'}`}>
+            <h2 className="subcategory-title">{subcategory}</h2>
+            <div className="product-grid">
+              {items.map((product) => (
+                <div key={product.id} className="product-card">
+                  <div className="image-container">
+                    <img
+                      src={resolveImageUrl(product.image)}
+                      alt={product.name}
+                      className="product-image"
+                    />
+                    <div className="qty-controls-overlay">
+                      <button
+                        className="qty-btn"
+                        onClick={() => handleQtyChange(product, -1)}
+                        disabled={(quantities[product.id] || 0) <= 0}
+                      >
+                        −
+                      </button>
+                      <span className="qty-number">
+                        {quantities[product.id] || 0}
+                      </span>
+                      <button
+                        className="qty-btn"
+                        onClick={() => handleQtyChange(product, 1)}
+                      >
+                        +
+                      </button>
                     </div>
-                    <h3>{product.name}</h3>
-                    <p className="product-description">{product.description}</p>
-                    <p className="product-price">₹{product.price}</p>
                   </div>
-                ))}
-              </div>
+                  <h3>{product.name}</h3>
+                  <p className="product-description">{product.description}</p>
+                  <p className="product-price">₹{product.price}</p>
+                </div>
+              ))}
             </div>
-          )
-      )}
+          </div>
+        )
+      ))}
 
       {Object.keys(cart).length > 0 && (
         <div className="floating-cart" onClick={() => setShowCartPopup(true)}>
