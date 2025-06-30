@@ -34,15 +34,20 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
 
     // Insert each item into order_items table
     for (const item of items) {
+      // Extract numeric productId and unitId from item.id string like "177-5"
+      const productId = parseInt(item.id.toString().split('-')[0], 10);
+      const unitIdStr = item.id.toString().split('-')[1];
+      const unitId = item.unit_id ?? (unitIdStr ? parseInt(unitIdStr, 10) : null);
+
       console.log('[createOrder] Inserting order item:', {
         orderId,
-        product_id: item.id,
+        productId,
         name: item.name,
         price: item.price,
         quantity: item.quantity,
         image: item.image,
         shop_id: item.shopId ?? item.shop_id,
-        unit_id: item.unit_id ?? null,
+        unit_id: unitId,
         unit_type: item.unit_type ?? null,
       });
 
@@ -53,13 +58,13 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
         [
           orderId,
-          item.id,
+          productId,
           item.name,
           item.price,
           item.quantity,
           item.image,
           item.shopId ?? item.shop_id,
-          item.unit_id ?? null,
+          unitId,
           item.unit_type ?? null,
         ]
       );
