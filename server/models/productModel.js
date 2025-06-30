@@ -9,25 +9,56 @@ const pool = new Pool({
   database: process.env.PG_DATABASE,
 });
 
-// Get all products
+// Get all products with their units
 const getAllProducts = async (shopId) => {
   console.log('🔍 getAllProducts called with shopId:', shopId);
+
   try {
-    const result = await pool.query(
+    // Fetch products by shopId
+    const productRes = await pool.query(
       'SELECT * FROM products WHERE shop_id = $1',
       [shopId]
     );
-    console.log('📦 Products fetched from DB:', result.rows);
-    return result.rows;  // Ensure you're returning rows, not res.rows
+    const products = productRes.rows;
+
+    if (products.length === 0) return [];
+
+    // Extract product IDs
+    const productIds = products.map((p) => p.id);
+
+    // Fetch units for all product IDs
+    const unitsRes = await pool.query(
+      'SELECT * FROM product_units WHERE product_id = ANY($1::int[])',
+      [productIds]
+    );
+
+    const unitMap = {};
+    unitsRes.rows.forEach((unit) => {
+      if (!unitMap[unit.product_id]) {
+        unitMap[unit.product_id] = [];
+      }
+      unitMap[unit.product_id].push({
+        id: unit.id,
+        name: unit.name,
+        price: unit.price,
+        stock: unit.stock,
+      });
+    });
+
+    // Attach units to products
+    const enrichedProducts = products.map((product) => ({
+      ...product,
+      units: unitMap[product.id] || [], // attach units or empty array
+    }));
+
+    return enrichedProducts;
   } catch (err) {
-    console.error('❌ Error fetching products from DB', err);
+    console.error('❌ Error fetching products with units from DB', err);
     throw err;
   }
 };
 
-
-
-// Get product by ID
+// Get a single product by ID
 const getProductById = async (id) => {
   try {
     const res = await pool.query('SELECT * FROM products WHERE id = $1', [id]);
@@ -38,7 +69,7 @@ const getProductById = async (id) => {
   }
 };
 
-// Add product to DB
+// Add new product to DB
 const addProduct = async ({
   name,
   description,
@@ -47,7 +78,7 @@ const addProduct = async ({
   barcode,
   category,
   subcategory,
-  image,     // Add this here
+  image,
   shop_id,
 }) => {
   try {
@@ -65,9 +96,8 @@ const addProduct = async ({
   }
 };
 
-
 module.exports = {
   getAllProducts,
   getProductById,
-  addProduct, // ✅ Make sure this is exported
+  addProduct,
 };
