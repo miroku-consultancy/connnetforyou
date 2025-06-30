@@ -76,7 +76,7 @@ const ShopQRCodes = () => {
                 e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
               }}
             >
-              <h3 style={{ marginBottom: '15px', color: '#2d3436', fontWeight: 600 }}>
+              <h3 style={{ marginBottom: '15px', color: '#2d3436', fontWeight: 600, textAlign: 'center' }}>
                 {displayName(shop)}
               </h3>
 
