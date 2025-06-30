@@ -94,14 +94,12 @@ const ShopOrderHistory = () => {
                     <div><strong>Payment:</strong> {order.payment_method}</div>
                     <div><strong>Customer:</strong> {order.customer_name} ({order.customer_phone})</div>
 
-                    {/* {order.address && (
+                    {order.address && (
                         <div>
                             <strong>Address:</strong>{' '}
-                            {order.address.name}, {order.address.street}, {order.address.city} - {order.address.zip}
-                            {order.address.phone ? ` (${order.address.phone})` : ''}
+                            {order.address.street}, {order.address.city} - {order.address.zip}
                         </div>
-                    )} */}
-
+                    )}
 
                     <ul className="order-items-list">
                         {order.items.map((item, index) => {
@@ -113,7 +111,7 @@ const ShopOrderHistory = () => {
                                 <li key={`${order.id}-${item.product_id}-${index}`} className="order-item">
                                     <div>
                                         {quantity} × {item.name}
-                                        {item.unit_type ? ` (${item.unit_type})` : ''}
+                                        {item.unit_name ? ` (${item.unit_name})` : ''}
                                     </div>
                                     <div>
                                         ₹{totalPrice.toFixed(2)}{' '}
