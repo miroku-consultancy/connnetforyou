@@ -26,6 +26,7 @@ const getAllProducts = async (shopId) => {
         p.shop_id,
         json_agg(
           json_build_object(
+            'id', pu.id,
             'unit_type', pu.unit_type,
             'price', pu.price,
             'stock', pu.stock
@@ -62,13 +63,13 @@ const getProductById = async (id) => {
         p.barcode,
         p.shop_id,
         json_agg(
-  json_build_object(
-    'id', pu.id, -- <-- Add this line
-    'unit_type', pu.unit_type,
-    'price', pu.price,
-    'stock', pu.stock
-  )
-) FILTER (WHERE pu.id IS NOT NULL) AS units
+          json_build_object(
+            'id', pu.id,
+            'unit_type', pu.unit_type,
+            'price', pu.price,
+            'stock', pu.stock
+          )
+        ) FILTER (WHERE pu.id IS NOT NULL) AS units
       FROM products p
       LEFT JOIN product_units pu ON pu.product_id = p.id
       WHERE p.id = $1
