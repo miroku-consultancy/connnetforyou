@@ -6,6 +6,7 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
 
   try {
     console.log('[createOrder] Starting order creation...');
+    console.log('[createOrder] Input:', { userId, total, address, paymentMethod, orderDate, itemsCount: items.length });
     await client.query('BEGIN');
 
     // Insert order
@@ -27,12 +28,15 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
     );
 
     const orderId = orderInsertResult.rows[0].id;
+    console.log(`[createOrder] Order inserted with ID: ${orderId}`);
 
     // Insert each order item
-    for (const item of items) {
+    for (const [index, item] of items.entries()) {
       const productId = parseInt(item.id.toString().split('-')[0], 10);
       const unitIdStr = item.id.toString().split('-')[1];
       const unitId = item.unit_id ?? (unitIdStr ? parseInt(unitIdStr, 10) : null);
+
+      console.log(`[createOrder] Inserting item ${index + 1}/${items.length}: productId=${productId}, unitId=${unitId}, quantity=${item.quantity}`);
 
       await client.query(
         `INSERT INTO order_items (
@@ -53,7 +57,7 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
     }
 
     await client.query('COMMIT');
-    console.log(`[createOrder] Order ${orderId} created successfully.`);
+    console.log(`[createOrder] Order ${orderId} created successfully with ${items.length} items.`);
     return orderId;
   } catch (err) {
     await client.query('ROLLBACK');
@@ -66,6 +70,8 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
 
 // GET ORDERS BY USER
 async function getOrdersByUser(userId) {
+  console.log(`[getOrdersByUser] Fetching orders for userId: ${userId}`);
+
   try {
     const result = await pool.query(
       `SELECT o.id AS order_id, o.total, o.order_date,
@@ -79,6 +85,8 @@ async function getOrdersByUser(userId) {
        ORDER BY o.order_date DESC, o.id`,
       [userId]
     );
+
+    console.log(`[getOrdersByUser] Retrieved ${result.rows.length} rows for user ${userId}`);
 
     const ordersMap = new Map();
 
@@ -110,7 +118,9 @@ async function getOrdersByUser(userId) {
       });
     });
 
-    return Array.from(ordersMap.values());
+    const orders = Array.from(ordersMap.values());
+    console.log(`[getOrdersByUser] Processed ${orders.length} orders for user ${userId}`);
+    return orders;
   } catch (err) {
     console.error('[getOrdersByUser] Error fetching user orders:', err.message);
     throw err;
@@ -119,6 +129,8 @@ async function getOrdersByUser(userId) {
 
 // GET ORDERS BY SHOP
 async function getOrdersByShop(shopId) {
+  console.log(`[getOrdersByShop] Fetching orders for shopId: ${shopId}`);
+
   try {
     const result = await pool.query(
       `SELECT 
@@ -141,6 +153,8 @@ async function getOrdersByShop(shopId) {
       ORDER BY o.order_date DESC, o.id`,
       [shopId]
     );
+
+    console.log(`[getOrdersByShop] Retrieved ${result.rows.length} rows for shop ${shopId}`);
 
     const ordersMap = new Map();
 
@@ -182,7 +196,9 @@ async function getOrdersByShop(shopId) {
       });
     });
 
-    return Array.from(ordersMap.values());
+    const orders = Array.from(ordersMap.values());
+    console.log(`[getOrdersByShop] Processed ${orders.length} orders for shop ${shopId}`);
+    return orders;
   } catch (err) {
     console.error('[getOrdersByShop] Error fetching shop orders:', err.message);
     throw err;

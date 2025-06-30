@@ -20,23 +20,26 @@ const getAllProducts = async (shopId) => {
       [shopId]
     );
     const products = productRes.rows;
+    console.log(`✅ Found ${products.length} products for shopId ${shopId}`);
 
     if (products.length === 0) return [];
 
     // Extract product IDs
     const productIds = products.map((p) => p.id);
+    console.log('➡️ Product IDs:', productIds);
 
     // Fetch product units joined with unit info
     const unitsRes = await pool.query(
-  `
-  SELECT pu.id, pu.product_id, pu.unit_id, pu.price, pu.stock, 
-         u.name AS unit_name, u.category AS unit_category
-  FROM product_units pu
-  JOIN units u ON pu.unit_id = u.id
-  WHERE pu.product_id = ANY($1::int[])
-  `,
-  [productIds]
-);
+      `
+      SELECT pu.id, pu.product_id, pu.unit_id, pu.price, pu.stock, 
+             u.name AS unit_name, u.category AS unit_category
+      FROM product_units pu
+      JOIN units u ON pu.unit_id = u.id
+      WHERE pu.product_id = ANY($1::int[])
+      `,
+      [productIds]
+    );
+    console.log(`✅ Found ${unitsRes.rows.length} unit entries for products`);
 
     // Map product_id to unit details
     const unitMap = {};
@@ -51,27 +54,36 @@ const getAllProducts = async (shopId) => {
         stock: unit.stock,
       });
     });
+    console.log('➡️ Constructed unitMap:', unitMap);
 
     // Enrich products with their units
     const enrichedProducts = products.map((product) => ({
       ...product,
       units: unitMap[product.id] || [],
     }));
+    console.log('✅ Enriched products with unit info');
 
     return enrichedProducts;
   } catch (err) {
-    console.error('❌ Error fetching products with units from DB', err);
+    console.error('❌ Error fetching products with units from DB:', err);
     throw err;
   }
 };
 
 // 🔍 Get a single product by ID
 const getProductById = async (id) => {
+  console.log(`🔍 getProductById called with id: ${id}`);
+
   try {
     const res = await pool.query('SELECT * FROM products WHERE id = $1', [id]);
+    if (res.rows.length === 0) {
+      console.warn(`⚠️ No product found with id ${id}`);
+      return null;
+    }
+    console.log(`✅ Product found with id ${id}`);
     return res.rows[0];
   } catch (err) {
-    console.error(`❌ Error fetching product id ${id} from DB`, err);
+    console.error(`❌ Error fetching product id ${id} from DB:`, err);
     throw err;
   }
 };
@@ -88,6 +100,18 @@ const addProduct = async ({
   image,
   shop_id,
 }) => {
+  console.log('➕ addProduct called with data:', {
+    name,
+    description,
+    price,
+    stock,
+    barcode,
+    category,
+    subcategory,
+    image,
+    shop_id,
+  });
+
   try {
     const result = await pool.query(
       `INSERT INTO products
@@ -96,6 +120,7 @@ const addProduct = async ({
        RETURNING *`,
       [name, description, price, stock, barcode, category, subcategory, image, shop_id]
     );
+    console.log('✅ Product added successfully with id:', result.rows[0].id);
     return result.rows[0];
   } catch (err) {
     console.error('❌ Error adding product to DB:', err);
