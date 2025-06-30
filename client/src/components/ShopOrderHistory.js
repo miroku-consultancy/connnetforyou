@@ -47,22 +47,26 @@ const ShopOrderHistory = () => {
                     setError('Error fetching shop orders.');
                 } else {
                     const data = await res.json();
-                    // Group orders by order ID with their items
+
+                    // ✅ Group by order ID and fix product_name binding
                     const grouped = data.reduce((acc, row) => {
                         const orderId = row.id;
+
                         if (!acc[orderId]) {
                             acc[orderId] = {
                                 id: orderId,
                                 order_date: row.order_date,
                                 payment_method: row.payment_method,
                                 total: row.total,
+                                customer_name: row.customer_name,
+                                customer_phone: row.customer_phone,
                                 items: [],
                             };
                         }
 
                         acc[orderId].items.push({
                             product_id: row.product_id,
-                            name: row.name,
+                            name: row.product_name, // ✅ FIXED
                             price: row.price,
                             quantity: row.quantity,
                             unit_type: row.unit_type,
@@ -114,6 +118,7 @@ const ShopOrderHistory = () => {
                         <div><strong>Order ID:</strong> #{order.id}</div>
                         <div><strong>Date:</strong> {new Date(order.order_date).toLocaleString()}</div>
                         <div><strong>Payment:</strong> {order.payment_method}</div>
+                        <div><strong>Customer:</strong> {order.customer_name} ({order.customer_phone})</div>
                     </div>
 
                     <ul className="order-items-list">
