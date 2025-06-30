@@ -39,45 +39,20 @@ const ShopOrderHistory = () => {
                     headers: { Authorization: `Bearer ${token}` },
                 });
 
-                if (res.status === 401 || res.status === 403) {
-                    setError('You are not a shop owner.');
-                } else if (res.status === 404) {
-                    setError('No orders found for this shop.');
-                } else if (!res.ok) {
-                    setError('Error fetching shop orders.');
-                } else {
-                    const data = await res.json();
-
-                    // ✅ Group by order ID and fix product_name binding
-                    const grouped = data.reduce((acc, row) => {
-                        const orderId = row.id;
-
-                        if (!acc[orderId]) {
-                            acc[orderId] = {
-                                id: orderId,
-                                order_date: row.order_date,
-                                payment_method: row.payment_method,
-                                total: row.total,
-                                customer_name: row.customer_name,
-                                customer_phone: row.customer_phone,
-                                items: [],
-                            };
-                        }
-
-                        acc[orderId].items.push({
-                            product_id: row.product_id,
-                            name: row.product_name, // ✅ FIXED
-                            price: row.price,
-                            quantity: row.quantity,
-                            unit_type: row.unit_type,
-                        });
-
-                        return acc;
-                    }, {});
-
-                    setOrders(Object.values(grouped));
+                if (!res.ok) {
+                    const msg = await res.text();
+                    setError(`Error: ${res.status} ${msg}`);
+                    setLoading(false);
+                    return;
                 }
+
+                const data = await res.json();
+                console.log('[DEBUG] Raw orders from API:', data);
+
+                // Use data directly — already grouped
+                setOrders(data);
             } catch (err) {
+                console.error('[ERROR] fetchShopOrders failed:', err);
                 setError('Network error, please try again.');
             } finally {
                 setLoading(false);
@@ -122,14 +97,15 @@ const ShopOrderHistory = () => {
                     </div>
 
                     <ul className="order-items-list">
-                        {order.items.map((item) => {
+                        {order.items.map((item, index) => {
                             const price = Number(item.price) || 0;
-                            const totalPrice = price * item.quantity;
+                            const quantity = Number(item.quantity) || 0;
+                            const totalPrice = price * quantity;
 
                             return (
-                                <li key={item.product_id} className="order-item">
+                                <li key={`${order.id}-${item.product_id}-${index}`} className="order-item">
                                     <div>
-                                        {item.quantity} × {item.name}
+                                        {quantity} × {item.name}
                                         {item.unit_type ? ` (${item.unit_type})` : ''}
                                     </div>
                                     <div>
