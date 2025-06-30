@@ -39,7 +39,7 @@ const getAllProducts = async (shopId) => {
       }
       unitMap[unit.product_id].push({
         id: unit.id,
-        name: unit.name,
+        name: unit.unit_type,
         price: unit.price,
         stock: unit.stock,
       });
