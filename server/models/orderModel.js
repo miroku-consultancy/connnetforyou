@@ -76,10 +76,19 @@ async function getOrdersByUser(userId) {
 
   try {
     const result = await pool.query(
-      `SELECT o.id AS order_id, o.total, o.order_date,
-              oi.product_id, oi.name, oi.price, oi.quantity,
-              oi.image, oi.unit_id,
-              u.name AS unit_name, u.category AS unit_category
+      `SELECT 
+         o.id AS order_id, 
+         o.total, 
+         o.order_date,
+         o.order_status,                            -- ✅ ADD THIS LINE
+         oi.product_id, 
+         oi.name, 
+         oi.price, 
+         oi.quantity,
+         oi.image, 
+         oi.unit_id,
+         u.name AS unit_name, 
+         u.category AS unit_category
        FROM orders o
        JOIN order_items oi ON o.id = oi.order_id
        LEFT JOIN units u ON oi.unit_id = u.id
@@ -94,7 +103,7 @@ async function getOrdersByUser(userId) {
 
     result.rows.forEach(row => {
       const {
-        order_id, total, order_date,
+        order_id, total, order_date, order_status,   // ✅ INCLUDE order_status
         product_id, name, price, quantity,
         image, unit_id, unit_name, unit_category
       } = row;
@@ -104,6 +113,7 @@ async function getOrdersByUser(userId) {
           id: order_id,
           total,
           order_date,
+          order_status,       // ✅ INCLUDE IT IN THE ORDER OBJECT
           items: [],
         });
       }
@@ -128,6 +138,7 @@ async function getOrdersByUser(userId) {
     throw err;
   }
 }
+
 
 // GET ORDERS BY SHOP
 async function getOrdersByShop(shopId) {

@@ -97,26 +97,35 @@
   background-color: #1a5cc8;
 }
 .order-status {
-  padding: 3px 8px;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 0.9em;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: bold;
   display: inline-block;
-  color: white;
+  text-transform: uppercase;
+  font-size: 0.85rem;
 }
 
+/* Status color styles */
 .order-status-pending {
-  background-color: #f0ad4e;
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
 }
 
 .order-status-accepted {
-  background-color: #5bc0de;
+  background-color: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
 }
 
 .order-status-in-transit {
-  background-color: #0275d8;
+  background-color: #cce5ff;
+  color: #004085;
+  border: 1px solid #b8daff;
 }
 
 .order-status-delivered {
-  background-color: #5cb85c;
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
 }

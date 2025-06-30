@@ -13,6 +13,14 @@ const parseJwt = (token) => {
 
 const STATUS_STEPS = ['Pending', 'Accepted', 'In Transit', 'Delivered'];
 
+const STATUS_LABELS = {
+    'Pending': 'Pending',
+    'Accepted': 'Accepted',
+    'In Transit': 'Order on the way',
+    'Delivered': 'Delivered',
+};
+
+
 const ShopOrderHistory = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -151,11 +159,12 @@ const ShopOrderHistory = () => {
                     <div>
                         <strong>Status:</strong>{' '}
                         <div>
-  <strong>Status:</strong>{' '}
-  <span className={`order-status order-status-${(order.order_status || 'Pending').replace(/\s+/g, '-').toLowerCase()}`}>
-    {order.order_status || 'Pending'}
-  </span>
-</div>
+                            <strong>Status:</strong>{' '}
+                            <span className={`order-status order-status-${(order.order_status || 'Pending').replace(/\s+/g, '-').toLowerCase()}`}>
+                                {STATUS_LABELS[order.order_status] || 'Pending'}
+                            </span>
+
+                        </div>
 
                     </div>
 
@@ -165,7 +174,8 @@ const ShopOrderHistory = () => {
                             onClick={() => updateOrderStatus(order.id, order.order_status || 'Pending')}
                             className="update-status-btn"
                         >
-                            {updatingOrderId === order.id ? 'Updating...' : `Mark as ${STATUS_STEPS[STATUS_STEPS.indexOf(order.order_status || 'Pending') + 1]}`}
+                            {updatingOrderId === order.id ? 'Updating...' : `Mark as ${STATUS_LABELS[STATUS_STEPS[STATUS_STEPS.indexOf(order.order_status || 'Pending') + 1]]}`
+                            }
                         </button>
                     )}
 

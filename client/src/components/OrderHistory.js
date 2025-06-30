@@ -5,6 +5,13 @@ import './OrderHistory.css';
 
 const API_BASE_URL = 'https://connnet4you-server.onrender.com';
 
+const STATUS_LABELS = {
+  'Pending': 'Pending',
+  'Accepted': 'Accepted',
+  'In Transit': 'Order on the way',
+  'Delivered': 'Delivered',
+};
+
 const OrderHistory = () => {
   const { user, loadingUser } = useUser();
   const [orders, setOrders] = useState([]);
@@ -80,7 +87,6 @@ const OrderHistory = () => {
       {orders.map((order) => (
         <div key={order.id} className="order-card">
           <p><strong>Order ID:</strong> {order.id}</p>
-          <p><strong>Date:</strong> {new Date(order.order_date).toLocaleString()}</p>
           <p>
             <strong>Status:</strong>{' '}
             <span
@@ -88,7 +94,7 @@ const OrderHistory = () => {
                 .replace(/\s+/g, '-')
                 .toLowerCase()}`}
             >
-              {order.order_status || 'Pending'}
+              {STATUS_LABELS[order.order_status] || 'Pending'}
             </span>
           </p>
 
