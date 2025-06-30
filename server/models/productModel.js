@@ -9,45 +9,89 @@ const pool = new Pool({
   database: process.env.PG_DATABASE,
 });
 
-// Get all products
+// Get all products with their units
 const getAllProducts = async (shopId) => {
   console.log('🔍 getAllProducts called with shopId:', shopId);
   try {
     const result = await pool.query(
-      'SELECT * FROM products WHERE shop_id = $1',
+      `
+      SELECT 
+        p.id,
+        p.name,
+        p.description,
+        p.category,
+        p.subcategory,
+        p.image,
+        p.barcode,
+        p.shop_id,
+        json_agg(
+          json_build_object(
+            'unit_type', pu.unit_type,
+            'price', pu.price,
+            'stock', pu.stock
+          )
+        ) FILTER (WHERE pu.id IS NOT NULL) AS units
+      FROM products p
+      LEFT JOIN product_units pu ON pu.product_id = p.id
+      WHERE p.shop_id = $1
+      GROUP BY p.id
+      ORDER BY p.name ASC;
+      `,
       [shopId]
     );
-    console.log('📦 Products fetched from DB:', result.rows);
-    return result.rows;  // Ensure you're returning rows, not res.rows
+    console.log('📦 Products fetched with units:', result.rows);
+    return result.rows;
   } catch (err) {
-    console.error('❌ Error fetching products from DB', err);
+    console.error('❌ Error fetching products from DB:', err);
     throw err;
   }
 };
 
-
-
-// Get product by ID
+// Get a single product by ID with its units
 const getProductById = async (id) => {
   try {
-    const res = await pool.query('SELECT * FROM products WHERE id = $1', [id]);
-    return res.rows[0];
+    const result = await pool.query(
+      `
+      SELECT 
+        p.id,
+        p.name,
+        p.description,
+        p.category,
+        p.subcategory,
+        p.image,
+        p.barcode,
+        p.shop_id,
+        json_agg(
+          json_build_object(
+            'unit_type', pu.unit_type,
+            'price', pu.price,
+            'stock', pu.stock
+          )
+        ) FILTER (WHERE pu.id IS NOT NULL) AS units
+      FROM products p
+      LEFT JOIN product_units pu ON pu.product_id = p.id
+      WHERE p.id = $1
+      GROUP BY p.id;
+      `,
+      [id]
+    );
+    return result.rows[0];
   } catch (err) {
-    console.error(`Error fetching product id ${id} from DB`, err);
+    console.error(`❌ Error fetching product id ${id} from DB`, err);
     throw err;
   }
 };
 
-// Add product to DB
+// Add product (basic version)
 const addProduct = async ({
   name,
   description,
-  price,
-  stock,
+  price, // optional if using product_units instead
+  stock, // optional if using product_units instead
   barcode,
   category,
   subcategory,
-  image,     // Add this here
+  image,
   shop_id,
 }) => {
   try {
@@ -60,14 +104,13 @@ const addProduct = async ({
     );
     return result.rows[0];
   } catch (err) {
-    console.error('Error adding product to DB:', err);
+    console.error('❌ Error adding product to DB:', err);
     throw err;
   }
 };
 
-
 module.exports = {
   getAllProducts,
   getProductById,
-  addProduct, // ✅ Make sure this is exported
+  addProduct,
 };
