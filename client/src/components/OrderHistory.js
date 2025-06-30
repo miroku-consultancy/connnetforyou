@@ -83,12 +83,10 @@ const OrderHistory = () => {
           <p><strong>Date:</strong> {new Date(order.order_date).toLocaleString()}</p>
 
           <ul className="order-items">
-            {order.items.map((item) => {
-              console.log('Order Item:', item); // 👈 Debug log
+            {order.items.map((item, index) => {
               const imageSrc = resolveImageUrl(item.image_url || item.image);
-
               return (
-                <li key={item.product_id} className="order-item">
+                <li key={`${item.product_id}-${item.unit_type || 'default'}-${index}`} className="order-item">
                   <img
                     src={imageSrc}
                     alt={item.name}
@@ -103,7 +101,6 @@ const OrderHistory = () => {
                       {item.name}
                       {item.unit_type ? ` (${item.unit_type})` : ''}
                     </span>
-
                     <span className="item-qty-price">
                       {item.quantity} × {formatCurrency(item.price)}
                     </span>
@@ -111,6 +108,7 @@ const OrderHistory = () => {
                 </li>
               );
             })}
+
           </ul>
 
           <p><strong>Total:</strong> {formatCurrency(order.total)}</p>

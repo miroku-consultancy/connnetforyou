@@ -441,7 +441,7 @@ const ProductCard = ({
       const productToAdd = {
         ...product,
         id: uniqueKey,
-        name: hasUnits ? `${product.name} (${selectedUnit.unit_name})` : product.name,
+        name: hasUnits ? `${product.name} (${selectedUnit.name})` : product.name,
         price: hasUnits ? selectedUnit.price : product.price,
         unit_id: hasUnits ? selectedUnit.unit_id : null,
       };
@@ -482,17 +482,18 @@ const ProductCard = ({
       {hasUnits ? (
         <>
           <select
-            value={selectedUnit?.unit_id}
-            onChange={handleUnitChange}
-            className="unit-dropdown"
-            style={{ marginTop: '6px', marginBottom: '4px' }}
-          >
-            {product.units.map((unit) => (
-              <option key={unit.unit_id} value={unit.unit_id}>
-                {unit.unit_name} - ₹{unit.price}
-              </option>
-            ))}
-          </select>
+  value={selectedUnit?.unit_id}
+  onChange={handleUnitChange}
+  className="unit-dropdown"
+  style={{ marginTop: '6px', marginBottom: '4px' }}
+>
+  {product.units.map((unit) => (
+    <option key={unit.unit_id} value={unit.unit_id}>
+      {unit.name} - ₹{unit.price}
+    </option>
+  ))}
+</select>
+
           <p className="product-price">₹{selectedUnit?.price}</p>
         </>
       ) : (

@@ -89,12 +89,19 @@ const ShopOrderHistory = () => {
                     onMouseEnter={(e) => e.currentTarget.classList.add('order-card-hover')}
                     onMouseLeave={(e) => e.currentTarget.classList.remove('order-card-hover')}
                 >
-                    <div className="order-info">
-                        <div><strong>Order ID:</strong> #{order.id}</div>
-                        <div><strong>Date:</strong> {new Date(order.order_date).toLocaleString()}</div>
-                        <div><strong>Payment:</strong> {order.payment_method}</div>
-                        <div><strong>Customer:</strong> {order.customer_name} ({order.customer_phone})</div>
-                    </div>
+                    <div><strong>Order ID:</strong> #{order.id}</div>
+                    <div><strong>Date:</strong> {new Date(order.order_date).toLocaleString()}</div>
+                    <div><strong>Payment:</strong> {order.payment_method}</div>
+                    <div><strong>Customer:</strong> {order.customer_name} ({order.customer_phone})</div>
+
+                    {order.address && (
+                        <div>
+                            <strong>Address:</strong>{' '}
+                            {order.address.name}, {order.address.street}, {order.address.city} - {order.address.zip}
+                            {order.address.phone ? ` (${order.address.phone})` : ''}
+                        </div>
+                    )}
+
 
                     <ul className="order-items-list">
                         {order.items.map((item, index) => {
