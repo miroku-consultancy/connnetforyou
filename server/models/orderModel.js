@@ -6,7 +6,6 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
   try {
     await client.query('BEGIN');
 
-    // Insert the order
     const orderRes = await client.query(
       `INSERT INTO orders (user_id, total, name, street, city, zip, phone, payment_method, order_date)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
@@ -25,7 +24,6 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
 
     const orderId = orderRes.rows[0].id;
 
-    // Insert each item, normalize shop_id key
     for (const item of items) {
       const shop_id = item.shop_id ?? item.shopId;
       if (!shop_id) {
@@ -33,8 +31,8 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
       }
 
       await client.query(
-        `INSERT INTO order_items (order_id, product_id, name, price, quantity, image, shop_id)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        `INSERT INTO order_items (order_id, product_id, name, price, quantity, image, shop_id, unit_id, unit_type)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
         [
           orderId,
           item.id,
@@ -42,7 +40,9 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
           item.price,
           item.quantity,
           item.image,
-          shop_id
+          shop_id,
+          item.unit_id ?? null,
+          item.unit_type ?? null
         ]
       );
     }
@@ -57,7 +57,7 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
   }
 }
 
-// Get orders placed by a user (with items)
+// Orders by user
 async function getOrdersByUser(userId) {
   const client = await pool.connect();
   try {
@@ -71,7 +71,7 @@ async function getOrdersByUser(userId) {
 
     for (const order of orders) {
       const { rows: items } = await client.query(
-        `SELECT product_id, name, price, quantity, image, shop_id
+        `SELECT product_id, name, price, quantity, image, shop_id, unit_type
          FROM order_items
          WHERE order_id = $1`,
         [order.id]
@@ -85,7 +85,7 @@ async function getOrdersByUser(userId) {
   }
 }
 
-// Get orders for a specific shop (based on order_items.shop_id)
+// Orders by shop
 async function getOrdersByShop(shopId) {
   const client = await pool.connect();
   try {
@@ -103,7 +103,7 @@ async function getOrdersByShop(shopId) {
 
     for (const order of ordersResult.rows) {
       const itemsResult = await client.query(
-        `SELECT product_id, name, price, quantity, image
+        `SELECT product_id, name, price, quantity, image, unit_type
          FROM order_items
          WHERE order_id = $1 AND shop_id = $2`,
         [order.id, shopId]
