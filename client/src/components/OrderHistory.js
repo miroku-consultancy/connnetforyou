@@ -81,12 +81,25 @@ const OrderHistory = () => {
         <div key={order.id} className="order-card">
           <p><strong>Order ID:</strong> {order.id}</p>
           <p><strong>Date:</strong> {new Date(order.order_date).toLocaleString()}</p>
+          <p>
+            <strong>Status:</strong>{' '}
+            <span
+              className={`order-status order-status-${(order.order_status || 'Pending')
+                .replace(/\s+/g, '-')
+                .toLowerCase()}`}
+            >
+              {order.order_status || 'Pending'}
+            </span>
+          </p>
 
           <ul className="order-items">
             {order.items.map((item, index) => {
               const imageSrc = resolveImageUrl(item.image_url || item.image);
               return (
-                <li key={`${item.product_id}-${item.unit_type || 'default'}-${index}`} className="order-item">
+                <li
+                  key={`${item.product_id}-${item.unit_type || 'default'}-${index}`}
+                  className="order-item"
+                >
                   <img
                     src={imageSrc}
                     alt={item.name}
@@ -108,7 +121,6 @@ const OrderHistory = () => {
                 </li>
               );
             })}
-
           </ul>
 
           <p><strong>Total:</strong> {formatCurrency(order.total)}</p>

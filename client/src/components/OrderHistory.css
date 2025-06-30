@@ -96,3 +96,27 @@
 .home-button:hover {
   background-color: #1a5cc8;
 }
+.order-status {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.9em;
+  display: inline-block;
+  color: white;
+}
+
+.order-status-pending {
+  background-color: #f0ad4e;
+}
+
+.order-status-accepted {
+  background-color: #5bc0de;
+}
+
+.order-status-in-transit {
+  background-color: #0275d8;
+}
+
+.order-status-delivered {
+  background-color: #5cb85c;
+}

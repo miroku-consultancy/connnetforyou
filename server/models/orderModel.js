@@ -9,11 +9,11 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
     console.log('[createOrder] Input:', { userId, total, address, paymentMethod, orderDate, itemsCount: items.length });
     await client.query('BEGIN');
 
-    // Insert order
     const orderInsertResult = await client.query(
-      `INSERT INTO orders (user_id, total, name, street, city, zip, phone, payment_method, order_date)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-       RETURNING id`,
+      `INSERT INTO orders (
+    user_id, total, name, street, city, zip, phone, payment_method, order_date, order_status
+  ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+   RETURNING id`,
       [
         userId,
         total,
@@ -24,8 +24,10 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
         address.phone,
         paymentMethod,
         orderDate,
+        'Pending' // or any default status you want to use
       ]
     );
+
 
     const orderId = orderInsertResult.rows[0].id;
     console.log(`[createOrder] Order inserted with ID: ${orderId}`);
@@ -138,6 +140,7 @@ async function getOrdersByShop(shopId) {
         o.order_date,
         o.payment_method,
         o.total,
+        o.order_status,
         o.name AS customer_name,
         o.phone AS customer_phone,
         o.street AS address_street,
@@ -186,6 +189,7 @@ async function getOrdersByShop(shopId) {
           order_date,
           payment_method,
           total,
+          order_status,
           customer_name,
           customer_phone,
           address: {
