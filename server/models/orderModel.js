@@ -141,6 +141,7 @@ async function getOrdersByUser(userId) {
 
 
 // GET ORDERS BY SHOP
+// GET ORDERS BY SHOP
 async function getOrdersByShop(shopId) {
   console.log(`[getOrdersByShop] Fetching orders for shopId: ${shopId}`);
 
@@ -151,7 +152,7 @@ async function getOrdersByShop(shopId) {
         o.order_date,
         o.payment_method,
         o.total,
-        o.order_status,
+        o.order_status,               -- Make sure this is selected in SQL
         o.name AS customer_name,
         o.phone AS customer_phone,
         o.street AS address_street,
@@ -181,6 +182,7 @@ async function getOrdersByShop(shopId) {
         order_date,
         payment_method,
         total,
+        order_status,       // <-- Added this line
         customer_name,
         customer_phone,
         address_street,
@@ -200,7 +202,7 @@ async function getOrdersByShop(shopId) {
           order_date,
           payment_method,
           total,
-          order_status,
+          order_status,       // <-- Use it here as well
           customer_name,
           customer_phone,
           address: {
@@ -230,6 +232,7 @@ async function getOrdersByShop(shopId) {
     throw err;
   }
 }
+
 
 module.exports = {
   createOrder,
