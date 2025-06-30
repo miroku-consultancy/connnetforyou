@@ -11,19 +11,27 @@ const pool = new Pool({
 
 // Get all products
 const getAllProducts = async (shopId) => {
-  console.log('🔍 getAllProducts called with shopId:', shopId);
-  try {
-    const result = await pool.query(
-      'SELECT * FROM products WHERE shop_id = $1',
-      [shopId]
-    );
-    console.log('📦 Products fetched from DB:', result.rows);
-    return result.rows;  // Ensure you're returning rows, not res.rows
-  } catch (err) {
-    console.error('❌ Error fetching products from DB', err);
-    throw err;
-  }
+  const result = await pool.query('SELECT * FROM products WHERE shop_id = $1', [shopId]);
+  const products = result.rows;
+  const productIds = products.map(p => p.id);
+
+  const unitsResult = await pool.query(
+    'SELECT * FROM product_units WHERE product_id = ANY($1::int[])',
+    [productIds]
+  );
+
+  const unitMap = unitsResult.rows.reduce((map, unit) => {
+    if (!map[unit.product_id]) map[unit.product_id] = [];
+    map[unit.product_id].push(unit);
+    return map;
+  }, {});
+
+  return products.map((product) => ({
+    ...product,
+    units: unitMap[product.id] || [],
+  }));
 };
+
 
 
 
