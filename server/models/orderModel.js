@@ -4,6 +4,11 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
   const client = await pool.connect();
 
   try {
+    console.log('[createOrder] Starting order creation...');
+    console.log('[createOrder] Order payload:', {
+      userId, total, address, paymentMethod, orderDate, itemCount: items.length
+    });
+
     await client.query('BEGIN');
 
     // Insert into orders table using individual address fields
@@ -25,9 +30,22 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
     );
 
     const orderId = orderInsertResult.rows[0].id;
+    console.log(`[createOrder] Order inserted with ID: ${orderId}`);
 
     // Insert each item into order_items table
     for (const item of items) {
+      console.log('[createOrder] Inserting order item:', {
+        orderId,
+        product_id: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        image: item.image,
+        shop_id: item.shopId ?? item.shop_id,
+        unit_id: item.unit_id ?? null,
+        unit_type: item.unit_type ?? null,
+      });
+
       await client.query(
         `INSERT INTO order_items (
           order_id, product_id, name, price, quantity,
@@ -48,34 +66,47 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
     }
 
     await client.query('COMMIT');
+    console.log('[createOrder] Order transaction committed successfully.');
     return orderId;
   } catch (err) {
     await client.query('ROLLBACK');
-    console.error('[createOrder] Error inserting order:', err);
+    console.error('[createOrder] Error inserting order:', err.message);
+    console.error('[createOrder] Stack trace:', err.stack);
     throw err;
   } finally {
     client.release();
+    console.log('[createOrder] Database connection released.');
   }
 }
 
 async function getOrdersByUser(userId) {
-  const result = await pool.query(
-    `SELECT * FROM orders WHERE user_id = $1 ORDER BY order_date DESC`,
-    [userId]
-  );
-  return result.rows;
+  try {
+    const result = await pool.query(
+      `SELECT * FROM orders WHERE user_id = $1 ORDER BY order_date DESC`,
+      [userId]
+    );
+    return result.rows;
+  } catch (err) {
+    console.error('[getOrdersByUser] Error fetching user orders:', err.message);
+    throw err;
+  }
 }
 
 async function getOrdersByShop(shopId) {
-  const result = await pool.query(
-    `SELECT o.*, oi.*
-     FROM orders o
-     JOIN order_items oi ON o.id = oi.order_id
-     WHERE oi.shop_id = $1
-     ORDER BY o.order_date DESC`,
-    [shopId]
-  );
-  return result.rows;
+  try {
+    const result = await pool.query(
+      `SELECT o.*, oi.*
+       FROM orders o
+       JOIN order_items oi ON o.id = oi.order_id
+       WHERE oi.shop_id = $1
+       ORDER BY o.order_date DESC`,
+      [shopId]
+    );
+    return result.rows;
+  } catch (err) {
+    console.error('[getOrdersByShop] Error fetching shop orders:', err.message);
+    throw err;
+  }
 }
 
 module.exports = {
