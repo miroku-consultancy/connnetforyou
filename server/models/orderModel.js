@@ -87,24 +87,72 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
 async function getOrdersByUser(userId) {
   try {
     const result = await pool.query(
-      `SELECT * FROM orders WHERE user_id = $1 ORDER BY order_date DESC`,
+      `SELECT o.id AS order_id, o.total, o.order_date,
+              oi.product_id, oi.name, oi.price, oi.quantity,
+              oi.image, oi.unit_id, oi.unit_type
+       FROM orders o
+       JOIN order_items oi ON o.id = oi.order_id
+       WHERE o.user_id = $1
+       ORDER BY o.order_date DESC, o.id`,
       [userId]
     );
-    return result.rows;
+
+    // Group items by order
+    const ordersMap = new Map();
+
+    result.rows.forEach(row => {
+      const {
+        order_id, total, order_date,
+        product_id, name, price, quantity,
+        image, unit_id, unit_type
+      } = row;
+
+      if (!ordersMap.has(order_id)) {
+        ordersMap.set(order_id, {
+          id: order_id,
+          total,
+          order_date,
+          items: [],
+        });
+      }
+
+      ordersMap.get(order_id).items.push({
+        product_id,
+        name,
+        price,
+        quantity,
+        image,
+        unit_id,
+        unit_type,
+      });
+    });
+
+    return Array.from(ordersMap.values());
   } catch (err) {
     console.error('[getOrdersByUser] Error fetching user orders:', err.message);
     throw err;
   }
 }
 
+
 async function getOrdersByShop(shopId) {
   try {
     const result = await pool.query(
-      `SELECT o.*, oi.*
-       FROM orders o
-       JOIN order_items oi ON o.id = oi.order_id
-       WHERE oi.shop_id = $1
-       ORDER BY o.order_date DESC`,
+      `SELECT 
+  o.id AS order_id,
+  o.order_date,
+  o.payment_method,
+  o.total,
+  oi.product_id,
+  oi.name,
+  oi.price,
+  oi.quantity,
+  oi.unit_type
+FROM orders o
+JOIN order_items oi ON o.id = oi.order_id
+WHERE oi.shop_id = $1
+ORDER BY o.order_date DESC
+`,
       [shopId]
     );
     return result.rows;

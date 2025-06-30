@@ -47,7 +47,31 @@ const ShopOrderHistory = () => {
                     setError('Error fetching shop orders.');
                 } else {
                     const data = await res.json();
-                    setOrders(data);
+                    // Group orders by order ID with their items
+                    const grouped = data.reduce((acc, row) => {
+                        const orderId = row.id;
+                        if (!acc[orderId]) {
+                            acc[orderId] = {
+                                id: orderId,
+                                order_date: row.order_date,
+                                payment_method: row.payment_method,
+                                total: row.total,
+                                items: [],
+                            };
+                        }
+
+                        acc[orderId].items.push({
+                            product_id: row.product_id,
+                            name: row.name,
+                            price: row.price,
+                            quantity: row.quantity,
+                            unit_type: row.unit_type,
+                        });
+
+                        return acc;
+                    }, {});
+
+                    setOrders(Object.values(grouped));
                 }
             } catch (err) {
                 setError('Network error, please try again.');
@@ -59,27 +83,22 @@ const ShopOrderHistory = () => {
         fetchShopOrders();
     }, []);
 
-    if (loading)
+    if (loading) {
         return (
             <div className="loader-container">
                 <div className="loader" />
                 <p>Loading orders...</p>
             </div>
         );
+    }
 
-    if (error)
-        return (
-            <p className="error-message">
-                {error}
-            </p>
-        );
+    if (error) {
+        return <p className="error-message">{error}</p>;
+    }
 
-    if (orders.length === 0)
-        return (
-            <p className="no-orders-message">
-                No orders yet for your shop.
-            </p>
-        );
+    if (orders.length === 0) {
+        return <p className="no-orders-message">No orders yet for your shop.</p>;
+    }
 
     return (
         <div className="shop-order-history-container">
@@ -88,12 +107,8 @@ const ShopOrderHistory = () => {
                 <div
                     key={order.id}
                     className="order-card"
-                    onMouseEnter={(e) => {
-                        e.currentTarget.classList.add('order-card-hover');
-                    }}
-                    onMouseLeave={(e) => {
-                        e.currentTarget.classList.remove('order-card-hover');
-                    }}
+                    onMouseEnter={(e) => e.currentTarget.classList.add('order-card-hover')}
+                    onMouseLeave={(e) => e.currentTarget.classList.remove('order-card-hover')}
                 >
                     <div className="order-info">
                         <div><strong>Order ID:</strong> #{order.id}</div>
@@ -105,9 +120,13 @@ const ShopOrderHistory = () => {
                         {order.items.map((item) => {
                             const price = Number(item.price) || 0;
                             const totalPrice = price * item.quantity;
+
                             return (
                                 <li key={item.product_id} className="order-item">
-                                    <div>{item.quantity} × {item.name}</div>
+                                    <div>
+                                        {item.quantity} × {item.name}
+                                        {item.unit_type ? ` (${item.unit_type})` : ''}
+                                    </div>
                                     <div>
                                         ₹{totalPrice.toFixed(2)}{' '}
                                         <span className="unit-price">

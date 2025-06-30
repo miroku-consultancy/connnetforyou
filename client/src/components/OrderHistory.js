@@ -18,11 +18,11 @@ const OrderHistory = () => {
       currency: 'INR',
     }).format(amount);
 
- const resolveImageUrl = (image) => {
-  if (!image) return 'https://via.placeholder.com/60';
-  if (image.startsWith('http') || image.startsWith('/images/')) return image;
-  return `${API_BASE_URL}/images/${image}`;
-};
+  const resolveImageUrl = (image) => {
+    if (!image) return 'https://via.placeholder.com/60';
+    if (image.startsWith('http') || image.startsWith('/images/')) return image;
+    return `${API_BASE_URL}/images/${image}`;
+  };
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -99,7 +99,11 @@ const OrderHistory = () => {
                     }}
                   />
                   <div className="item-details">
-                    <span className="item-name">{item.name}</span>
+                    <span className="item-name">
+                      {item.name}
+                      {item.unit_type ? ` (${item.unit_type})` : ''}
+                    </span>
+
                     <span className="item-qty-price">
                       {item.quantity} × {formatCurrency(item.price)}
                     </span>
