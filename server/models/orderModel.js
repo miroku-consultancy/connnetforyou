@@ -6,12 +6,22 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
   try {
     await client.query('BEGIN');
 
-    // Insert into orders table
+    // Insert into orders table using individual address fields
     const orderInsertResult = await client.query(
-      `INSERT INTO orders (user_id, total, address, payment_method, order_date)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO orders (user_id, total, name, street, city, zip, phone, payment_method, order_date)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING id`,
-      [userId, total, JSON.stringify(address), paymentMethod, orderDate]
+      [
+        userId,
+        total,
+        address.name,
+        address.street,
+        address.city,
+        address.zip,
+        address.phone,
+        paymentMethod,
+        orderDate,
+      ]
     );
 
     const orderId = orderInsertResult.rows[0].id;
