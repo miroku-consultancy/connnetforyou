@@ -14,6 +14,9 @@ const stripeRoutes = require('./routes/stripe');
 const shopRoutes = require('./routes/shopRoutes');
 const { sseRouter } = require('./routes/notificationSse');
 const notificationRoutes = require('./routes/notificationRoutes'); // ✅ ADD THIS
+const ordersStatusRouter = require('./routes/ordersStatus'); // Adjust path as necessary
+
+
 
 const app = express();
 
@@ -53,7 +56,8 @@ app.use('/api/products', productRoutes);
 app.use('/api/address', addressRoutes);
 app.use('/api/stripe', stripeRoutes);
 app.use('/api/shops', shopRoutes);
-
+// Mount it at /api/orders
+app.use('/api/orders', ordersStatusRouter);
 // Use both SSE and normal notifications
 app.use('/api/notifications', notificationRoutes); // ✅ Handles GET /api/notifications
 app.use('/api/notifications', sseRouter);          // ✅ Handles /api/notifications/stream
