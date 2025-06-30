@@ -9,7 +9,7 @@ const pool = new Pool({
   database: process.env.PG_DATABASE,
 });
 
-// Get all products with their units
+// 🔍 Get all products with enriched unit data
 const getAllProducts = async (shopId) => {
   console.log('🔍 getAllProducts called with shopId:', shopId);
 
@@ -26,29 +26,35 @@ const getAllProducts = async (shopId) => {
     // Extract product IDs
     const productIds = products.map((p) => p.id);
 
-    // Fetch units for all product IDs
+    // Fetch product units joined with unit info
     const unitsRes = await pool.query(
-      'SELECT * FROM product_units WHERE product_id = ANY($1::int[])',
+      `
+      SELECT pu.id, pu.product_id, pu.price, pu.stock, 
+             u.name AS unit_name, u.category AS unit_category
+      FROM product_units pu
+      JOIN units u ON pu.unit_id = u.id
+      WHERE pu.product_id = ANY($1::int[])
+      `,
       [productIds]
     );
 
+    // Map product_id to unit details
     const unitMap = {};
     unitsRes.rows.forEach((unit) => {
-      if (!unitMap[unit.product_id]) {
-        unitMap[unit.product_id] = [];
-      }
+      if (!unitMap[unit.product_id]) unitMap[unit.product_id] = [];
       unitMap[unit.product_id].push({
         id: unit.id,
-        name: unit.unit_type,
+        name: unit.unit_name,
+        category: unit.unit_category,
         price: unit.price,
         stock: unit.stock,
       });
     });
 
-    // Attach units to products
+    // Enrich products with their units
     const enrichedProducts = products.map((product) => ({
       ...product,
-      units: unitMap[product.id] || [], // attach units or empty array
+      units: unitMap[product.id] || [],
     }));
 
     return enrichedProducts;
@@ -58,18 +64,18 @@ const getAllProducts = async (shopId) => {
   }
 };
 
-// Get a single product by ID
+// 🔍 Get a single product by ID
 const getProductById = async (id) => {
   try {
     const res = await pool.query('SELECT * FROM products WHERE id = $1', [id]);
     return res.rows[0];
   } catch (err) {
-    console.error(`Error fetching product id ${id} from DB`, err);
+    console.error(`❌ Error fetching product id ${id} from DB`, err);
     throw err;
   }
 };
 
-// Add new product to DB
+// ➕ Add a new product to the DB
 const addProduct = async ({
   name,
   description,
@@ -91,7 +97,7 @@ const addProduct = async ({
     );
     return result.rows[0];
   } catch (err) {
-    console.error('Error adding product to DB:', err);
+    console.error('❌ Error adding product to DB:', err);
     throw err;
   }
 };
