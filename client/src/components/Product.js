@@ -419,12 +419,14 @@ const ProductCard = ({
   const [selectedUnit, setSelectedUnit] = useState(hasUnits ? product.units[0] : null);
 
   // Unique key combines product id and unit id (if applicable)
-  const uniqueKey = hasUnits ? `${product.id}-${selectedUnit?.id}` : product.id;
+  const uniqueKey = hasUnits ? `${product.id}-${selectedUnit?.unit_id}` : product.id;
   const qty = quantities[uniqueKey] || 0;
+
+
 
   const handleUnitChange = (e) => {
     const unitId = parseInt(e.target.value, 10);
-    const unit = product.units.find((u) => u.id === unitId);
+    const unit = product.units.find((u) => u.unit_id === unitId);
     setSelectedUnit(unit);
   };
 
@@ -439,8 +441,9 @@ const ProductCard = ({
       const productToAdd = {
         ...product,
         id: uniqueKey,
-        name: hasUnits ? `${product.name} (${selectedUnit.name})` : product.name,
+        name: hasUnits ? `${product.name} (${selectedUnit.unit_name})` : product.name,
         price: hasUnits ? selectedUnit.price : product.price,
+        unit_id: hasUnits ? selectedUnit.unit_id : null,
       };
       addToCart(productToAdd, diff);
     }
@@ -479,14 +482,14 @@ const ProductCard = ({
       {hasUnits ? (
         <>
           <select
-            value={selectedUnit?.id}
+            value={selectedUnit?.unit_id}
             onChange={handleUnitChange}
             className="unit-dropdown"
             style={{ marginTop: '6px', marginBottom: '4px' }}
           >
             {product.units.map((unit) => (
-              <option key={unit.id} value={unit.id}>
-                {unit.name} - ₹{unit.price}
+              <option key={unit.unit_id} value={unit.unit_id}>
+                {unit.unit_name} - ₹{unit.price}
               </option>
             ))}
           </select>

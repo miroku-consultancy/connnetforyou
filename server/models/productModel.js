@@ -28,15 +28,15 @@ const getAllProducts = async (shopId) => {
 
     // Fetch product units joined with unit info
     const unitsRes = await pool.query(
-      `
-      SELECT pu.id, pu.product_id, pu.price, pu.stock, 
-             u.name AS unit_name, u.category AS unit_category
-      FROM product_units pu
-      JOIN units u ON pu.unit_id = u.id
-      WHERE pu.product_id = ANY($1::int[])
-      `,
-      [productIds]
-    );
+  `
+  SELECT pu.id, pu.product_id, pu.unit_id, pu.price, pu.stock, 
+         u.name AS unit_name, u.category AS unit_category
+  FROM product_units pu
+  JOIN units u ON pu.unit_id = u.id
+  WHERE pu.product_id = ANY($1::int[])
+  `,
+  [productIds]
+);
 
     // Map product_id to unit details
     const unitMap = {};
@@ -44,6 +44,7 @@ const getAllProducts = async (shopId) => {
       if (!unitMap[unit.product_id]) unitMap[unit.product_id] = [];
       unitMap[unit.product_id].push({
         id: unit.id,
+        unit_id: unit.unit_id,
         name: unit.unit_name,
         category: unit.unit_category,
         price: unit.price,
