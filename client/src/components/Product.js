@@ -6,6 +6,8 @@ import { useUser } from './UserContext';
 import LogoutButton from './LogoutButton';
 import AddressPopup from './AddressPopup';
 
+const API_BASE_URL = 'https://connnet4you-server.onrender.com';
+
 const Product = () => {
   const [products, setProducts] = useState([]);
   const [quantities, setQuantities] = useState({});
@@ -26,8 +28,6 @@ const Product = () => {
   const { user, loadingUser } = useUser();
   const navigate = useNavigate();
   const { shopSlug } = useParams();
-
-  const API_BASE_URL = 'https://connnet4you-server.onrender.com';
 
   const getSafeShopSlug = (slug) => {
     if (!slug || slug === 'undefined' || slug === 'null') return null;
@@ -212,7 +212,7 @@ const Product = () => {
     if (diff !== 0) addToCart(product, diff);
   };
 
-  // 💡 Dynamically group by subcategory
+  // Group products by subcategory
   const freshProducts = products.filter((p) => !!p.subcategory);
   const groupedProductsMap = freshProducts.reduce((acc, product) => {
     const sub = product.subcategory || 'Uncategorized';
@@ -233,7 +233,9 @@ const Product = () => {
     <section className="product-section">
       {!loadingUser && user && (
         <div className="user-profile-banner">
-          <span role="img" aria-label="user" className="user-icon">👤</span>
+          <span role="img" aria-label="user" className="user-icon">
+            👤
+          </span>
           <div className="user-info-container">
             <p>
               Welcome back, <strong>{user.name || user.email?.split('@')[0]}</strong>
@@ -312,40 +314,22 @@ const Product = () => {
 
       {groupedProducts.map(({ subcategory, items }, index) => (
         items.length > 0 && (
-          <div key={subcategory} className={`subcategory-section ${index % 2 === 0 ? 'light-bg' : 'dark-bg'}`}>
+          <div
+            key={subcategory}
+            className={`subcategory-section ${index % 2 === 0 ? 'light-bg' : 'dark-bg'}`}
+          >
             <h2 className="subcategory-title">{subcategory}</h2>
             <div className="product-grid">
               {items.map((product) => (
-                <div key={product.id} className="product-card">
-                  <div className="image-container">
-                    <img
-                      src={resolveImageUrl(product.image)}
-                      alt={product.name}
-                      className="product-image"
-                    />
-                    <div className="qty-controls-overlay">
-                      <button
-                        className="qty-btn"
-                        onClick={() => handleQtyChange(product, -1)}
-                        disabled={(quantities[product.id] || 0) <= 0}
-                      >
-                        −
-                      </button>
-                      <span className="qty-number">
-                        {quantities[product.id] || 0}
-                      </span>
-                      <button
-                        className="qty-btn"
-                        onClick={() => handleQtyChange(product, 1)}
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                  <h3>{product.name}</h3>
-                  <p className="product-description">{product.description}</p>
-                  <p className="product-price">₹{product.price}</p>
-                </div>
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  quantities={quantities}
+                  setQuantities={setQuantities}
+                  cart={cart}
+                  addToCart={addToCart}
+                  resolveImageUrl={resolveImageUrl}
+                />
               ))}
             </div>
           </div>
@@ -400,7 +384,10 @@ const Product = () => {
               ))}
             </ul>
             <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-              <button onClick={() => navigate(`/${safeShopSlug}/order`)} className="login-btn">
+              <button
+                onClick={() => navigate(`/${safeShopSlug}/order`)}
+                className="login-btn"
+              >
                 Proceed to Order
               </button>
             </div>
@@ -417,6 +404,98 @@ const Product = () => {
         />
       )}
     </section>
+  );
+};
+
+const ProductCard = ({
+  product,
+  quantities,
+  setQuantities,
+  cart,
+  addToCart,
+  resolveImageUrl,
+}) => {
+  const hasUnits = Array.isArray(product.units) && product.units.length > 0;
+  const [selectedUnit, setSelectedUnit] = useState(hasUnits ? product.units[0] : null);
+
+  // Unique key combines product id and unit id (if applicable)
+  const uniqueKey = hasUnits ? `${product.id}-${selectedUnit?.id}` : product.id;
+  const qty = quantities[uniqueKey] || 0;
+
+  const handleUnitChange = (e) => {
+    const unitId = parseInt(e.target.value, 10);
+    const unit = product.units.find((u) => u.id === unitId);
+    setSelectedUnit(unit);
+  };
+
+  const handleQtyChangeForUnit = (delta) => {
+    const newQty = Math.max(0, qty + delta);
+    setQuantities((prev) => ({ ...prev, [uniqueKey]: newQty }));
+
+    const cartQty = cart[uniqueKey]?.quantity || 0;
+    const diff = newQty - cartQty;
+
+    if (diff !== 0) {
+      const productToAdd = {
+        ...product,
+        id: uniqueKey,
+        name: hasUnits ? `${product.name} (${selectedUnit.name})` : product.name,
+        price: hasUnits ? selectedUnit.price : product.price,
+      };
+      addToCart(productToAdd, diff);
+    }
+  };
+
+  return (
+    <div className="product-card">
+      <div className="image-container">
+        <img
+          src={resolveImageUrl(product.image)}
+          alt={product.name}
+          className="product-image"
+        />
+        <div className="qty-controls-overlay">
+          <button
+            className="qty-btn"
+            onClick={() => handleQtyChangeForUnit(-1)}
+            disabled={qty <= 0}
+          >
+            −
+          </button>
+          <span className="qty-number">{qty}</span>
+          <button
+            className="qty-btn"
+            onClick={() => handleQtyChangeForUnit(1)}
+          >
+            +
+          </button>
+        </div>
+      </div>
+
+      <h3>{product.name}</h3>
+      <p className="product-description">{product.description}</p>
+
+      {/* Show unit dropdown if applicable */}
+      {hasUnits ? (
+        <>
+          <select
+            value={selectedUnit?.id}
+            onChange={handleUnitChange}
+            className="unit-dropdown"
+            style={{ marginTop: '6px', marginBottom: '4px' }}
+          >
+            {product.units.map((unit) => (
+              <option key={unit.id} value={unit.id}>
+                {unit.name} - ₹{unit.price}
+              </option>
+            ))}
+          </select>
+          <p className="product-price">₹{selectedUnit?.price}</p>
+        </>
+      ) : (
+        <p className="product-price">₹{product.price}</p>
+      )}
+    </div>
   );
 };
 

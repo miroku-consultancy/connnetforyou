@@ -102,58 +102,74 @@ const Order = () => {
     }
   };
 
-  const handleOrder = async () => {
-    if (!paymentMethod) return alert('Please select a payment method');
-    if (!address) {
-      alert('Please select or enter your address.');
-      setShowAddressPopup(true);
-      return;
-    }
+const handleOrder = async () => {
+  if (!paymentMethod) return alert('Please select a payment method');
+  if (!address) {
+    alert('Please select or enter your address.');
+    setShowAddressPopup(true);
+    return;
+  }
 
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      alert('You must be logged in to place an order.');
-      navigate('/login');
-      return;
-    }
+  const token = localStorage.getItem('authToken');
+  if (!token) {
+    alert('You must be logged in to place an order.');
+    navigate('/login');
+    return;
+  }
 
-    const orderData = {
-      items,
-      total,
-      address,
-      paymentMethod,
-      orderDate: new Date().toISOString(),
-    };
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/orders`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(orderData),
-      });
-
-      if (!response.ok) throw new Error('Failed to place order');
-      const result = await response.json();
-
-      // Refresh notifications on successful order
-      setRefreshNotifications((prev) => prev + 1);
-
-      const fullOrder = { ...orderData, orderId: result.orderId };
-      localStorage.setItem('orderSummary', JSON.stringify(fullOrder));
-
-      if (paymentMethod === 'cod') {
-        navigate(`/${effectiveShopSlug}/order-summary`);
-      } else {
-        navigate(`/${effectiveShopSlug}/payment`, { state: { order: fullOrder } });
-      }
-    } catch (error) {
-      console.error('Order placement failed:', error);
-      alert('Failed to place order. Please try again.');
-    }
+  const orderData = {
+    items: items.map(i => ({
+      id: i.id,
+      name: i.name,
+      price: i.price,
+      quantity: i.quantity,
+      image: i.image,
+      shopId: i.shopId ?? i.shop_id,
+      unit_id: i.unit_id ?? null,
+      unit_type: i.unit_type ?? null,
+    })),
+    total,
+    address,
+    paymentMethod,
+    orderDate: new Date().toISOString(),
   };
+
+  console.log('[handleOrder] Submitting order with payload:', orderData);
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/orders`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(orderData),
+    });
+
+    const responseText = await response.text();
+    console.log('[handleOrder] Raw response from server:', responseText);
+
+    if (!response.ok) {
+      throw new Error(`Failed to place order: ${response.status} ${response.statusText}`);
+    }
+
+    const result = JSON.parse(responseText);
+
+    setRefreshNotifications((prev) => prev + 1);
+    const fullOrder = { ...orderData, orderId: result.orderId };
+    localStorage.setItem('orderSummary', JSON.stringify(fullOrder));
+
+    if (paymentMethod === 'cod') {
+      navigate(`/${effectiveShopSlug}/order-summary`);
+    } else {
+      navigate(`/${effectiveShopSlug}/payment`, { state: { order: fullOrder } });
+    }
+  } catch (error) {
+    console.error('[handleOrder] Order placement failed:', error);
+    alert('Failed to place order. Please check your address and try again.');
+  }
+};
+
 
   const handleQtyChange = (item, delta) => {
     const newQty = Math.max(0, item.quantity + delta);
