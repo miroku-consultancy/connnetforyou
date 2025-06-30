@@ -5,8 +5,21 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useUser } from './UserContext';
 import LogoutButton from './LogoutButton';
 import AddressPopup from './AddressPopup';
+import { jwtDecode } from 'jwt-decode';
 
 const API_BASE_URL = 'https://connnet4you-server.onrender.com';
+
+const token = localStorage.getItem('authToken');
+let isVendor = false;
+
+if (token) {
+  try {
+    const decoded = jwtDecode(token);
+    isVendor = decoded.role === 'vendor';
+  } catch (err) {
+    console.error('Invalid token:', err);
+  }
+}
 
 const Product = () => {
   const [products, setProducts] = useState([]);
@@ -285,28 +298,49 @@ const Product = () => {
             )}
           </div>
 
-          <div className="user-actions">
-            <LogoutButton />
-            <button
-              onClick={() => navigate(`/${safeShopSlug}/order-history`)}
-              className="order-history-btn"
-            >
-              📜 Order History
-            </button>
-            <button
-              onClick={() => navigate(`/${safeShopSlug}/shop-orders`)}
-              className="shop-orders-btn"
-            >
-              🛍️ Shop Orders
-            </button>
-            <button
-              onClick={() => navigate(`/${safeShopSlug}/admin/add-product`)}
-              className="add-product-btn"
-              style={{ marginLeft: '10px' }}
-            >
-              ➕ Add Product
-            </button>
-          </div>
+          {!loadingUser && user && (
+            <div className="user-profile-banner">
+              {/* ... existing user info and address UI ... */}
+
+              <div className="user-actions">
+                <LogoutButton />
+                <button
+                  onClick={() => navigate(`/${safeShopSlug}/order-history`)}
+                  className="order-history-btn"
+                >
+                  📜 Order History
+                </button>
+
+                {/* Only show server-side shop features if user.role === 'vendor' */}
+                {isVendor && (
+                  <>
+                    <button
+                      onClick={() => navigate(`/vendor/dashboard`)}
+                      className="dashboard-btn"
+                      style={{ marginLeft: '10px' }}
+                    >
+                      📊 Dashboard
+                    </button>
+                    <button
+                      onClick={() => navigate(`/${safeShopSlug}/shop-orders`)}
+                      className="shop-orders-btn"
+                    >
+                      🛍️ Shop Orders
+                    </button>
+                    <button
+                      onClick={() => navigate(`/${safeShopSlug}/admin/add-product`)}
+                      className="add-product-btn"
+                      style={{ marginLeft: '10px' }}
+                    >
+                      ➕ Add Product
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
+
         </div>
       )}
 
@@ -482,17 +516,17 @@ const ProductCard = ({
       {hasUnits ? (
         <>
           <select
-  value={selectedUnit?.unit_id}
-  onChange={handleUnitChange}
-  className="unit-dropdown"
-  style={{ marginTop: '6px', marginBottom: '4px' }}
->
-  {product.units.map((unit) => (
-    <option key={unit.unit_id} value={unit.unit_id}>
-      {unit.name} - ₹{unit.price}
-    </option>
-  ))}
-</select>
+            value={selectedUnit?.unit_id}
+            onChange={handleUnitChange}
+            className="unit-dropdown"
+            style={{ marginTop: '6px', marginBottom: '4px' }}
+          >
+            {product.units.map((unit) => (
+              <option key={unit.unit_id} value={unit.unit_id}>
+                {unit.name} - ₹{unit.price}
+              </option>
+            ))}
+          </select>
 
           <p className="product-price">₹{selectedUnit?.price}</p>
         </>
