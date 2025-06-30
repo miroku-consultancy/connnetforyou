@@ -94,13 +94,13 @@ const ShopOrderHistory = () => {
                     <div><strong>Payment:</strong> {order.payment_method}</div>
                     <div><strong>Customer:</strong> {order.customer_name} ({order.customer_phone})</div>
 
-                    {order.address && (
+                    {/* {order.address && (
                         <div>
                             <strong>Address:</strong>{' '}
                             {order.address.name}, {order.address.street}, {order.address.city} - {order.address.zip}
                             {order.address.phone ? ` (${order.address.phone})` : ''}
                         </div>
-                    )}
+                    )} */}
 
 
                     <ul className="order-items-list">

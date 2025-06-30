@@ -140,11 +140,9 @@ async function getOrdersByShop(shopId) {
         o.total,
         o.name AS customer_name,
         o.phone AS customer_phone,
-        a.name AS address_name,
-        a.street AS address_street,
-        a.city AS address_city,
-        a.zip AS address_zip,
-        a.phone AS address_phone,
+        o.street AS address_street,
+        o.city AS address_city,
+        o.zip AS address_zip,
         oi.product_id,
         oi.name AS product_name,
         oi.price,
@@ -154,7 +152,6 @@ async function getOrdersByShop(shopId) {
       FROM orders o
       JOIN order_items oi ON o.id = oi.order_id
       LEFT JOIN units u ON oi.unit_id = u.id
-      LEFT JOIN address a ON o.address_id = a.id
       WHERE oi.shop_id = $1
       ORDER BY o.order_date DESC, o.id`,
       [shopId]
@@ -172,11 +169,9 @@ async function getOrdersByShop(shopId) {
         total,
         customer_name,
         customer_phone,
-        address_name,
         address_street,
         address_city,
         address_zip,
-        address_phone,
         product_id,
         product_name,
         price,
@@ -194,11 +189,9 @@ async function getOrdersByShop(shopId) {
           customer_name,
           customer_phone,
           address: {
-            name: address_name,
             street: address_street,
             city: address_city,
             zip: address_zip,
-            phone: address_phone,
           },
           items: [],
         });
@@ -222,7 +215,6 @@ async function getOrdersByShop(shopId) {
     throw err;
   }
 }
-
 
 module.exports = {
   createOrder,
