@@ -11,80 +11,80 @@ const categoryOptions = {
   Beverages: ['Tea', 'Coffee', 'Juice'],
 };
 
+const API_BASE_URL = 'https://connnet4you-server.onrender.com';
+
 const AddProduct = () => {
   const { user } = useUser();
   const navigate = useNavigate();
-  const [showScanner, setShowScanner] = useState(false);
-  const [previewImage, setPreviewImage] = useState(null);
+
   const [unitList, setUnitList] = useState([]);
   const [addingNewUnit, setAddingNewUnit] = useState(false);
   const [newUnitName, setNewUnitName] = useState('');
+  const [previewImage, setPreviewImage] = useState(null);
+  const [showScanner, setShowScanner] = useState(false);
 
   const [productData, setProductData] = useState({
     name: '',
     description: '',
     price: '',
     stock: '',
-    image: null,
     barcode: '',
     category: '',
     subcategory: '',
     unit: '',
     unitPrice: '',
     unitStock: '',
+    image: null,
   });
 
-  const API_BASE_URL = 'https://connnet4you-server.onrender.com';
+  // 🔄 Load units on mount
+  useEffect(() => {
+    const fetchUnits = async () => {
+      const token = localStorage.getItem('authToken');
+      if (!token) return;
 
-useEffect(() => {
-  const fetchUnits = async () => {
-    const token = localStorage.getItem('authToken');
-    if (!token) return;
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/units`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (Array.isArray(data)) setUnitList(data);
+      } catch (err) {
+        console.error('Failed to load units:', err);
+      }
+    };
 
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/units`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const data = await res.json();
-      if (Array.isArray(data)) setUnitList(data);
-    } catch (err) {
-      console.error('Failed to load units:', err);
-    }
-  };
+    fetchUnits();
+  }, []);
 
-  fetchUnits();
-}, []);
-
-
+  // 🧩 Form input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setProductData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setProductData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    setProductData((prev) => ({
-      ...prev,
-      image: file,
-    }));
+    if (!file) return;
+    setProductData((prev) => ({ ...prev, image: file }));
     setPreviewImage(URL.createObjectURL(file));
   };
 
+  // ➕ Add unit dynamically
   const handleAddNewUnit = async () => {
     if (!newUnitName.trim()) return;
+
     try {
+      const token = localStorage.getItem('authToken');
       const res = await fetch(`${API_BASE_URL}/api/units`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ name: newUnitName }),
       });
+
       if (res.ok) {
         const newUnit = await res.json();
         setUnitList((prev) => [...prev, newUnit]);
@@ -99,11 +99,18 @@ useEffect(() => {
     }
   };
 
+  // ✅ Final submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('authToken');
-    const formData = new FormData();
 
+    // Validate required fields
+    if (!productData.subcategory) {
+      alert('Please select a subcategory.');
+      return;
+    }
+
+    const formData = new FormData();
     for (const key in productData) {
       if (productData[key]) {
         formData.append(key, productData[key]);
@@ -123,7 +130,7 @@ useEffect(() => {
 
       if (response.ok) {
         alert('✅ Product added successfully!');
-        navigate('/products');
+        navigate('/demo/products');
       } else {
         const error = await response.json();
         alert(error.message || '❌ Failed to add product');
@@ -136,42 +143,40 @@ useEffect(() => {
 
   return (
     <div className="add-product-container">
-      <h2>Add New Product</h2>
+      <h2>➕ Add New Product</h2>
       <form onSubmit={handleSubmit} className="add-product-form" encType="multipart/form-data">
+        {/* Product Name */}
         <label htmlFor="name">Product Name <span className="required">*</span></label>
         <input type="text" name="name" value={productData.name} onChange={handleInputChange} required />
 
+        {/* Description */}
         <label htmlFor="description">Description</label>
         <textarea name="description" value={productData.description} onChange={handleInputChange} />
 
+        {/* Price */}
         <label htmlFor="price">Price <span className="required">*</span></label>
         <input type="number" name="price" value={productData.price} onChange={handleInputChange} required />
 
+        {/* Stock */}
         <label htmlFor="stock">Stock <span className="required">*</span></label>
         <input type="number" name="stock" value={productData.stock} onChange={handleInputChange} required />
 
+        {/* Barcode + Scanner */}
         <label htmlFor="barcode">Barcode (Optional)</label>
         <input type="text" name="barcode" value={productData.barcode} onChange={handleInputChange} />
+        <button type="button" onClick={() => setShowScanner(!showScanner)} className="barcode-btn">
+          {showScanner ? '📷 Close Scanner' : '📷 Scan Barcode'}
+        </button>
+        {showScanner && (
+          <BarcodeScanner
+            onScanSuccess={(scannedCode) => {
+              setProductData((prev) => ({ ...prev, barcode: scannedCode }));
+              setShowScanner(false);
+            }}
+          />
+        )}
 
-        <div style={{ marginTop: '10px' }}>
-          <button
-            type="button"
-            onClick={() => setShowScanner(!showScanner)}
-            className="barcode-btn"
-          >
-            {showScanner ? '📷 Close Scanner' : '📷 Scan Barcode'}
-          </button>
-
-          {showScanner && (
-            <BarcodeScanner
-              onScanSuccess={(scannedCode) => {
-                setProductData((prev) => ({ ...prev, barcode: scannedCode }));
-                setShowScanner(false);
-              }}
-            />
-          )}
-        </div>
-
+        {/* Category */}
         <label htmlFor="category">Category <span className="required">*</span></label>
         <select
           name="category"
@@ -191,12 +196,14 @@ useEffect(() => {
           ))}
         </select>
 
-        <label htmlFor="subcategory">Subcategory</label>
+        {/* Subcategory (mandatory) */}
+        <label htmlFor="subcategory">Subcategory <span className="required">*</span></label>
         <select
           name="subcategory"
           value={productData.subcategory}
           onChange={handleInputChange}
           disabled={!productData.category}
+          required
         >
           <option value="">-- Select Subcategory --</option>
           {productData.category &&
@@ -205,25 +212,20 @@ useEffect(() => {
             ))}
         </select>
 
+        {/* Unit & Add Unit Button */}
         <label htmlFor="unit">Unit <span className="required">*</span></label>
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div className="unit-input">
           <select name="unit" value={productData.unit} onChange={handleInputChange} required>
             <option value="">-- Select Unit --</option>
             {unitList.map((unit) => (
               <option key={unit.id} value={unit.name}>{unit.name}</option>
             ))}
           </select>
-          <button
-            type="button"
-            onClick={() => setAddingNewUnit(!addingNewUnit)}
-            style={{ padding: '6px 12px' }}
-          >
-            ➕ Add Unit
-          </button>
+          <button type="button" onClick={() => setAddingNewUnit(!addingNewUnit)}>➕ Add Unit</button>
         </div>
 
         {addingNewUnit && (
-          <div style={{ marginTop: '10px' }}>
+          <div className="new-unit-form">
             <input
               type="text"
               placeholder="New Unit Name"
@@ -234,23 +236,21 @@ useEffect(() => {
           </div>
         )}
 
+        {/* Unit price & stock */}
         <label htmlFor="unitPrice">Unit Price</label>
-        <input type="number" name="unitPrice" value={productData.unitPrice} onChange={handleInputChange} placeholder="Optional" />
+        <input type="number" name="unitPrice" value={productData.unitPrice} onChange={handleInputChange} />
 
         <label htmlFor="unitStock">Unit Stock</label>
-        <input type="number" name="unitStock" value={productData.unitStock} onChange={handleInputChange} placeholder="Optional" />
+        <input type="number" name="unitStock" value={productData.unitStock} onChange={handleInputChange} />
 
+        {/* Image upload */}
         <label htmlFor="image">Product Image</label>
         <input type="file" accept="image/*" onChange={handleFileChange} />
         {previewImage && (
-          <img
-            src={previewImage}
-            alt="Preview"
-            style={{ maxWidth: '150px', marginTop: '10px', borderRadius: '8px' }}
-          />
+          <img src={previewImage} alt="Preview" className="preview-image" />
         )}
 
-        <button type="submit" className="submit-btn">➕ Add Product</button>
+        <button type="submit" className="submit-btn">📦 Add Product</button>
       </form>
     </div>
   );
