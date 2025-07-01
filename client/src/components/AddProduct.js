@@ -57,7 +57,6 @@ const AddProduct = () => {
     fetchUnits();
   }, []);
 
-  // 🧩 Form input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setProductData((prev) => ({ ...prev, [name]: value }));
@@ -70,10 +69,8 @@ const AddProduct = () => {
     setPreviewImage(URL.createObjectURL(file));
   };
 
-  // ➕ Add unit dynamically
   const handleAddNewUnit = async () => {
-    if (!newUnitName.trim()) return;
-
+    if (!newUnitName.trim()) return alert('Unit name required');
     try {
       const token = localStorage.getItem('authToken');
       const res = await fetch(`${API_BASE_URL}/api/units`, {
@@ -96,98 +93,88 @@ const AddProduct = () => {
       }
     } catch (err) {
       console.error('Error adding unit:', err);
+      alert('Error adding unit');
     }
   };
 
-  // ✅ Final submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('authToken');
 
-    // Validate required fields
-    if (!productData.subcategory) {
-      alert('Please select a subcategory.');
-      return;
+    if (!productData.name || !productData.price || !productData.stock || !productData.category || !productData.subcategory || !productData.unit) {
+      return alert('Please fill in all required fields');
     }
 
     const formData = new FormData();
-    for (const key in productData) {
-      if (productData[key]) {
-        formData.append(key, productData[key]);
-      }
-    }
-
-    formData.append('shop_id', user.shop_id);
+    Object.entries(productData).forEach(([key, value]) => {
+      if (value) formData.append(key, value);
+    });
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/products`, {
+      const res = await fetch(`${API_BASE_URL}/api/products`, {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
 
-      if (response.ok) {
-        alert('✅ Product added successfully!');
+      if (res.ok) {
+        alert('✅ Product added or updated successfully!');
         navigate('/demo/products');
       } else {
-        const error = await response.json();
-        alert(error.message || '❌ Failed to add product');
+        const err = await res.json();
+        alert(err.message || '❌ Failed to add product');
       }
     } catch (err) {
-      console.error('Add product error:', err);
+      console.error('Error submitting product:', err);
       alert('An error occurred. Please try again.');
     }
   };
 
   return (
     <div className="add-product-container">
-      <h2>➕ Add New Product</h2>
+      <h2>➕ Add Product or Unit</h2>
       <form onSubmit={handleSubmit} className="add-product-form" encType="multipart/form-data">
         {/* Product Name */}
-        <label htmlFor="name">Product Name <span className="required">*</span></label>
+        <label>Product Name <span className="required">*</span></label>
         <input type="text" name="name" value={productData.name} onChange={handleInputChange} required />
 
         {/* Description */}
-        <label htmlFor="description">Description</label>
+        <label>Description</label>
         <textarea name="description" value={productData.description} onChange={handleInputChange} />
 
         {/* Price */}
-        <label htmlFor="price">Price <span className="required">*</span></label>
+        <label>Default Price <span className="required">*</span></label>
         <input type="number" name="price" value={productData.price} onChange={handleInputChange} required />
 
         {/* Stock */}
-        <label htmlFor="stock">Stock <span className="required">*</span></label>
+        <label>Default Stock <span className="required">*</span></label>
         <input type="number" name="stock" value={productData.stock} onChange={handleInputChange} required />
 
-        {/* Barcode + Scanner */}
-        <label htmlFor="barcode">Barcode (Optional)</label>
+        {/* Barcode */}
+        <label>Barcode (Optional)</label>
         <input type="text" name="barcode" value={productData.barcode} onChange={handleInputChange} />
-        <button type="button" onClick={() => setShowScanner(!showScanner)} className="barcode-btn">
+        <button type="button" className="barcode-btn" onClick={() => setShowScanner(!showScanner)}>
           {showScanner ? '📷 Close Scanner' : '📷 Scan Barcode'}
         </button>
         {showScanner && (
           <BarcodeScanner
-            onScanSuccess={(scannedCode) => {
-              setProductData((prev) => ({ ...prev, barcode: scannedCode }));
+            onScanSuccess={(code) => {
+              setProductData((prev) => ({ ...prev, barcode: code }));
               setShowScanner(false);
             }}
           />
         )}
 
         {/* Category */}
-        <label htmlFor="category">Category <span className="required">*</span></label>
+        <label>Category <span className="required">*</span></label>
         <select
           name="category"
           value={productData.category}
-          onChange={(e) =>
-            setProductData((prev) => ({
-              ...prev,
-              category: e.target.value,
-              subcategory: '',
-            }))
-          }
+          onChange={(e) => setProductData((prev) => ({
+            ...prev,
+            category: e.target.value,
+            subcategory: '',
+          }))}
           required
         >
           <option value="">-- Select Category --</option>
@@ -196,8 +183,8 @@ const AddProduct = () => {
           ))}
         </select>
 
-        {/* Subcategory (mandatory) */}
-        <label htmlFor="subcategory">Subcategory <span className="required">*</span></label>
+        {/* Subcategory */}
+        <label>Subcategory <span className="required">*</span></label>
         <select
           name="subcategory"
           value={productData.subcategory}
@@ -206,14 +193,13 @@ const AddProduct = () => {
           required
         >
           <option value="">-- Select Subcategory --</option>
-          {productData.category &&
-            categoryOptions[productData.category]?.map((sub) => (
-              <option key={sub} value={sub}>{sub}</option>
-            ))}
+          {categoryOptions[productData.category]?.map((sub) => (
+            <option key={sub} value={sub}>{sub}</option>
+          ))}
         </select>
 
-        {/* Unit & Add Unit Button */}
-        <label htmlFor="unit">Unit <span className="required">*</span></label>
+        {/* Unit selection */}
+        <label>Unit <span className="required">*</span></label>
         <div className="unit-input">
           <select name="unit" value={productData.unit} onChange={handleInputChange} required>
             <option value="">-- Select Unit --</option>
@@ -224,6 +210,7 @@ const AddProduct = () => {
           <button type="button" onClick={() => setAddingNewUnit(!addingNewUnit)}>➕ Add Unit</button>
         </div>
 
+        {/* Add new unit inline */}
         {addingNewUnit && (
           <div className="new-unit-form">
             <input
@@ -232,25 +219,25 @@ const AddProduct = () => {
               value={newUnitName}
               onChange={(e) => setNewUnitName(e.target.value)}
             />
-            <button type="button" onClick={handleAddNewUnit}>Save Unit</button>
+            <button type="button" onClick={handleAddNewUnit}>Save</button>
           </div>
         )}
 
-        {/* Unit price & stock */}
-        <label htmlFor="unitPrice">Unit Price</label>
+        {/* Unit-specific price and stock */}
+        <label>Unit Price (optional)</label>
         <input type="number" name="unitPrice" value={productData.unitPrice} onChange={handleInputChange} />
 
-        <label htmlFor="unitStock">Unit Stock</label>
+        <label>Unit Stock (optional)</label>
         <input type="number" name="unitStock" value={productData.unitStock} onChange={handleInputChange} />
 
         {/* Image upload */}
-        <label htmlFor="image">Product Image</label>
+        <label>Product Image</label>
         <input type="file" accept="image/*" onChange={handleFileChange} />
         {previewImage && (
           <img src={previewImage} alt="Preview" className="preview-image" />
         )}
 
-        <button type="submit" className="submit-btn">📦 Add Product</button>
+        <button type="submit" className="submit-btn">📦 Submit Product</button>
       </form>
     </div>
   );

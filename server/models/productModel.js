@@ -9,7 +9,7 @@ const pool = new Pool({
   database: process.env.PG_DATABASE,
 });
 
-// 🔍 Get all products with enriched unit data
+// 🔍 Get all products with unit details
 const getAllProducts = async (shopId) => {
   try {
     const productRes = await pool.query(
@@ -20,7 +20,6 @@ const getAllProducts = async (shopId) => {
     if (products.length === 0) return [];
 
     const productIds = products.map((p) => p.id);
-
     const unitsRes = await pool.query(
       `SELECT pu.id, pu.product_id, pu.unit_id, pu.price, pu.stock, 
               u.name AS unit_name, u.category AS unit_category
@@ -43,40 +42,37 @@ const getAllProducts = async (shopId) => {
       });
     });
 
-    const enrichedProducts = products.map((product) => ({
+    return products.map((product) => ({
       ...product,
       units: unitMap[product.id] || [],
     }));
-
-    return enrichedProducts;
   } catch (err) {
     console.error('❌ Error in getAllProducts:', err);
     throw err;
   }
 };
 
-// 🔍 Get product by ID
+// 🔍 Get single product
 const getProductById = async (id) => {
   try {
     const res = await pool.query('SELECT * FROM products WHERE id = $1', [id]);
-    if (res.rows.length === 0) return null;
-    return res.rows[0];
+    return res.rows[0] || null;
   } catch (err) {
     console.error('❌ Error in getProductById:', err);
     throw err;
   }
 };
 
-// ➕ Add product + unit (with upsert logic)
+// ➕ Add or update product & unit
 const addProduct = async ({
   name, description, price, stock, barcode, category, subcategory, image, shop_id,
-  unit, unitPrice, unitStock
+  unit, unitPrice, unitStock,
 }) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
 
-    // 1. Insert unit if it doesn't exist
+    // Insert unit if not exists
     await client.query(
       `INSERT INTO units(name, category)
        VALUES ($1, 'quantity')
@@ -84,20 +80,33 @@ const addProduct = async ({
       [unit]
     );
 
-    const unitResult = await client.query(`SELECT id FROM units WHERE name = $1`, [unit]);
-    const unit_id = unitResult.rows[0]?.id;
-    if (!unit_id) throw new Error('❌ Failed to fetch or insert unit');
+    const unitRes = await client.query(`SELECT id FROM units WHERE name = $1`, [unit]);
+    const unit_id = unitRes.rows[0]?.id;
+    if (!unit_id) throw new Error('Unit not found or failed to insert');
 
-    // 2. Insert product
-    const productResult = await client.query(
-      `INSERT INTO products(name, description, price, stock, barcode, category, subcategory, image, shop_id)
-       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)
-       RETURNING id`,
-      [name, description, price, stock, barcode, category, subcategory, image, shop_id]
+    // Check if product exists
+    let productRes = await client.query(
+      `SELECT id FROM products WHERE name = $1 AND shop_id = $2`,
+      [name, shop_id]
     );
-    const product_id = productResult.rows[0].id;
 
-    // 3. Upsert product_units
+    let product_id;
+
+    if (productRes.rowCount > 0) {
+      // Product exists
+      product_id = productRes.rows[0].id;
+    } else {
+      // Create product
+      const insertRes = await client.query(
+        `INSERT INTO products(name, description, price, stock, barcode, category, subcategory, image, shop_id)
+         VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)
+         RETURNING id`,
+        [name, description, price, stock, barcode, category, subcategory, image, shop_id]
+      );
+      product_id = insertRes.rows[0].id;
+    }
+
+    // Upsert unit for the product
     const unitExistsRes = await client.query(
       `SELECT id FROM product_units WHERE product_id = $1 AND unit_id = $2`,
       [product_id, unit_id]
@@ -122,7 +131,7 @@ const addProduct = async ({
     return { product_id, unit_id };
   } catch (err) {
     await client.query('ROLLBACK');
-    console.error('❌ Error in addProduct transaction:', err);
+    console.error('❌ Error in addProduct:', err);
     throw err;
   } finally {
     client.release();
