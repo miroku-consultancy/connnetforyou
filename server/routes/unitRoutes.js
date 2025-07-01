@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const unitController = require('../controllers/unitController');
+const { getUnits, addUnit } = require('../controllers/unitController');
 const authMiddleware = require('../middleware/authMiddleware');
 
-// GET /api/units
-router.get('/', authMiddleware, unitController.getUnits);
+// 🔐 Protect routes if needed
+router.get('/', authMiddleware, getUnits);
+router.post('/', authMiddleware, addUnit);
 
 module.exports = router;
