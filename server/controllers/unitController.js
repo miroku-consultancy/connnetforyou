@@ -11,14 +11,33 @@ const getUnits = async (req, res) => {
   }
 };
 
-const res = await fetch(`${API_BASE_URL}/api/units`, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${token}`, // ✅ Optional: if your route is protected
-  },
-  body: JSON.stringify({ name: newUnitName }),
-});
+// POST /api/units
+const addUnit = async (req, res) => {
+  const { name } = req.body;
+  if (!name) {
+    return res.status(400).json({ message: 'Unit name is required' });
+  }
 
+  try {
+    const result = await pool.query(
+      `INSERT INTO units(name, category)
+       VALUES ($1, 'quantity')
+       ON CONFLICT (name) DO NOTHING
+       RETURNING *`,
+      [name]
+    );
 
-module.exports = { getUnits };
+    if (result.rows.length === 0) {
+      // Unit already exists, return existing one
+      const existing = await pool.query(`SELECT * FROM units WHERE name = $1`, [name]);
+      return res.status(200).json(existing.rows[0]);
+    }
+
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error('❌ Error adding unit:', err);
+    res.status(500).json({ message: 'Failed to add unit', error: err.message });
+  }
+};
+
+module.exports = { getUnits, addUnit };
