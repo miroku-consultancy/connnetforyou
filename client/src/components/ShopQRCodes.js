@@ -5,7 +5,7 @@ const shops = [
   "Kanji-Sweets",
   "SanjayVegStore",
   "Ganga-Medical-hall",
-  "ALNazeerMuradabadiChickenBIryani",
+  "ALNazeerMuradabadiChickenBiryani",
   "Janta7DaysChineseFastFood"
 ];
 
