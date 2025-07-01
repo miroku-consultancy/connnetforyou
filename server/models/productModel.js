@@ -11,37 +11,25 @@ const pool = new Pool({
 
 // 🔍 Get all products with enriched unit data
 const getAllProducts = async (shopId) => {
-  console.log('🔍 getAllProducts called with shopId:', shopId);
-
   try {
-    // Fetch products by shopId
     const productRes = await pool.query(
       'SELECT * FROM products WHERE shop_id = $1',
       [shopId]
     );
     const products = productRes.rows;
-    console.log(`✅ Found ${products.length} products for shopId ${shopId}`);
-
     if (products.length === 0) return [];
 
-    // Extract product IDs
     const productIds = products.map((p) => p.id);
-    console.log('➡️ Product IDs:', productIds);
 
-    // Fetch product units joined with unit info
     const unitsRes = await pool.query(
-      `
-      SELECT pu.id, pu.product_id, pu.unit_id, pu.price, pu.stock, 
-             u.name AS unit_name, u.category AS unit_category
-      FROM product_units pu
-      JOIN units u ON pu.unit_id = u.id
-      WHERE pu.product_id = ANY($1::int[])
-      `,
+      `SELECT pu.id, pu.product_id, pu.unit_id, pu.price, pu.stock, 
+              u.name AS unit_name, u.category AS unit_category
+         FROM product_units pu
+         JOIN units u ON pu.unit_id = u.id
+         WHERE pu.product_id = ANY($1::int[])`,
       [productIds]
     );
-    console.log(`✅ Found ${unitsRes.rows.length} unit entries for products`);
 
-    // Map product_id to unit details
     const unitMap = {};
     unitsRes.rows.forEach((unit) => {
       if (!unitMap[unit.product_id]) unitMap[unit.product_id] = [];
@@ -54,77 +42,90 @@ const getAllProducts = async (shopId) => {
         stock: unit.stock,
       });
     });
-    console.log('➡️ Constructed unitMap:', unitMap);
 
-    // Enrich products with their units
     const enrichedProducts = products.map((product) => ({
       ...product,
       units: unitMap[product.id] || [],
     }));
-    console.log('✅ Enriched products with unit info');
 
     return enrichedProducts;
   } catch (err) {
-    console.error('❌ Error fetching products with units from DB:', err);
+    console.error('❌ Error in getAllProducts:', err);
     throw err;
   }
 };
 
-// 🔍 Get a single product by ID
+// 🔍 Get product by ID
 const getProductById = async (id) => {
-  console.log(`🔍 getProductById called with id: ${id}`);
-
   try {
     const res = await pool.query('SELECT * FROM products WHERE id = $1', [id]);
-    if (res.rows.length === 0) {
-      console.warn(`⚠️ No product found with id ${id}`);
-      return null;
-    }
-    console.log(`✅ Product found with id ${id}`);
+    if (res.rows.length === 0) return null;
     return res.rows[0];
   } catch (err) {
-    console.error(`❌ Error fetching product id ${id} from DB:`, err);
+    console.error('❌ Error in getProductById:', err);
     throw err;
   }
 };
 
-// ➕ Add a new product to the DB
+// ➕ Add product + unit (with upsert logic)
 const addProduct = async ({
-  name,
-  description,
-  price,
-  stock,
-  barcode,
-  category,
-  subcategory,
-  image,
-  shop_id,
+  name, description, price, stock, barcode, category, subcategory, image, shop_id,
+  unit, unitPrice, unitStock
 }) => {
-  console.log('➕ addProduct called with data:', {
-    name,
-    description,
-    price,
-    stock,
-    barcode,
-    category,
-    subcategory,
-    image,
-    shop_id,
-  });
-
+  const client = await pool.connect();
   try {
-    const result = await pool.query(
-      `INSERT INTO products
-        (name, description, price, stock, barcode, category, subcategory, image, shop_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-       RETURNING *`,
+    await client.query('BEGIN');
+
+    // 1. Insert unit if it doesn't exist
+    await client.query(
+      `INSERT INTO units(name, category)
+       VALUES ($1, 'quantity')
+       ON CONFLICT (name) DO NOTHING`,
+      [unit]
+    );
+
+    const unitResult = await client.query(`SELECT id FROM units WHERE name = $1`, [unit]);
+    const unit_id = unitResult.rows[0]?.id;
+    if (!unit_id) throw new Error('❌ Failed to fetch or insert unit');
+
+    // 2. Insert product
+    const productResult = await client.query(
+      `INSERT INTO products(name, description, price, stock, barcode, category, subcategory, image, shop_id)
+       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)
+       RETURNING id`,
       [name, description, price, stock, barcode, category, subcategory, image, shop_id]
     );
-    console.log('✅ Product added successfully with id:', result.rows[0].id);
-    return result.rows[0];
+    const product_id = productResult.rows[0].id;
+
+    // 3. Upsert product_units
+    const unitExistsRes = await client.query(
+      `SELECT id FROM product_units WHERE product_id = $1 AND unit_id = $2`,
+      [product_id, unit_id]
+    );
+
+    if (unitExistsRes.rowCount > 0) {
+      await client.query(
+        `UPDATE product_units
+         SET price = $1, stock = $2
+         WHERE product_id = $3 AND unit_id = $4`,
+        [unitPrice || price, unitStock || stock, product_id, unit_id]
+      );
+    } else {
+      await client.query(
+        `INSERT INTO product_units(product_id, price, stock, unit_id)
+         VALUES ($1, $2, $3, $4)`,
+        [product_id, unitPrice || price, unitStock || stock, unit_id]
+      );
+    }
+
+    await client.query('COMMIT');
+    return { product_id, unit_id };
   } catch (err) {
-    console.error('❌ Error adding product to DB:', err);
+    await client.query('ROLLBACK');
+    console.error('❌ Error in addProduct transaction:', err);
     throw err;
+  } finally {
+    client.release();
   }
 };
 

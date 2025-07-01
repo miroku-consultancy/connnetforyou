@@ -15,6 +15,8 @@ const shopRoutes = require('./routes/shopRoutes');
 const { sseRouter } = require('./routes/notificationSse');
 const notificationRoutes = require('./routes/notificationRoutes'); // ✅ ADD THIS
 const ordersStatusRouter = require('./routes/ordersStatus'); // Adjust path as necessary
+const unitRoutes = require('./routes/unitRoutes');
+
 
 
 
@@ -61,6 +63,8 @@ app.use('/api/orders', ordersStatusRouter);
 // Use both SSE and normal notifications
 app.use('/api/notifications', notificationRoutes); // ✅ Handles GET /api/notifications
 app.use('/api/notifications', sseRouter);          // ✅ Handles /api/notifications/stream
+
+app.use('/api/units', unitRoutes);
 
 // Serve static assets (images and frontend build)
 app.use('/images', express.static(imagesDir));

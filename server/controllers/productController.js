@@ -29,13 +29,13 @@ const getProduct = async (req, res) => {
   }
 };
 
-// POST /api/products
 const addProduct = async (req, res) => {
   try {
     const user = req.user;
     if (!user || (user.role !== 'admin' && user.role !== 'vendor')) {
-      return res.status(403).json({ message: 'You are not a store owner' });
+      return res.status(403).json({ message: 'You are not authorized to add products' });
     }
+
     const {
       name,
       description,
@@ -43,18 +43,21 @@ const addProduct = async (req, res) => {
       stock,
       barcode,
       category,
-      subcategory
+      subcategory,
+      unit,
+      unitPrice,
+      unitStock,
     } = req.body;
 
     if (!name || !price || !stock) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    console.log('req.file:', req.file); // Log to verify multer worked
-    console.log('req.body:', req.body); // See form fields
+    console.log('📦 req.file:', req.file); 
+    console.log('📝 req.body:', req.body); 
 
     const image = req.file ? req.file.filename : null;
-    const shopId = user.shop_id || null;
+    const shopId = user.shop_id;
 
     const newProduct = await productModel.addProduct({
       name,
@@ -65,15 +68,22 @@ const addProduct = async (req, res) => {
       category,
       subcategory,
       image,
-      shop_id: shopId
+      shop_id: shopId,
+      unit,
+      unitPrice,
+      unitStock,
     });
 
-    res.status(201).json({ message: 'Product added successfully', product: newProduct });
+    res.status(201).json({
+      message: '✅ Product added successfully',
+      product: newProduct,
+    });
   } catch (err) {
-    console.error('Error adding product:', err);
+    console.error('❌ Error adding product:', err);
     res.status(500).json({ message: 'Error adding product', error: err.message });
   }
 };
+
 
 
 
