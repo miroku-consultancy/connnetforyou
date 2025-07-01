@@ -11,4 +11,14 @@ const getUnits = async (req, res) => {
   }
 };
 
+const res = await fetch(`${API_BASE_URL}/api/units`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`, // ✅ Optional: if your route is protected
+  },
+  body: JSON.stringify({ name: newUnitName }),
+});
+
+
 module.exports = { getUnits };

@@ -36,19 +36,27 @@ const AddProduct = () => {
 
   const API_BASE_URL = 'https://connnet4you-server.onrender.com';
 
-  useEffect(() => {
-    // Fetch unit options from backend
-    const fetchUnits = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/units`);
-        const data = await res.json();
-        if (Array.isArray(data)) setUnitList(data);
-      } catch (err) {
-        console.error('Failed to load units:', err);
-      }
-    };
-    fetchUnits();
-  }, []);
+useEffect(() => {
+  const fetchUnits = async () => {
+    const token = localStorage.getItem('authToken');
+    if (!token) return;
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/units`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      if (Array.isArray(data)) setUnitList(data);
+    } catch (err) {
+      console.error('Failed to load units:', err);
+    }
+  };
+
+  fetchUnits();
+}, []);
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
