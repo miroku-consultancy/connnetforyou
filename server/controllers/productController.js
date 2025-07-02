@@ -62,8 +62,30 @@ const addProduct = async (req, res) => {
   }
 };
 
-module.exports = {
-  getProducts,
-  getProduct,
-  addProduct,
+const updateProduct = async (req, res) => {
+  try {
+    const shopId = req.user?.shop_id;
+    const productId = req.params.id;
+    const {
+      name, description, price, stock,
+      barcode, category, subcategory,
+      unit, unitPrice, unitStock
+    } = req.body;
+    const image = req.file?.filename;
+
+    await productModel.updateProduct({
+      id: productId, shop_id: shopId,
+      name, description, price, stock,
+      barcode, category, subcategory,
+      image, unit, unitPrice, unitStock
+    });
+
+    res.json({ message: 'Product updated!' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to update', error: err.message });
+  }
 };
+
+module.exports = { addProduct, getProducts, getProduct, updateProduct };
+

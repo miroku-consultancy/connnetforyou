@@ -40,4 +40,12 @@ router.post(
   productController.addProduct
 );
 
+// In routes/productRoutes.js
+router.put(
+  '/:id',
+  authMiddleware,
+  upload.single('image'),
+  productController.updateProduct
+);
+
 module.exports = router;

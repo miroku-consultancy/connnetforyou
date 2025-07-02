@@ -19,6 +19,9 @@ import ShopQRCodes from './components/ShopQRCodes';
 import ShopDashboard from './components/ShopDashboard'; // NEW: Shop owner dashboard
 import ShopOrderHistory from './components/ShopOrderHistory'; // NEW: Shop orders history page
 import VendorDashboard from './components/VendorDashboard';
+import UpdateProduct from './components/UpdateProduct'; // ⬅️ import at top
+
+
 
 import { ToastContainer } from 'react-toastify';
 
@@ -32,7 +35,7 @@ const App = () => (
         <Header />
         <main>
           <Routes>
-            <Route path="/" element={<Navigate to="/Kanji-Sweets/login" replace />} />
+            <Route path="/" element={<Navigate to="/demo/login" replace />} />
             <Route path="/:shopSlug/login" element={<EmailTokenLogin />} />
             <Route path="/:shopSlug/products" element={<ProtectedRoute><Product /></ProtectedRoute>} />
             <Route path="/:shopSlug/order" element={<ProtectedRoute><Order /></ProtectedRoute>} />
@@ -50,10 +53,14 @@ const App = () => (
                   <ShopOrderHistory />
                 </ProtectedRoute>
               }
-            />
-            <Route path="/qr-login" element={<QrLoginPage />} />
-            <Route path="/qr-codes" element={<ShopQRCodes />} />
-          </Routes>
+            /> 
+              <Route
+                path="/:shopSlug/admin/edit-product/:id"
+                element={<ProtectedRoute><UpdateProduct /></ProtectedRoute>}
+              />
+              <Route path="/qr-login" element={<QrLoginPage />} />
+              <Route path="/qr-codes" element={<ShopQRCodes />} />
+            </Routes>
         </main>
 
         <Cart />

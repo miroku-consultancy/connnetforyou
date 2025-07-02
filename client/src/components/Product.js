@@ -9,19 +9,8 @@ import { jwtDecode } from 'jwt-decode';
 
 const API_BASE_URL = 'https://connnet4you-server.onrender.com';
 
-const token = localStorage.getItem('authToken');
-let isVendor = false;
-
-if (token) {
-  try {
-    const decoded = jwtDecode(token);
-    isVendor = decoded.role === 'vendor';
-  } catch (err) {
-    console.error('Invalid token:', err);
-  }
-}
-
 const Product = () => {
+  const [isVendor, setIsVendor] = useState(false); // ✅ Correct placement
   const [products, setProducts] = useState([]);
   const [quantities, setQuantities] = useState({});
   const [showCartPopup, setShowCartPopup] = useState(false);
@@ -54,6 +43,20 @@ const Product = () => {
     if (image.startsWith('http') || image.startsWith('/images/')) return image;
     return `${API_BASE_URL}/images/${image}`;
   };
+
+  // ✅ Check token and vendor status
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        setIsVendor(decoded.role === 'vendor');
+      } catch (err) {
+        console.error('Invalid token:', err);
+        setIsVendor(false);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (!safeShopSlug) {
@@ -225,7 +228,6 @@ const Product = () => {
     if (diff !== 0) addToCart(product, diff);
   };
 
-  // Group products by subcategory
   const freshProducts = products.filter((p) => !!p.subcategory);
   const groupedProductsMap = freshProducts.reduce((acc, product) => {
     const sub = product.subcategory || 'Uncategorized';
@@ -246,9 +248,7 @@ const Product = () => {
     <section className="product-section">
       {!loadingUser && user && (
         <div className="user-profile-banner">
-          <span role="img" aria-label="user" className="user-icon">
-            👤
-          </span>
+          <span role="img" aria-label="user" className="user-icon">👤</span>
           <div className="user-info-container">
             <p>
               Welcome back, <strong>{user.name || user.email?.split('@')[0]}</strong>
@@ -272,7 +272,6 @@ const Product = () => {
                 <button
                   onClick={() => setShowAddressPopup(true)}
                   className="edit-btn"
-                  title="Edit Address"
                 >
                   ✏️ Edit Address
                 </button>
@@ -291,56 +290,44 @@ const Product = () => {
                   setShowAddressPopup(true);
                 }}
                 className="edit-btn"
-                title="Add Address"
               >
                 ➕ Add Address
               </button>
             )}
           </div>
 
-          {!loadingUser && user && (
-            <div className="user-profile-banner">
-              {/* ... existing user info and address UI ... */}
+          <div className="user-actions">
+            <LogoutButton />
+            <button
+              onClick={() => navigate(`/${safeShopSlug}/order-history`)}
+              className="order-history-btn"
+            >
+              📜 Order History
+            </button>
 
-              <div className="user-actions">
-                <LogoutButton />
+            {isVendor && (
+              <>
                 <button
-                  onClick={() => navigate(`/${safeShopSlug}/order-history`)}
-                  className="order-history-btn"
+                  onClick={() => navigate(`/vendor/dashboard`)}
+                  className="dashboard-btn"
                 >
-                  📜 Order History
+                  📊 Dashboard
                 </button>
-
-                {/* Only show server-side shop features if user.role === 'vendor' */}
-                {isVendor && (
-                  <>
-                    <button
-                      onClick={() => navigate(`/vendor/dashboard`)}
-                      className="dashboard-btn"
-                      style={{ marginLeft: '10px' }}
-                    >
-                      📊 Dashboard
-                    </button>
-                    <button
-                      onClick={() => navigate(`/${safeShopSlug}/shop-orders`)}
-                      className="shop-orders-btn"
-                    >
-                      🛍️ Shop Orders
-                    </button>
-                    <button
-                      onClick={() => navigate(`/${safeShopSlug}/admin/add-product`)}
-                      className="add-product-btn"
-                      style={{ marginLeft: '10px' }}
-                    >
-                      ➕ Add Product
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
-
-
+                <button
+                  onClick={() => navigate(`/${safeShopSlug}/shop-orders`)}
+                  className="shop-orders-btn"
+                >
+                  🛍️ Shop Orders
+                </button>
+                <button
+                  onClick={() => navigate(`/${safeShopSlug}/admin/add-product`)}
+                  className="add-product-btn"
+                >
+                  ➕ Add Product
+                </button>
+              </>
+            )}
+          </div>
         </div>
       )}
 
@@ -363,6 +350,7 @@ const Product = () => {
                   cart={cart}
                   addToCart={addToCart}
                   resolveImageUrl={resolveImageUrl}
+                  isVendor={isVendor} // ✅ pass down
                 />
               ))}
             </div>
@@ -383,48 +371,30 @@ const Product = () => {
       )}
 
       {showCartPopup && (
-        <div
-          className="cart-popup"
-          onClick={() => setShowCartPopup(false)}
-          role="dialog"
-          aria-modal="true"
-        >
+        <div className="cart-popup" onClick={() => setShowCartPopup(false)}>
           <div className="cart-popup-content" onClick={(e) => e.stopPropagation()}>
-            <button
-              className="cart-close-btn"
-              onClick={() => setShowCartPopup(false)}
-              aria-label="Close Cart"
-            >
+            <button className="cart-close-btn" onClick={() => setShowCartPopup(false)}>
               &times;
             </button>
             <h2>Your Cart</h2>
             <ul>
               {Object.values(cart).map((item) => (
-                <li key={item.id} style={{ margin: '10px 0' }}>
+                <li key={item.id}>
                   <img
                     src={resolveImageUrl(item.image)}
                     alt={item.name}
-                    style={{
-                      width: '40px',
-                      height: '40px',
-                      objectFit: 'cover',
-                      borderRadius: '6px',
-                      marginRight: '10px',
-                      verticalAlign: 'middle',
-                    }}
+                    className="cart-item-image"
                   />
                   {item.name} × {item.quantity} = ₹{item.quantity * item.price}
                 </li>
               ))}
             </ul>
-            <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-              <button
-                onClick={() => navigate(`/${safeShopSlug}/order`)}
-                className="login-btn"
-              >
-                Proceed to Order
-              </button>
-            </div>
+            <button
+              onClick={() => navigate(`/${safeShopSlug}/order`)}
+              className="login-btn"
+            >
+              Proceed to Order
+            </button>
           </div>
         </div>
       )}
@@ -448,15 +418,12 @@ const ProductCard = ({
   cart,
   addToCart,
   resolveImageUrl,
+  isVendor, // ✅ added
 }) => {
   const hasUnits = Array.isArray(product.units) && product.units.length > 0;
   const [selectedUnit, setSelectedUnit] = useState(hasUnits ? product.units[0] : null);
-
-  // Unique key combines product id and unit id (if applicable)
   const uniqueKey = hasUnits ? `${product.id}-${selectedUnit?.unit_id}` : product.id;
   const qty = quantities[uniqueKey] || 0;
-
-
 
   const handleUnitChange = (e) => {
     const unitId = parseInt(e.target.value, 10);
@@ -492,34 +459,21 @@ const ProductCard = ({
           className="product-image"
         />
         <div className="qty-controls-overlay">
-          <button
-            className="qty-btn"
-            onClick={() => handleQtyChangeForUnit(-1)}
-            disabled={qty <= 0}
-          >
-            −
-          </button>
+          <button onClick={() => handleQtyChangeForUnit(-1)} disabled={qty <= 0}>−</button>
           <span className="qty-number">{qty}</span>
-          <button
-            className="qty-btn"
-            onClick={() => handleQtyChangeForUnit(1)}
-          >
-            +
-          </button>
+          <button onClick={() => handleQtyChangeForUnit(1)}>+</button>
         </div>
       </div>
 
       <h3>{product.name}</h3>
       <p className="product-description">{product.description}</p>
 
-      {/* Show unit dropdown if applicable */}
       {hasUnits ? (
         <>
           <select
             value={selectedUnit?.unit_id}
             onChange={handleUnitChange}
             className="unit-dropdown"
-            style={{ marginTop: '6px', marginBottom: '4px' }}
           >
             {product.units.map((unit) => (
               <option key={unit.unit_id} value={unit.unit_id}>
@@ -527,11 +481,19 @@ const ProductCard = ({
               </option>
             ))}
           </select>
-
           <p className="product-price">₹{selectedUnit?.price}</p>
         </>
       ) : (
         <p className="product-price">₹{product.price}</p>
+      )}
+
+      {isVendor && (
+        <button
+          className="edit-product-btn"
+          onClick={() => window.location.href = `/admin/edit-product/${product.id}`}
+        >
+          ✏️ Edit Product
+        </button>
       )}
     </div>
   );
