@@ -5,6 +5,14 @@ import './AddProduct.css';
 
 const API_BASE_URL = 'https://connnet4you-server.onrender.com';
 
+// ✅ Image path resolver to avoid double slashes
+const resolveImageUrl = (image) => {
+  if (!image) return '';
+  if (image.startsWith('http')) return image;
+  if (image.startsWith('/')) return `${API_BASE_URL}${image}`;
+  return `${API_BASE_URL}/uploads/${image}`;
+};
+
 const UpdateProduct = () => {
   const { user } = useUser();
   const { id: productId } = useParams();
@@ -27,7 +35,6 @@ const UpdateProduct = () => {
   const [allUnits, setAllUnits] = useState([]);
   const [newUnit, setNewUnit] = useState({ name: '', price: '', stock: '' });
 
-  // Load all available units
   useEffect(() => {
     const fetchUnits = async () => {
       const token = localStorage.getItem('authToken');
@@ -44,7 +51,6 @@ const UpdateProduct = () => {
     fetchUnits();
   }, []);
 
-  // Load product details
   useEffect(() => {
     const fetchProduct = async () => {
       const token = localStorage.getItem('authToken');
@@ -161,7 +167,6 @@ const UpdateProduct = () => {
 
         <label>Product Units</label>
         {(productUnits || []).map((unit, index) => (
-
           <div key={index} className="unit-block">
             <input
               type="text"
@@ -210,7 +215,7 @@ const UpdateProduct = () => {
         <input type="file" accept="image/*" onChange={handleFileChange} />
         {existingImage && !productData.image && (
           <img
-            src={`${API_BASE_URL}/uploads/${existingImage}`}
+            src={resolveImageUrl(existingImage)}
             alt="Product"
             style={{ maxWidth: '150px', marginTop: '10px' }}
           />

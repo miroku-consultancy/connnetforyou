@@ -138,8 +138,91 @@ const addProduct = async ({
   }
 };
 
+const updateProductWithUnits = async ({
+  id, shop_id, name, description, price, stock,
+  barcode, category, subcategory, image, units
+}) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    // Update product
+    const updateFields = [];
+    const values = [id];
+    let idx = 2;
+
+    const fieldMap = {
+      name, description, price, stock,
+      barcode, category, subcategory, image
+    };
+
+    for (const [key, value] of Object.entries(fieldMap)) {
+      if (value !== undefined) {
+        updateFields.push(`${key} = $${idx}`);
+        values.push(value);
+        idx++;
+      }
+    }
+
+    if (updateFields.length > 0) {
+      await client.query(
+        `UPDATE products SET ${updateFields.join(', ')} WHERE id = $1 AND shop_id = $${idx}`,
+        [...values, shop_id]
+      );
+    }
+
+    // Update units
+    for (const unit of units) {
+      const { name: unitName, price: unitPrice, stock: unitStock } = unit;
+
+      if (!unitName) continue;
+
+      // Ensure unit exists
+      await client.query(
+        `INSERT INTO units(name, category)
+         VALUES ($1, 'quantity')
+         ON CONFLICT (name) DO NOTHING`,
+        [unitName]
+      );
+
+      const unitRes = await client.query(`SELECT id FROM units WHERE name = $1`, [unitName]);
+      const unit_id = unitRes.rows[0]?.id;
+      if (!unit_id) throw new Error(`Unit not found: ${unitName}`);
+
+      const existsRes = await client.query(
+        `SELECT id FROM product_units WHERE product_id = $1 AND unit_id = $2`,
+        [id, unit_id]
+      );
+
+      if (existsRes.rowCount > 0) {
+        await client.query(
+          `UPDATE product_units SET price = $1, stock = $2
+           WHERE product_id = $3 AND unit_id = $4`,
+          [unitPrice || price, unitStock || stock, id, unit_id]
+        );
+      } else {
+        await client.query(
+          `INSERT INTO product_units(product_id, unit_id, price, stock)
+           VALUES ($1, $2, $3, $4)`,
+          [id, unit_id, unitPrice || price, unitStock || stock]
+        );
+      }
+    }
+
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('❌ Error in updateProductWithUnits:', err);
+    throw err;
+  } finally {
+    client.release();
+  }
+};
+
+
 module.exports = {
   getAllProducts,
   getProductById,
   addProduct,
+  updateProductWithUnits,   // <--- add this line
 };
