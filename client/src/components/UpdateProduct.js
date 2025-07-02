@@ -160,7 +160,8 @@ const UpdateProduct = () => {
         <input type="number" name="stock" value={productData.stock} onChange={handleInputChange} />
 
         <label>Product Units</label>
-        {productUnits.map((unit, index) => (
+        {(productUnits || []).map((unit, index) => (
+
           <div key={index} className="unit-block">
             <input
               type="text"

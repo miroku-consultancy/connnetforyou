@@ -351,6 +351,7 @@ const Product = () => {
                   addToCart={addToCart}
                   resolveImageUrl={resolveImageUrl}
                   isVendor={isVendor} // ✅ pass down
+                  safeShopSlug={safeShopSlug}
                 />
               ))}
             </div>
@@ -419,11 +420,13 @@ const ProductCard = ({
   addToCart,
   resolveImageUrl,
   isVendor, // ✅ added
+  safeShopSlug,
 }) => {
   const hasUnits = Array.isArray(product.units) && product.units.length > 0;
   const [selectedUnit, setSelectedUnit] = useState(hasUnits ? product.units[0] : null);
   const uniqueKey = hasUnits ? `${product.id}-${selectedUnit?.unit_id}` : product.id;
   const qty = quantities[uniqueKey] || 0;
+const navigate = useNavigate();
 
   const handleUnitChange = (e) => {
     const unitId = parseInt(e.target.value, 10);
@@ -488,13 +491,14 @@ const ProductCard = ({
       )}
 
       {isVendor && (
-        <button
-          className="edit-product-btn"
-          onClick={() => window.location.href = `/admin/edit-product/${product.id}`}
-        >
-          ✏️ Edit Product
-        </button>
-      )}
+  <button
+    className="edit-product-btn"
+    onClick={() => navigate(`/${safeShopSlug}/admin/edit-product/${product.id}`)}
+  >
+    ✏️ Edit Product
+  </button>
+)}
+
     </div>
   );
 };
