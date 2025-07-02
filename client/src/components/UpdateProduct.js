@@ -5,7 +5,19 @@ import './AddProduct.css';
 
 const API_BASE_URL = 'https://connnet4you-server.onrender.com';
 
-// ✅ Image path resolver to avoid double slashes
+// ✅ Category and subcategory data
+const categoryOptions = {
+  Fresh: [
+    'Fresh Fruits', 'Mangoes & Melons', 'Plants & Gardening',
+    'Fresh Vegetables', 'Exotics & Premium', 'Leafy, Herbs & Seasonings',
+    'Organics & Hydroponics', 'Flowers & Leaves', 'Cuts & Sprouts', 'Dried & Dehydrated',
+  ],
+  Dairy: ['Milk', 'Cheese', 'Yogurt'],
+  Bakery: ['Breads', 'Cakes', 'Cookies'],
+  Beverages: ['Tea', 'Coffee', 'Juice'],
+};
+
+// ✅ Image path resolver
 const resolveImageUrl = (image) => {
   if (!image) return '';
   if (image.startsWith('http')) return image;
@@ -30,11 +42,11 @@ const UpdateProduct = () => {
   });
 
   const [existingImage, setExistingImage] = useState('');
-  const [unitList, setUnitList] = useState([]);
   const [productUnits, setProductUnits] = useState([]);
   const [allUnits, setAllUnits] = useState([]);
   const [newUnit, setNewUnit] = useState({ name: '', price: '', stock: '' });
 
+  // 🔄 Fetch all available units
   useEffect(() => {
     const fetchUnits = async () => {
       const token = localStorage.getItem('authToken');
@@ -51,6 +63,7 @@ const UpdateProduct = () => {
     fetchUnits();
   }, []);
 
+  // 🔄 Load product data by ID
   useEffect(() => {
     const fetchProduct = async () => {
       const token = localStorage.getItem('authToken');
@@ -69,7 +82,7 @@ const UpdateProduct = () => {
           subcategory: data.subcategory,
           image: null,
         });
-        setProductUnits(data.units);
+        setProductUnits(data.units || []);
         setExistingImage(data.image || '');
       } catch (err) {
         console.error('Error loading product:', err);
@@ -84,6 +97,15 @@ const UpdateProduct = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setProductData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleCategoryChange = (e) => {
+    const selectedCategory = e.target.value;
+    setProductData((prev) => ({
+      ...prev,
+      category: selectedCategory,
+      subcategory: '', // reset subcategory
+    }));
   };
 
   const handleFileChange = (e) => {
@@ -150,11 +172,29 @@ const UpdateProduct = () => {
         <label>Description</label>
         <textarea name="description" value={productData.description} onChange={handleInputChange} />
 
+        {/* ✅ Category dropdown */}
         <label>Category *</label>
-        <input type="text" name="category" value={productData.category} onChange={handleInputChange} required />
+        <select name="category" value={productData.category} onChange={handleCategoryChange} required>
+          <option value="">-- Select Category --</option>
+          {Object.keys(categoryOptions).map((cat) => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
+        </select>
 
+        {/* ✅ Subcategory dropdown */}
         <label>Subcategory *</label>
-        <input type="text" name="subcategory" value={productData.subcategory} onChange={handleInputChange} required />
+        <select
+          name="subcategory"
+          value={productData.subcategory}
+          onChange={handleInputChange}
+          required
+          disabled={!productData.category}
+        >
+          <option value="">-- Select Subcategory --</option>
+          {(categoryOptions[productData.category] || []).map((sub) => (
+            <option key={sub} value={sub}>{sub}</option>
+          ))}
+        </select>
 
         <label>Barcode</label>
         <input type="text" name="barcode" value={productData.barcode} onChange={handleInputChange} />
