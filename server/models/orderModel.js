@@ -6,15 +6,17 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
 
   try {
     console.log('[createOrder] Starting order creation...');
+    console.log('[createOrder] Address:', address);
+    console.log('[createOrder] Items:', items);
+
     await client.query('BEGIN');
 
-    // ✅ Infer shop_id from first item (assumes all items from same shop)
+    // Infer shop_id from first item (assumes all items from same shop)
     const shopId = items[0].shopId ?? items[0].shop_id;
-    console.log('[createOrder] items[0]:', items[0]);
-console.log('[createOrder] Resolved shopId:', shopId);
+    console.log('[createOrder] Resolved shopId:', shopId);
     if (!shopId) throw new Error('Missing shop ID in order items');
 
-    // ✅ Get the next order_number for this shop safely (with FOR UPDATE lock)
+    // Get the next order_number for this shop safely (with FOR UPDATE lock)
     const { rows } = await client.query(
       `SELECT COALESCE(MAX(order_number), 0) + 1 AS next_order_number
        FROM orders
@@ -23,8 +25,9 @@ console.log('[createOrder] Resolved shopId:', shopId);
       [shopId]
     );
     const orderNumber = rows[0].next_order_number;
-console.log('[createOrder] Inserting into orders...');
-    // ✅ Insert into orders table with shop_id + order_number
+    console.log('[createOrder] Next order number:', orderNumber);
+
+    // Insert into orders table
     const orderInsertResult = await client.query(
       `INSERT INTO orders (
         user_id, total, name, street, city, zip, phone,
@@ -47,8 +50,10 @@ console.log('[createOrder] Inserting into orders...');
       ]
     );
 
-console.log('[createOrder] Insert result:', orderInsertResult.rows);
+    console.log('[createOrder] Insert result:', orderInsertResult.rows);
+
     const orderId = orderInsertResult.rows[0].id;
+
     console.log(`[createOrder] Order inserted with ID: ${orderId}, shop: ${shopId}, order_number: ${orderNumber}`);
 
     // Insert order items
@@ -77,18 +82,17 @@ console.log('[createOrder] Insert result:', orderInsertResult.rows);
 
     await client.query('COMMIT');
     console.log(`[createOrder] Order ${orderId} (Shop ${shopId}, #${orderNumber}) created successfully.`);
+
     return { orderId, orderNumber };
   } catch (err) {
-  await client.query('ROLLBACK');
-  console.error('[createOrder] Error inserting order:', err.message);
-  console.error('[createOrder] Stack Trace:', err.stack);
-  throw err;
-}
-finally {
+    await client.query('ROLLBACK');
+    console.error('[createOrder] Error inserting order:', err.message);
+    console.error('[createOrder] Stack Trace:', err.stack);
+    throw err;
+  } finally {
     client.release();
   }
 }
-
 
 // GET ORDERS BY USER
 async function getOrdersByUser(userId) {
@@ -100,7 +104,7 @@ async function getOrdersByUser(userId) {
          o.id AS order_id, 
          o.total, 
          o.order_date,
-         o.order_status,                            -- ✅ ADD THIS LINE
+         o.order_status,
          oi.product_id, 
          oi.name, 
          oi.price, 
@@ -123,7 +127,7 @@ async function getOrdersByUser(userId) {
 
     result.rows.forEach(row => {
       const {
-        order_id, total, order_date, order_status,   // ✅ INCLUDE order_status
+        order_id, total, order_date, order_status,
         product_id, name, price, quantity,
         image, unit_id, unit_name, unit_category
       } = row;
@@ -133,7 +137,7 @@ async function getOrdersByUser(userId) {
           id: order_id,
           total,
           order_date,
-          order_status,       // ✅ INCLUDE IT IN THE ORDER OBJECT
+          order_status,
           items: [],
         });
       }
@@ -159,8 +163,6 @@ async function getOrdersByUser(userId) {
   }
 }
 
-
-// GET ORDERS BY SHOP
 // GET ORDERS BY SHOP
 async function getOrdersByShop(shopId) {
   console.log(`[getOrdersByShop] Fetching orders for shopId: ${shopId}`);
@@ -172,7 +174,7 @@ async function getOrdersByShop(shopId) {
         o.order_date,
         o.payment_method,
         o.total,
-        o.order_status,               -- Make sure this is selected in SQL
+        o.order_status,
         o.name AS customer_name,
         o.phone AS customer_phone,
         o.street AS address_street,
@@ -202,7 +204,7 @@ async function getOrdersByShop(shopId) {
         order_date,
         payment_method,
         total,
-        order_status,       // <-- Added this line
+        order_status,
         customer_name,
         customer_phone,
         address_street,
@@ -222,7 +224,7 @@ async function getOrdersByShop(shopId) {
           order_date,
           payment_method,
           total,
-          order_status,       // <-- Use it here as well
+          order_status,
           customer_name,
           customer_phone,
           address: {
@@ -236,7 +238,7 @@ async function getOrdersByShop(shopId) {
 
       ordersMap.get(order_id).items.push({
         product_id,
-        name: product_name,
+        product_name,
         price,
         quantity,
         unit_name,
@@ -252,7 +254,6 @@ async function getOrdersByShop(shopId) {
     throw err;
   }
 }
-
 
 module.exports = {
   createOrder,
