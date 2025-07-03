@@ -21,6 +21,7 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
       [shopId]
     );
     const orderNumber = rows[0].next_order_number;
+    console.log('orderNumber',orderNumber)
 
     // Insert into orders table WITH shop_id + order_number
     const orderInsertResult = await client.query(
@@ -41,7 +42,7 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
         orderDate,
         'Pending',
         shopId,
-        orderNumber
+        3
       ]
     );
 
