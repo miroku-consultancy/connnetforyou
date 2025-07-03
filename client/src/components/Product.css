@@ -370,6 +370,16 @@ body {
   align-items: center;
 }
 
+.cart-item-image {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-right: 10px;
+  vertical-align: middle;
+}
+
+
 /* Proceed to Order Button */
 .cart-popup-content button.login-btn {
   background-color: #4caf50;
