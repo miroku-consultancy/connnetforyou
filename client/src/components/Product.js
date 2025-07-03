@@ -426,7 +426,7 @@ const ProductCard = ({
   const [selectedUnit, setSelectedUnit] = useState(hasUnits ? product.units[0] : null);
   const uniqueKey = hasUnits ? `${product.id}-${selectedUnit?.unit_id}` : product.id;
   const qty = quantities[uniqueKey] || 0;
-const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const handleUnitChange = (e) => {
     const unitId = parseInt(e.target.value, 10);
@@ -491,13 +491,15 @@ const navigate = useNavigate();
       )}
 
       {isVendor && (
-  <button
-    className="edit-product-btn"
-    onClick={() => navigate(`/${safeShopSlug}/admin/edit-product/${product.id}`)}
-  >
-    ✏️ Edit Product
-  </button>
-)}
+        <button
+          className="edit-product-btn"
+          onClick={() => navigate(`/${safeShopSlug}/admin/edit-product/${product.id}`)}
+          disabled={true} // or some condition like isDisabled
+        >
+          ✏️ Edit Product
+        </button>
+
+      )}
 
     </div>
   );

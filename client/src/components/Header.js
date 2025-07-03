@@ -12,10 +12,20 @@ const Header = () => {
   const [shop, setShop] = useState(null);
   const [expandedIndex, setExpandedIndex] = useState(null);
 
+  // Format 24h time string ("HH:mm:ss") to 12h with AM/PM, e.g. "14:30:00" => "2:30 PM"
+  const formatTime = (timeStr) => {
+    if (!timeStr) return '';
+    const [hour, minute] = timeStr.split(':');
+    let h = parseInt(hour, 10);
+    const suffix = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return `${h}:${minute} ${suffix}`;
+  };
+
   // Fetch navigation menu
   useEffect(() => {
     fetch(`${API_BASE_URL}/api/navigation`)
-      .then(res => res.ok ? res.json() : Promise.reject())
+      .then(res => (res.ok ? res.json() : Promise.reject()))
       .then(data => setNavItems(data.navItems || []))
       .catch(err => console.error('Nav fetch error:', err));
   }, []);
@@ -100,8 +110,14 @@ const Header = () => {
 
       {/* Right side: Branding */}
       <div className="right-box">
+        {shop?.open_time && shop?.close_time && (
+          <span className="shop-hours">
+            🕒 <strong>Open Hours:</strong> {formatTime(shop.open_time)} – {formatTime(shop.close_time)}
+          </span>
+        )}
+
         <span className="powered-by">
-           Powered by <strong>ConnectFREE4U</strong>
+          Powered by <strong>ConnectFREE4U</strong>
         </span>
       </div>
     </header>

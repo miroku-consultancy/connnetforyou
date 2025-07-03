@@ -150,13 +150,14 @@
 .right-box {
   flex: 1;
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;       /* stack vertically */
+  justify-content: center;       /* center vertically */
+  align-items: center;         /* align items to the right */
   min-width: 200px;
   font-size: 15px;
   font-weight: 600;
   color: #fcd835;
-  align-items: center;
-  gap: 8px;
+  gap: 6px;                     /* vertical spacing */
   letter-spacing: 0.05em;
 }
 
@@ -205,3 +206,21 @@
   font-weight: bold;
   color: #2196f3;
 }
+.shop-hours {
+  font-size: 14px;
+  color: #fffde7;
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 4px 10px;
+  border-radius: 5px;
+  margin-top: 6px;
+  font-weight: 600;
+  display: inline-block;
+  letter-spacing: 0.03em;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  transition: background-color 0.3s ease;
+}
+
+.shop-hours:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
