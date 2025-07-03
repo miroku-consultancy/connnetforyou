@@ -8,11 +8,11 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
     console.log('[createOrder] Starting order creation...');
     await client.query('BEGIN');
 
-    // ✅ Get shop_id from first item (assuming all items from the same shop)
+    // Extract shop_id from first item
     const shopId = items[0].shopId ?? items[0].shop_id;
     if (!shopId) throw new Error('Missing shop ID in order items');
 
-    // ✅ Generate next order_number for this shop
+    // Get next order number for this shop
     const { rows } = await client.query(
       `SELECT COALESCE(MAX(order_number), 0) + 1 AS next_order_number
        FROM orders
@@ -22,7 +22,7 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
     );
     const orderNumber = rows[0].next_order_number;
 
-    // ✅ Insert into orders including shop_id and order_number
+    // Insert into orders table WITH shop_id + order_number
     const orderInsertResult = await client.query(
       `INSERT INTO orders (
         user_id, total, name, street, city, zip, phone,
@@ -46,9 +46,8 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
     );
 
     const orderId = orderInsertResult.rows[0].id;
-    console.log(`[createOrder] Order inserted: ID=${orderId}, shopId=${shopId}, orderNumber=${orderNumber}`);
 
-    // ✅ Insert order items
+    // Insert order items
     for (const item of items) {
       const productId = parseInt(item.id.toString().split('-')[0], 10);
       const unitIdStr = item.id.toString().split('-')[1];
@@ -67,12 +66,13 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
           item.quantity,
           item.image,
           shopId,
-          unitId,
+          unitId
         ]
       );
     }
 
     await client.query('COMMIT');
+    console.log(`[createOrder] Order ${orderId} created successfully.`);
     return { orderId, orderNumber };
   } catch (err) {
     await client.query('ROLLBACK');
