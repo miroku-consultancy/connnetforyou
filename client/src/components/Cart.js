@@ -15,7 +15,7 @@ const Cart = () => {
   useEffect(() => {
     if (items.length > 0) {
       setVisible(true);
-      const timer = setTimeout(() => setVisible(false), 1200);
+      const timer = setTimeout(() => setVisible(false), 1350);
       return () => clearTimeout(timer);
     }
   }, [items.length]);
