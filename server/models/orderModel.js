@@ -6,14 +6,29 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
 
   try {
     console.log('[createOrder] Starting order creation...');
-    console.log('[createOrder] Input:', { userId, total, address, paymentMethod, orderDate, itemsCount: items.length });
     await client.query('BEGIN');
 
+    // ✅ Get shop_id from first item (assuming all items from the same shop)
+    const shopId = items[0].shopId ?? items[0].shop_id;
+    if (!shopId) throw new Error('Missing shop ID in order items');
+
+    // ✅ Generate next order_number for this shop
+    const { rows } = await client.query(
+      `SELECT COALESCE(MAX(order_number), 0) + 1 AS next_order_number
+       FROM orders
+       WHERE shop_id = $1
+       FOR UPDATE`,
+      [shopId]
+    );
+    const orderNumber = rows[0].next_order_number;
+
+    // ✅ Insert into orders including shop_id and order_number
     const orderInsertResult = await client.query(
       `INSERT INTO orders (
-    user_id, total, name, street, city, zip, phone, payment_method, order_date, order_status
-  ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-   RETURNING id`,
+        user_id, total, name, street, city, zip, phone,
+        payment_method, order_date, order_status, shop_id, order_number
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      RETURNING id`,
       [
         userId,
         total,
@@ -24,21 +39,20 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
         address.phone,
         paymentMethod,
         orderDate,
-        'Pending' // or any default status you want to use
+        'Pending',
+        shopId,
+        orderNumber
       ]
     );
 
-
     const orderId = orderInsertResult.rows[0].id;
-    console.log(`[createOrder] Order inserted with ID: ${orderId}`);
+    console.log(`[createOrder] Order inserted: ID=${orderId}, shopId=${shopId}, orderNumber=${orderNumber}`);
 
-    // Insert each order item
-    for (const [index, item] of items.entries()) {
+    // ✅ Insert order items
+    for (const item of items) {
       const productId = parseInt(item.id.toString().split('-')[0], 10);
       const unitIdStr = item.id.toString().split('-')[1];
       const unitId = item.unit_id ?? (unitIdStr ? parseInt(unitIdStr, 10) : null);
-
-      console.log(`[createOrder] Inserting item ${index + 1}/${items.length}: productId=${productId}, unitId=${unitId}, quantity=${item.quantity}`);
 
       await client.query(
         `INSERT INTO order_items (
@@ -52,15 +66,14 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
           item.price,
           item.quantity,
           item.image,
-          item.shopId ?? item.shop_id,
+          shopId,
           unitId,
         ]
       );
     }
 
     await client.query('COMMIT');
-    console.log(`[createOrder] Order ${orderId} created successfully with ${items.length} items.`);
-    return orderId;
+    return { orderId, orderNumber };
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('[createOrder] Error inserting order:', err.message);
@@ -69,6 +82,7 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
     client.release();
   }
 }
+
 
 // GET ORDERS BY USER
 async function getOrdersByUser(userId) {
