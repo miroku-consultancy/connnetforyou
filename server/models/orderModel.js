@@ -76,10 +76,12 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
     console.log(`[createOrder] Order ${orderId} (Shop ${shopId}, #${orderNumber}) created successfully.`);
     return { orderId, orderNumber };
   } catch (err) {
-    await client.query('ROLLBACK');
-    console.error('[createOrder] Error inserting order:', err.message);
-    throw err;
-  } finally {
+  await client.query('ROLLBACK');
+  console.error('[createOrder] Error inserting order:', err.message);
+  console.error('[createOrder] Stack Trace:', err.stack);
+  throw err;
+}
+finally {
     client.release();
   }
 }
