@@ -14,7 +14,7 @@ const router = express.Router();
 
 console.log('[OrderRoute] Loaded');
 
-// Logging middleware for every request in this router
+// Logging middleware
 router.use((req, res, next) => {
   console.log(`[OrderRoute] ${req.method} ${req.originalUrl}`);
   next();
@@ -25,13 +25,12 @@ router.use((req, res, next) => {
  */
 router.post('/', authMiddleware, async (req, res) => {
   console.log('[OrderRoute] POST /api/orders called');
-  console.log('[OrderRoute] req.user:', req.user);
 
   const { items, total, address, paymentMethod, orderDate } = req.body;
   const userId = req.user.id;
 
   try {
-    const { orderId, orderNumber } = await createOrder({
+    const orderId = await createOrder({
       items,
       total,
       address,
@@ -40,7 +39,7 @@ router.post('/', authMiddleware, async (req, res) => {
       userId,
     });
 
-    console.log(`[OrderRoute] Order created with ID: ${orderId}, orderNumber: ${orderNumber}`);
+    console.log(`[OrderRoute] Order created with ID: ${orderId}`);
 
     // Get user name from DB
     const userResult = await pool.query('SELECT name FROM users WHERE id = $1', [userId]);
@@ -57,7 +56,7 @@ router.post('/', authMiddleware, async (req, res) => {
     for (const shopId of shopIds) {
       const message = `${userName} has placed an order${addressText ? ` at ${addressText}` : ''}.`;
 
-      // Save notification in DB
+      // Save in DB
       await sendShopNotification({ shopId, message });
 
       // Real-time push via SSE
