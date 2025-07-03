@@ -8,19 +8,26 @@ const LogoutButton = () => {
   const location = useLocation();
   const { clearCart } = useCart();
 
-const handleLogout = () => {
-  localStorage.removeItem('authToken');
-  localStorage.removeItem('userId');
-  clearCart();
+  const handleLogout = () => {
+    const confirmed = window.confirm('Are you sure you want to log out?');
+    if (!confirmed) return;
 
-  const shopSlug = location.pathname.split('/')[1];
-  navigate(shopSlug ? `/${shopSlug}/login` : '/login');
-};
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userId');
+    clearCart();
 
+    const shopSlug = location.pathname.split('/')[1];
+    navigate(shopSlug ? `/${shopSlug}/login` : '/login');
+  };
 
   return (
-    <button className="logout-button" onClick={handleLogout} title="Logout">
-      ⎋
+    <button
+      className="logout-button"
+      onClick={handleLogout}
+      title="Logout"
+      aria-label="Logout"
+    >
+      🔓 Logout
     </button>
   );
 };
