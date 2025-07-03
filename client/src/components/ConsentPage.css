@@ -1,0 +1,21 @@
+.consent-container {
+  margin-top: 30px;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 6px;
+  font-size: 15px;
+  color: #333;
+}
+.terms-link {
+  background: none;
+  border: none;
+  color: #007bff;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 1em;
+  padding: 0;
+}
+
+.consent-link-container {
+  margin-top: 20px;
+}

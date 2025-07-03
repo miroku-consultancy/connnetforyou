@@ -122,3 +122,20 @@ body {
   border-radius: 8px;
   font-size: 0.95rem;
 }
+.consent-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: #2e7d32;
+  margin-bottom: 20px;
+  user-select: none;
+}
+
+.consent-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-top: 3px;
+  cursor: pointer;
+  accent-color: #4caf50;
+}

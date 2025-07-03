@@ -26,6 +26,7 @@ import ShopDashboard from './components/ShopDashboard';
 import ShopOrderHistory from './components/ShopOrderHistory';
 import VendorDashboard from './components/VendorDashboard';
 import UpdateProduct from './components/UpdateProduct';
+import ConsentPage from './components/ConsentPage';
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -70,6 +71,8 @@ const AppRoutes = () => (
         <Route path="/:shopSlug/admin/edit-product/:id" element={<ProtectedRoute><UpdateProduct /></ProtectedRoute>} />
         <Route path="/qr-login" element={<QrLoginPage />} />
         <Route path="/qr-codes" element={<ShopQRCodes />} />
+        
+<Route path="/consent" element={<ConsentPage />} />
       </Routes>
     </main>
 

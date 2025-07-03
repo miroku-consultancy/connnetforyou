@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import { toast } from 'react-toastify';
 import { useUser } from './UserContext';
+import ConsentPage from './ConsentPage';
 import './EmailTokenLogin.css';
 
 const EmailTokenLogin = () => {
@@ -10,9 +11,10 @@ const EmailTokenLogin = () => {
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-  const { shopSlug } = useParams(); // 🧠 Extract from /:shopSlug/login
+  const [showConsent, setShowConsent] = useState(false);
 
+  const navigate = useNavigate();
+  const { shopSlug } = useParams();
   const { refreshUser } = useUser();
 
   useEffect(() => {
@@ -66,9 +68,7 @@ const EmailTokenLogin = () => {
       if (res.ok) {
         localStorage.setItem('authToken', data.token);
         localStorage.setItem('userId', data.user.id);
-
         refreshUser();
-
         toast.success('🎉 Login successful!');
         navigate(`/${shopSlug}/products`);
       } else {
@@ -112,16 +112,26 @@ const EmailTokenLogin = () => {
             <button onClick={verifyOtp} disabled={loading || !otp} className="login-btn">
               {loading ? 'Verifying...' : 'Login'}
             </button>
+
             <p className="resend-text">
               Didn't get OTP?{' '}
-              <button
-                className="resend-link"
-                onClick={() => setStep(1)}
-                disabled={loading}
-              >
+              <button className="resend-link" onClick={() => setStep(1)} disabled={loading}>
                 Resend
               </button>
             </p>
+
+            {!showConsent && (
+              <div style={{ marginTop: '20px' }}>
+                <button
+                  className="terms-link"
+                  onClick={() => setShowConsent(true)}
+                >
+                  📄 View Terms and Conditions
+                </button>
+              </div>
+            )}
+
+            {showConsent && <ConsentPage />}
           </>
         )}
       </div>
