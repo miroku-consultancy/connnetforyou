@@ -10,6 +10,8 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
 
     // ✅ Infer shop_id from first item (assumes all items from same shop)
     const shopId = items[0].shopId ?? items[0].shop_id;
+    console.log('[createOrder] items[0]:', items[0]);
+console.log('[createOrder] Resolved shopId:', shopId);
     if (!shopId) throw new Error('Missing shop ID in order items');
 
     // ✅ Get the next order_number for this shop safely (with FOR UPDATE lock)
@@ -21,7 +23,7 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
       [shopId]
     );
     const orderNumber = rows[0].next_order_number;
-
+console.log('[createOrder] Inserting into orders...');
     // ✅ Insert into orders table with shop_id + order_number
     const orderInsertResult = await client.query(
       `INSERT INTO orders (
@@ -45,6 +47,7 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
       ]
     );
 
+console.log('[createOrder] Insert result:', orderInsertResult.rows);
     const orderId = orderInsertResult.rows[0].id;
     console.log(`[createOrder] Order inserted with ID: ${orderId}, shop: ${shopId}, order_number: ${orderNumber}`);
 
