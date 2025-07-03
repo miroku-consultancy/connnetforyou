@@ -141,7 +141,7 @@ const ShopOrderHistory = () => {
           onMouseEnter={(e) => e.currentTarget.classList.add('order-card-hover')}
           onMouseLeave={(e) => e.currentTarget.classList.remove('order-card-hover')}
         >
-          <div><strong>Order ID:</strong> #{order.id}</div>
+          <div><strong>Order Number:</strong> #{order.orderNumber ?? order.id}</div>
           <div><strong>Date:</strong> {new Date(order.order_date).toLocaleString()}</div>
           <div><strong>Payment:</strong> {order.payment_method}</div>
           <div><strong>Customer:</strong> {order.customer_name} ({order.customer_phone})</div>

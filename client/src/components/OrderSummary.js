@@ -22,7 +22,13 @@ const OrderSummary = () => {
 
     const saved = localStorage.getItem('orderSummary');
     if (saved) {
-      setOrder(JSON.parse(saved));
+      try {
+        const parsedOrder = JSON.parse(saved);
+        console.log('Loaded order from localStorage:', parsedOrder);
+        setOrder(parsedOrder);
+      } catch (err) {
+        console.error('Error parsing orderSummary from localStorage:', err);
+      }
     }
 
     window.history.replaceState({ fromSummary: true }, '');
@@ -48,52 +54,85 @@ const OrderSummary = () => {
     return <div style={{ padding: '2rem' }}>Loading summary...</div>;
   }
 
+  // Defensive helper for orderId display
+  const getOrderIdDisplay = () => {
+    if (!order.orderId) return null;
+
+    // order.orderId might be object or primitive
+    if (typeof order.orderId === 'object' && order.orderId !== null) {
+      // Example: { orderId: 5, orderNumber: 1 }
+      return order.orderId.orderId ?? JSON.stringify(order.orderId);
+    }
+    // If primitive (string or number)
+    return order.orderId;
+  };
+
+  // Defensive helper for item price and quantity (ensure numbers)
+  const getItemPrice = (item) => {
+    // if item.price is string, parseFloat to number; else use as is
+    if (typeof item.price === 'string') {
+      const p = parseFloat(item.price);
+      return isNaN(p) ? 0 : p;
+    }
+    if (typeof item.price === 'number') return item.price;
+    return 0;
+  };
+
+  const getItemQuantity = (item) => {
+    if (typeof item.quantity === 'string') {
+      const q = parseInt(item.quantity, 10);
+      return isNaN(q) ? 0 : q;
+    }
+    if (typeof item.quantity === 'number') return item.quantity;
+    return 0;
+  };
+
   return (
     <div className="order-summary">
       <h1>Order Summary</h1>
 
       {order.orderId && (
-        <>
-          <h4>
-            Order ID: <span>{order.orderId.orderId}</span>
-          </h4>
-          <h4>
-            Order Number: <span>{order.orderId.orderNumber}</span>
-          </h4>
-        </>
+        <h4>
+          Order ID: <span>{getOrderIdDisplay()}</span>
+        </h4>
       )}
 
       <h3>
-        Ordered On: <span>{new Date(order.orderDate).toLocaleString()}</span>
+        Ordered On:{' '}
+        <span>{new Date(order.orderDate).toLocaleString()}</span>
       </h3>
 
       <ul className="order-items">
-        {order.items.map((item) => (
-          <li
-            key={item.product_id || item.id}
-            className="order-summary-item"
-          >
-            <img
-              src={
-                item.image.startsWith('http')
-                  ? item.image
-                  : process.env.PUBLIC_URL + item.image
-              }
-              alt={item.name}
-              className="summary-image"
-            />
-            <div>
-              <strong>{item.name}</strong>
-              <br />
-              Qty: {item.quantity} × ₹{item.price}
-              <br />
-              Total: ₹{(item.quantity * item.price).toFixed(2)}
-            </div>
-          </li>
-        ))}
+        {order.items.map((item) => {
+          const price = getItemPrice(item);
+          const quantity = getItemQuantity(item);
+          return (
+            <li
+              key={item.product_id || item.id}
+              className="order-summary-item"
+            >
+              <img
+                src={
+                  item.image.startsWith('http')
+                    ? item.image
+                    : process.env.PUBLIC_URL + item.image
+                }
+                alt={item.name}
+                className="summary-image"
+              />
+              <div>
+                <strong>{item.name}</strong>
+                <br />
+                Qty: {quantity} × ₹{price.toFixed(2)}
+                <br />
+                Total: ₹{(quantity * price).toFixed(2)}
+              </div>
+            </li>
+          );
+        })}
       </ul>
 
-      <h3>Total Amount: ₹{order.total.toFixed(2)}</h3>
+      <h3>Total Amount: ₹{Number(order.total).toFixed(2)}</h3>
       <h4>
         Payment Method:{' '}
         <span>

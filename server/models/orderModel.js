@@ -173,10 +173,11 @@ async function getOrdersByShop(shopId) {
     const result = await pool.query(
       `SELECT 
         o.id AS order_id,
+        o.order_number,               -- <--- Added this line to fetch order number
         o.order_date,
         o.payment_method,
         o.total,
-        o.order_status,               -- Make sure this is selected in SQL
+        o.order_status,
         o.name AS customer_name,
         o.phone AS customer_phone,
         o.street AS address_street,
@@ -203,10 +204,11 @@ async function getOrdersByShop(shopId) {
     result.rows.forEach(row => {
       const {
         order_id,
+        order_number,               // <--- Grab order number here
         order_date,
         payment_method,
         total,
-        order_status,       // <-- Added this line
+        order_status,
         customer_name,
         customer_phone,
         address_street,
@@ -223,10 +225,11 @@ async function getOrdersByShop(shopId) {
       if (!ordersMap.has(order_id)) {
         ordersMap.set(order_id, {
           id: order_id,
+          orderNumber: order_number,  // <--- Include order number here
           order_date,
           payment_method,
           total,
-          order_status,       // <-- Use it here as well
+          order_status,
           customer_name,
           customer_phone,
           address: {
@@ -256,6 +259,7 @@ async function getOrdersByShop(shopId) {
     throw err;
   }
 }
+
 
 
 module.exports = {
