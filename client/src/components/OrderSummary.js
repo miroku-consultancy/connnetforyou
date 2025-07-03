@@ -53,14 +53,26 @@ const OrderSummary = () => {
       <h1>Order Summary</h1>
 
       {order.orderId && (
-        <h4>Order ID: <span>{order.orderId}</span></h4>
+        <>
+          <h4>
+            Order ID: <span>{order.orderId.orderId}</span>
+          </h4>
+          <h4>
+            Order Number: <span>{order.orderId.orderNumber}</span>
+          </h4>
+        </>
       )}
 
-      <h3>Ordered On: <span>{new Date(order.orderDate).toLocaleString()}</span></h3>
+      <h3>
+        Ordered On: <span>{new Date(order.orderDate).toLocaleString()}</span>
+      </h3>
 
       <ul className="order-items">
-        {order.items.map(item => (
-          <li key={item.product_id || item.id} className="order-summary-item">
+        {order.items.map((item) => (
+          <li
+            key={item.product_id || item.id}
+            className="order-summary-item"
+          >
             <img
               src={
                 item.image.startsWith('http')
@@ -71,8 +83,10 @@ const OrderSummary = () => {
               className="summary-image"
             />
             <div>
-              <strong>{item.name}</strong><br />
-              Qty: {item.quantity} × ₹{item.price}<br />
+              <strong>{item.name}</strong>
+              <br />
+              Qty: {item.quantity} × ₹{item.price}
+              <br />
               Total: ₹{(item.quantity * item.price).toFixed(2)}
             </div>
           </li>
@@ -81,15 +95,23 @@ const OrderSummary = () => {
 
       <h3>Total Amount: ₹{order.total.toFixed(2)}</h3>
       <h4>
-        Payment Method: <span>{order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment'}</span>
+        Payment Method:{' '}
+        <span>
+          {order.paymentMethod === 'cod'
+            ? 'Cash on Delivery'
+            : 'Online Payment'}
+        </span>
       </h4>
 
       <div className="summary-address">
         <h4>Delivering To:</h4>
         <p>
-          {order.address.name}<br />
-          {order.address.street}<br />
-          {order.address.city} – {order.address.zip}<br />
+          {order.address.name}
+          <br />
+          {order.address.street}
+          <br />
+          {order.address.city} – {order.address.zip}
+          <br />
           Phone: {order.address.phone}
         </p>
       </div>
