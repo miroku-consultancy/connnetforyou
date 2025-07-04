@@ -16,6 +16,12 @@ firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
-  const { title, body, icon } = payload.data;
-  self.registration.showNotification(title, { body, icon, tag: "shop-order" });
+  console.log('Received background message:', payload);
+
+  const { title, body, icon } = payload.notification || {};
+  self.registration.showNotification(title ?? 'Notification', {
+    body: body ?? '',
+    icon: icon ?? '/favicon.ico',
+    tag: 'shop-order'
+  });
 });
