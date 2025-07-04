@@ -90,7 +90,12 @@ const OrderSummary = () => {
   return (
     <div className="order-summary">
       <h1>Order Summary</h1>
-
+      
+      {order.shop_name && (
+        <h3>
+          Shop: <span>{order.shop_name}</span>
+        </h3>
+      )}
       {order.orderId && (
         <h4>
           Order ID: <span>{getOrderIdDisplay()}</span>
