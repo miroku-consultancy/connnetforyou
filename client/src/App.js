@@ -87,38 +87,35 @@ const AppRoutes = () => (
 
 const App = () => {
 useEffect(() => {
-  console.log('App useEffect fired');
-
+  console.log('App init');
   registerServiceWorker();
 
   (async () => {
     const token = await requestForToken();
+    console.log('👉 requestForToken returned token:', token);
     if (token) {
-      console.log('👉 requestForToken returned token:', token);
-      try {
-        console.log('Calling /save-fcm-token with Bearer:', localStorage.getItem('authToken'));
-        const res = await fetch(`${API_BASE}/api/save-fcm-token`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-          },
-          body: JSON.stringify({ fcm_token: token }),
-        });
-        const data = await res.json();
-        console.log('🔁 save-fcm-token response:', res.status, data);
-      } catch (err) {
-        console.error('Error saving FCM token:', err);
-      }
+      const res = await fetch(`${API_BASE}/api/save-fcm-token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+        },
+        body: JSON.stringify({ fcm_token: token }),
+      });
+      const data = await res.json();
+      console.log('🔁 save-fcm-token response:', res.status, data);
     }
   })();
 
-  const unsubscribe = onMessageListener(payload => {
-    toast.info(`${payload.notification.title}: ${payload.notification.body}`);
+  const unsub = onMessageListener(payload => {
+    console.log('📩 foreground payload:', payload);
+    const notif = payload.notification || payload.data;
+    toast.info(`${notif.title}: ${notif.body}`, { position: 'top-right' });
   });
 
-  return () => unsubscribe();
+  return () => unsub();
 }, []);
+
 
 
   return (

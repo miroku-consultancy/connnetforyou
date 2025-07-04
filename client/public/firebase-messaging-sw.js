@@ -15,13 +15,31 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
 
-messaging.onBackgroundMessage((payload) => {
-  console.log('Background message received:', payload);
+messaging.onBackgroundMessage(payload => {
+  const notif = payload.notification || payload.data;
+  const clickUrl = payload.notification?.click_action
+                || payload.data?.click_action
+                || '/';
 
-  const { title, body, icon } = payload.data;
-  self.registration.showNotification(title, {
-    body,
-    icon,
-    tag: 'shop-order' // groups notifications and prevents duplicates
+  self.registration.showNotification(notif.title, {
+    body: notif.body,
+    icon: notif.icon || '/favicon.ico',
+    tag: notif.tag || 'shop-order',
+    data: { url: clickUrl }
   });
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const url = event.notification.data?.url || '/';
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windows => {
+      for (let client of windows) {
+        if (client.url.includes(url)) {
+          return client.focus();
+        }
+      }
+      return clients.openWindow(url);
+    })
+  );
 });
