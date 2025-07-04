@@ -101,25 +101,26 @@ async function getOrdersByUser(userId) {
   try {
     const result = await pool.query(
       `SELECT 
-         o.id AS order_id, 
-         o.total, 
-         o.order_date,
-         o.order_status,
-         oi.product_id, 
-         oi.name, 
-         oi.price, 
-         oi.quantity,
-         oi.image, 
-         oi.unit_id,
-         u.name AS unit_name, 
-         u.category AS unit_category,
-         s.name AS shop_name                      -- ✅ Added shop name
-       FROM orders o
-       JOIN order_items oi ON o.id = oi.order_id
-       LEFT JOIN units u ON oi.unit_id = u.id
-       LEFT JOIN shops s ON o.shop_id = s.id          -- ✅ Join with shops table
-       WHERE o.user_id = $1
-       ORDER BY o.order_date DESC, o.id`,
+  o.id AS order_id, 
+  o.total, 
+  o.order_date,
+  o.order_status,
+  oi.product_id, 
+  oi.name AS product_name,
+  oi.price,
+  oi.quantity,
+  oi.image, 
+  oi.unit_id,
+  u.name AS unit_name, 
+  u.category AS unit_category,
+  s.name AS shop_name
+FROM orders o
+JOIN order_items oi ON o.id = oi.order_id
+LEFT JOIN units u ON oi.unit_id = u.id
+LEFT JOIN shops s ON oi.shop_id = s.id
+WHERE o.user_id = $1
+ORDER BY o.order_date DESC, o.id
+`,
       [userId]
     );
 
@@ -129,10 +130,9 @@ async function getOrdersByUser(userId) {
 
     result.rows.forEach(row => {
       const {
-        order_id, total, order_date, order_status,
+        order_id, total, order_date, order_status,   // ✅ INCLUDE order_status
         product_id, name, price, quantity,
-        image, unit_id, unit_name, unit_category,
-        shop_name                               // ✅ Destructure shop_name
+        image, unit_id, unit_name, unit_category
       } = row;
 
       if (!ordersMap.has(order_id)) {
@@ -140,8 +140,7 @@ async function getOrdersByUser(userId) {
           id: order_id,
           total,
           order_date,
-          order_status,
-          shop_name,                      // ✅ Include shop_name in order object
+          order_status,       // ✅ INCLUDE IT IN THE ORDER OBJECT
           items: [],
         });
       }
@@ -166,7 +165,6 @@ async function getOrdersByUser(userId) {
     throw err;
   }
 }
-
 
 
 // GET ORDERS BY SHOP
