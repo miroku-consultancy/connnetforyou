@@ -33,7 +33,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
 
 import { requestForToken, onMessageListener } from './firebase-messaging';
-import { register } from './serviceWorker';
+import { register } from './components/ConsentPage';
 
 // Extract shopSlug manually from the pathname
 const extractShopSlug = (pathname) => {
