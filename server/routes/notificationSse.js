@@ -21,9 +21,8 @@ async function sendToClients(shopId, data) {
     subscribers.forEach(res => res.write(payload));
   }
 
-  // FCM push notification
+  // FCM push
   try {
-    // Query the FCM token(s) for this shop (adjust table/column names as needed)
     const result = await pool.query(
       'SELECT fcm_token FROM shop_tokens WHERE shop_id = $1',
       [shopId]
@@ -34,7 +33,6 @@ async function sendToClients(shopId, data) {
       return;
     }
 
-    // Send notification to each token (or you can batch)
     for (const row of result.rows) {
       const message = {
         token: row.fcm_token,
@@ -49,13 +47,18 @@ async function sendToClients(shopId, data) {
         },
       };
 
-      const response = await admin.messaging().send(message);
-      console.log(`✅ FCM sent to token ${row.fcm_token}:`, response);
+      try {
+        const response = await admin.messaging().send(message);
+        console.log(`✅ FCM sent to token ${row.fcm_token}:`, response);
+      } catch (err) {
+        console.error(`❌ Failed to send FCM to ${row.fcm_token}:`, err.message);
+      }
     }
   } catch (error) {
-    console.error('❌ Failed to send FCM notification:', error);
+    console.error('❌ Failed to fetch FCM token from DB:', error.message);
   }
 }
+
 
 
 // SSE stream endpoint for real-time notifications
