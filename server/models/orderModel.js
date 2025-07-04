@@ -101,26 +101,23 @@ async function getOrdersByUser(userId) {
   try {
     const result = await pool.query(
       `SELECT 
-  o.id AS order_id, 
-  o.total, 
-  o.order_date,
-  o.order_status,
-  oi.product_id, 
-  oi.name AS product_name,
-  oi.price,
-  oi.quantity,
-  oi.image, 
-  oi.unit_id,
-  u.name AS unit_name, 
-  u.category AS unit_category,
-  s.name AS shop_name
-FROM orders o
-JOIN order_items oi ON o.id = oi.order_id
-LEFT JOIN units u ON oi.unit_id = u.id
-LEFT JOIN shops s ON oi.shop_id = s.id
-WHERE o.user_id = $1
-ORDER BY o.order_date DESC, o.id
-`,
+         o.id AS order_id, 
+         o.total, 
+         o.order_date,
+         o.order_status,                            -- ✅ ADD THIS LINE
+         oi.product_id, 
+         oi.name, 
+         oi.price, 
+         oi.quantity,
+         oi.image, 
+         oi.unit_id,
+         u.name AS unit_name, 
+         u.category AS unit_category
+       FROM orders o
+       JOIN order_items oi ON o.id = oi.order_id
+       LEFT JOIN units u ON oi.unit_id = u.id
+       WHERE o.user_id = $1
+       ORDER BY o.order_date DESC, o.id`,
       [userId]
     );
 
