@@ -36,15 +36,16 @@ async function sendToClients(shopId, data) {
     for (const row of result.rows) {
       const message = {
         token: row.fcm_token,
-        notification: {
+        data: {
           title: '🛒 New Order Received',
           body: data.message || 'You have a new order!',
+          icon: '/favicon.ico'
         },
         webpush: {
-          notification: {
-            icon: '/favicon.ico',
-          },
-        },
+          fcm_options: { link: '/dashboard' },
+          headers: { Urgency: 'high' }
+
+        }
       };
 
       try {
