@@ -1,18 +1,23 @@
-// src/App.js
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import {
-  HashRouter as Router, Routes, Route, Navigate, useLocation
+  HashRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useLocation
 } from 'react-router-dom';
 import { CartProvider } from './components/CartContext';
 import { UserProvider, useUser } from './components/UserContext';
-import Header from './components/Header';
-import ProtectedRoute from './components/ProtectedRoute';
+
 import EmailTokenLogin from './components/EmailTokenLogin';
-import Product from './components/Product';
 import Order from './components/Order';
 import Payment from './components/Payment';
 import OrderSummary from './components/OrderSummary';
 import OrderHistory from './components/OrderHistory';
+import Product from './components/Product';
+import ProtectedRoute from './components/ProtectedRoute';
+import Cart from './components/Cart';
+import Header from './components/Header';
 import AddressPopup from './components/AddressPopup';
 import AddProduct from './components/AddProduct';
 import QrLoginPage from './components/QrLoginPage';
@@ -22,23 +27,26 @@ import ShopOrderHistory from './components/ShopOrderHistory';
 import VendorDashboard from './components/VendorDashboard';
 import UpdateProduct from './components/UpdateProduct';
 import ConsentPage from './components/ConsentPage';
-import Cart from './components/Cart';
-import { requestForToken, onMessageListener } from './components/firebase-messaging';
 
-
-import { ToastContainer } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
 
+import { requestForToken, onMessageListener } from './firebase-messaging';
+import { register } from './serviceWorker';
+
+// Extract shopSlug manually from the pathname
 const extractShopSlug = (pathname) => {
   const match = pathname.match(/^\/([^/]+)/);
   return match ? match[1] : null;
 };
 
+// Use location + user context to scope cart
 const CartProviderWithParams = ({ children }) => {
   const { user } = useUser();
   const location = useLocation();
   const shopSlug = extractShopSlug(location.pathname);
+
   return (
     <CartProvider userId={user?.id} shopSlug={shopSlug}>
       {children}
@@ -51,7 +59,7 @@ const AppRoutes = () => (
     <Header />
     <main>
       <Routes>
-        <Route path="/" element={<Navigate to="/demo/login" />} />
+        <Route path="/" element={<Navigate to="/demo/login" replace />} />
         <Route path="/:shopSlug/login" element={<EmailTokenLogin />} />
         <Route path="/:shopSlug/products" element={<ProtectedRoute><Product /></ProtectedRoute>} />
         <Route path="/:shopSlug/order" element={<ProtectedRoute><Order /></ProtectedRoute>} />
@@ -69,47 +77,62 @@ const AppRoutes = () => (
         <Route path="/consent" element={<ConsentPage />} />
       </Routes>
     </main>
+
     <Cart />
-    <footer><p>&copy; 2024 Connect4U</p></footer>
+
+    <footer>
+      <p>&copy; 2024 Connect4U. All rights reserved.</p>
+    </footer>
   </CartProviderWithParams>
 );
 
 const App = () => {
-  const [fcmToken, setFcmToken] = useState(null);
-  const { user } = useUser();
-
   useEffect(() => {
-    // Register SW
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/firebase-messaging-sw.js')
-        .then(reg => console.log('SW registered:', reg.scope))
-        .catch(err => console.error('SW registration failed:', err));
-    }
+    // Register service worker for background notifications
+    register();
 
-    // Get permission + token once user logs in
-    if (user) {
-      requestForToken().then(token => {
-        if (token) {
-          setFcmToken(token);
-          // 👉 TODO: POST token to /api/save-fcm-token
-        }
-      });
-    }
-  }, [user]);
+    // Request notification permission and get FCM token
+    const getToken = async () => {
+      const token = await requestForToken();
+      if (token) {
+        // TODO: send this token to your backend to register for push notifications
+        console.log('FCM Token:', token);
+      }
+    };
+    getToken();
 
-  useEffect(() => {
+    // Listen for foreground messages and show toast notifications
     const unsubscribe = onMessageListener((payload) => {
-      ToastContainer; // Optionally show UI/notification toast here
-      console.log('Foreground notification:', payload);
+      const title = payload.notification?.title || 'Notification';
+      const body = payload.notification?.body || '';
+      toast.info(`${title}: ${body}`, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     });
-    return unsubscribe;
+
+    // Cleanup the listener on component unmount
+    return () => unsubscribe();
   }, []);
 
   return (
     <Router>
       <UserProvider>
         <AppRoutes />
-        <ToastContainer position="top-right" autoClose={3000} />
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          pauseOnHover
+          draggable
+          theme="colored"
+        />
       </UserProvider>
     </Router>
   );
