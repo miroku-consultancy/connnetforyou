@@ -1,5 +1,6 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
+const admin = require('./firebaseAdmin');  // Adjust path if needed
 const pool = require('../db');
 
 const sseRouter = express.Router();
@@ -11,13 +12,51 @@ const clients = new Map();
  * @param {string|number} shopId
  * @param {object} data Notification object to send
  */
-function sendToClients(shopId, data) {
+async function sendToClients(shopId, data) {
   const subscribers = clients.get(shopId);
+  const payload = `data: ${JSON.stringify(data)}\n\n`;
+
+  // SSE push
   if (subscribers) {
-    const payload = `data: ${JSON.stringify(data)}\n\n`;
     subscribers.forEach(res => res.write(payload));
   }
+
+  // FCM push notification
+  try {
+    // Query the FCM token(s) for this shop (adjust table/column names as needed)
+    const result = await pool.query(
+      'SELECT fcm_token FROM shop_tokens WHERE shop_id = $1',
+      [shopId]
+    );
+
+    if (result.rows.length === 0) {
+      console.warn(`⚠️ No FCM token found for shop ${shopId}`);
+      return;
+    }
+
+    // Send notification to each token (or you can batch)
+    for (const row of result.rows) {
+      const message = {
+        token: row.fcm_token,
+        notification: {
+          title: '🛒 New Order Received',
+          body: data.message || 'You have a new order!',
+        },
+        webpush: {
+          notification: {
+            icon: '/favicon.ico',
+          },
+        },
+      };
+
+      const response = await admin.messaging().send(message);
+      console.log(`✅ FCM sent to token ${row.fcm_token}:`, response);
+    }
+  } catch (error) {
+    console.error('❌ Failed to send FCM notification:', error);
+  }
 }
+
 
 // SSE stream endpoint for real-time notifications
 sseRouter.get('/stream', (req, res) => {
