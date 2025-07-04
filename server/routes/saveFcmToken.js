@@ -8,7 +8,11 @@ const router = express.Router();
 router.post('/save-fcm-token', auth, async (req, res) => {
   const { fcm_token } = req.body;
   const { shop_id, role } = req.user;
-
+console.log('🔔 POST /save-fcm-token', { shop_id, fcm_token });
+console.log('🔔 POST /save-fcm-token', {
+  fcm_token: req.body.fcm_token,
+  user: req.user
+});
   if (!fcm_token || role !== 'vendor' || !shop_id) {
     return res.status(400).json({ error: 'Missing FCM token or invalid user' });
   }

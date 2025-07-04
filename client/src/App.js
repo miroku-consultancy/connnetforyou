@@ -93,6 +93,7 @@ const App = () => {
     const token = await requestForToken();
     if (token) {
       console.log('✅ FCM Token:', token);
+      console.log('✅ Token:', localStorage.getItem('authToken'));
       // POST token to backend with JWT auth
       const res = await fetch(`${API_BASE}/api/save-fcm-token`, {
         method: 'POST',
