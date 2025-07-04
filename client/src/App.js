@@ -32,8 +32,8 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
 
-import { requestForToken, onMessageListener } from './firebase-messaging';
-import { register } from './components/ConsentPage';
+import { requestForToken, onMessageListener } from '../public/firebase-messaging-sw';
+import { register } from './components/serviceWorker';
 
 // Extract shopSlug manually from the pathname
 const extractShopSlug = (pathname) => {
