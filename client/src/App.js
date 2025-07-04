@@ -42,7 +42,7 @@ const extractShopSlug = (pathname) => {
   const match = pathname.match(/^\/([^/]+)/);
   return match ? match[1] : null;
 };
-
+const API_BASE = 'https://connnet4you-server.onrender.com'; 
 const CartProviderWithParams = ({ children }) => {
   const { user } = useUser();
   const location = useLocation();
@@ -87,33 +87,31 @@ const AppRoutes = () => (
 
 const App = () => {
   useEffect(() => {
-    // 1️⃣ Register service worker for background notifications
-    registerServiceWorker();
+  registerServiceWorker();
 
-    // 2️⃣ Request token & log it
-    (async () => {
-      const token = await requestForToken();
-      if (token) {
-        console.log('✅ FCM Token:', token);
-        // TODO: POST to your backend at `/api/save-fcm-token`
-      }
-    })();
-
-    // 3️⃣ Listen for foreground messages
-    const unsubscribe = onMessageListener((payload) => {
-      const title = payload.notification?.title ?? 'New Notification';
-      const body = payload.notification?.body ?? '';
-      toast.info(`${title}: ${body}`, {
-        position: 'top-right',
-        autoClose: 5000,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
+  (async () => {
+    const token = await requestForToken();
+    if (token) {
+      console.log('✅ FCM Token:', token);
+      // POST token to backend with JWT auth
+      const res = await fetch(`${API_BASE}/api/save-fcm-token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+        },
+        body: JSON.stringify({ fcm_token: token }),
       });
-    });
+      const data = await res.json();
+      console.log('🔁 save-fcm-token response:', res.status, data);
+    }
+  })();
 
-    return () => unsubscribe();
-  }, []);
+  const unsubscribe = onMessageListener(payload => {
+    toast.info(`${payload.notification.title}: ${payload.notification.body}`);
+  });
+  return () => unsubscribe();
+}, []);
 
   return (
     <Router>
