@@ -87,7 +87,7 @@ const OrderHistory = () => {
       {orders.map((order) => (
         <div key={order.id} className="order-card">
           <p><strong>Order ID:</strong> {order.id}</p>
-          <p><strong>Shop Name:</strong> {item.shop_name}</p>
+          <p><strong>Shop Name:</strong> {order.shop_name}</p>
           <p>
             <strong>Status:</strong>{' '}
             <span
