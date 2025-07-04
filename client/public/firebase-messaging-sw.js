@@ -1,8 +1,27 @@
 // public/firebase-messaging-sw.js
-import { onBackgroundMessage } from 'firebase/messaging/sw';
-import { messaging } from './src/firebase';
+importScripts('https://www.gstatic.com/firebasejs/11.1.0/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/11.1.0/firebase-messaging-compat.js');
 
-onBackgroundMessage(messaging, (payload) => {
+const firebaseConfig = {
+  apiKey: "AIzaSyCb-DDzsODTuAID6mSBc_yNspH1NZuFdwM",
+  authDomain: "connectfree4u-ef6e3.firebaseapp.com",
+  projectId: "connectfree4u-ef6e3",
+  storageBucket: "connectfree4u-ef6e3.firebasestorage.app",
+  messagingSenderId: "781867072533",
+  appId: "1:781867072533:web:eb824e70d01992e1ece21c",
+  measurementId: "G-GV14CLD8WL"
+};
+
+firebase.initializeApp(firebaseConfig);
+const messaging = firebase.messaging();
+
+messaging.onBackgroundMessage((payload) => {
   console.log('Received background message:', payload);
-  // Customize notification here
+  const notificationTitle = payload.notification.title;
+  const notificationOptions = {
+    body: payload.notification.body,
+    icon: payload.notification.icon,
+  };
+
+  self.registration.showNotification(notificationTitle, notificationOptions);
 });
