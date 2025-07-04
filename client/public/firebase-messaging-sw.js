@@ -15,13 +15,12 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
 
-messaging.onBackgroundMessage((payload) => {
-  console.log('Received background message:', payload);
-
-  const { title, body, icon } = payload.notification || {};
-  self.registration.showNotification(title ?? 'Notification', {
-    body: body ?? '',
-    icon: icon ?? '/favicon.ico',
-    tag: 'shop-order'
+messaging.onBackgroundMessage(payload => {
+  console.log('[SW] Received background message:', payload);
+  const { title, body, icon } = payload.notification || payload.data;
+  self.registration.showNotification(title || 'Notification', {
+    body: body || '',
+    icon: icon || '/favicon.ico',
+    tag: 'shop-order',
   });
 });
