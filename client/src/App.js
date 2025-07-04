@@ -23,12 +23,12 @@ import VendorDashboard from './components/VendorDashboard';
 import UpdateProduct from './components/UpdateProduct';
 import ConsentPage from './components/ConsentPage';
 import Cart from './components/Cart';
+import { requestForToken, onMessageListener } from './components/firebase-messaging';
+
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
-
-import { requestForToken, onMessageListener } from './firebase-messaging';
 
 const extractShopSlug = (pathname) => {
   const match = pathname.match(/^\/([^/]+)/);
