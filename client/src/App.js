@@ -86,41 +86,40 @@ const AppRoutes = () => (
 );
 
 const App = () => {
-  useEffect(() => {
-     console.log('App useEffect fired');
+useEffect(() => {
+  console.log('App useEffect fired');
 
-    registerServiceWorker();
+  registerServiceWorker();
 
-    (async () => {
-  const token = await requestForToken();
-  console.log('👉 requestForToken returned token:', token);
-  if (token) {
-    try {
-      console.log('Calling /save-fcm-token with Bearer:', localStorage.getItem('authToken'));
-      const res = await fetch(`${API_BASE}/api/save-fcm-token`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-        },
-        body: JSON.stringify({ fcm_token: token }),
-      });
-      console.log('response status:', res.status);
-      const data = await res.json();
-      console.log('🔁 save-fcm-token response:', data);
-    } catch (err) {
-      console.error('Error saving FCM token:', err);
+  (async () => {
+    const token = await requestForToken();
+    if (token) {
+      console.log('👉 requestForToken returned token:', token);
+      try {
+        console.log('Calling /save-fcm-token with Bearer:', localStorage.getItem('authToken'));
+        const res = await fetch(`${API_BASE}/api/save-fcm-token`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+          },
+          body: JSON.stringify({ fcm_token: token }),
+        });
+        const data = await res.json();
+        console.log('🔁 save-fcm-token response:', res.status, data);
+      } catch (err) {
+        console.error('Error saving FCM token:', err);
+      }
     }
-  } else {
-    console.warn('No token obtained');
-  }
-})();
+  })();
 
-    const unsubscribe = onMessageListener(payload => {
-      toast.info(`${payload.notification.title}: ${payload.notification.body}`);
-    });
-    return () => unsubscribe();
-  }, []);
+  const unsubscribe = onMessageListener(payload => {
+    toast.info(`${payload.notification.title}: ${payload.notification.body}`);
+  });
+
+  return () => unsubscribe();
+}, []);
+
 
   return (
     <Router>
