@@ -9,15 +9,14 @@ import {
 import { CartProvider } from './components/CartContext';
 import { UserProvider, useUser } from './components/UserContext';
 
+import Header from './components/Header';
+import ProtectedRoute from './components/ProtectedRoute';
 import EmailTokenLogin from './components/EmailTokenLogin';
+import Product from './components/Product';
 import Order from './components/Order';
 import Payment from './components/Payment';
 import OrderSummary from './components/OrderSummary';
 import OrderHistory from './components/OrderHistory';
-import Product from './components/Product';
-import ProtectedRoute from './components/ProtectedRoute';
-import Cart from './components/Cart';
-import Header from './components/Header';
 import AddressPopup from './components/AddressPopup';
 import AddProduct from './components/AddProduct';
 import QrLoginPage from './components/QrLoginPage';
@@ -27,21 +26,23 @@ import ShopOrderHistory from './components/ShopOrderHistory';
 import VendorDashboard from './components/VendorDashboard';
 import UpdateProduct from './components/UpdateProduct';
 import ConsentPage from './components/ConsentPage';
+import Cart from './components/Cart';
 
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
 
-import { requestForToken, onMessageListener } from '../public/firebase-messaging-sw';
-import { register } from './components/serviceWorker';
+import {
+  requestForToken,
+  onMessageListener
+} from './components/firebase-messaging';
+import { register as registerServiceWorker } from './components/serviceWorker';
 
-// Extract shopSlug manually from the pathname
 const extractShopSlug = (pathname) => {
   const match = pathname.match(/^\/([^/]+)/);
   return match ? match[1] : null;
 };
 
-// Use location + user context to scope cart
 const CartProviderWithParams = ({ children }) => {
   const { user } = useUser();
   const location = useLocation();
@@ -77,9 +78,7 @@ const AppRoutes = () => (
         <Route path="/consent" element={<ConsentPage />} />
       </Routes>
     </main>
-
     <Cart />
-
     <footer>
       <p>&copy; 2024 Connect4U. All rights reserved.</p>
     </footer>
@@ -88,34 +87,31 @@ const AppRoutes = () => (
 
 const App = () => {
   useEffect(() => {
-    // Register service worker for background notifications
-    register();
+    // 1️⃣ Register service worker for background notifications
+    registerServiceWorker();
 
-    // Request notification permission and get FCM token
-    const getToken = async () => {
+    // 2️⃣ Request token & log it
+    (async () => {
       const token = await requestForToken();
       if (token) {
-        // TODO: send this token to your backend to register for push notifications
-        console.log('FCM Token:', token);
+        console.log('✅ FCM Token:', token);
+        // TODO: POST to your backend at `/api/save-fcm-token`
       }
-    };
-    getToken();
+    })();
 
-    // Listen for foreground messages and show toast notifications
+    // 3️⃣ Listen for foreground messages
     const unsubscribe = onMessageListener((payload) => {
-      const title = payload.notification?.title || 'Notification';
-      const body = payload.notification?.body || '';
+      const title = payload.notification?.title ?? 'New Notification';
+      const body = payload.notification?.body ?? '';
       toast.info(`${title}: ${body}`, {
-        position: "top-right",
+        position: 'top-right',
         autoClose: 5000,
-        hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
         draggable: true,
       });
     });
 
-    // Cleanup the listener on component unmount
     return () => unsubscribe();
   }, []);
 
@@ -123,16 +119,7 @@ const App = () => {
     <Router>
       <UserProvider>
         <AppRoutes />
-        <ToastContainer
-          position="top-right"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop
-          closeOnClick
-          pauseOnHover
-          draggable
-          theme="colored"
-        />
+        <ToastContainer position="top-right" autoClose={3000} />
       </UserProvider>
     </Router>
   );
