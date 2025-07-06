@@ -1,90 +1,172 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
 .dashboard-container {
-  padding: 40px 20px;
+  padding: 50px 20px;
   font-family: 'Poppins', sans-serif;
-  background: linear-gradient(to right, #f1f7fe, #e6ecfa);
+  background: linear-gradient(135deg, #fcd34d 0%, #a7f3d0 100%);
+  background-repeat: no-repeat;
   min-height: 100vh;
   text-align: center;
+  color: #222;
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard-container::before {
+  content: "";
+  position: absolute;
+  top: -30%;
+  left: -30%;
+  width: 160%;
+  height: 160%;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.1), transparent 70%),
+    radial-gradient(circle at 70% 70%, rgba(255, 255, 255, 0.15), transparent 60%);
+  animation: floatBG 20s linear infinite;
+  z-index: 0;
+  pointer-events: none;
+}
+
+@keyframes floatBG {
+  0% { transform: translate(0,0) scale(1); }
+  50% { transform: translate(20px, 15px) scale(1.1); }
+  100% { transform: translate(0,0) scale(1); }
 }
 
 .dashboard-title {
-  font-size: 2.8rem;
+  font-size: 3rem;
   font-weight: 700;
-  color: #2b2b2b;
-  margin-bottom: 10px;
+  color: #1a202c;
+  margin-bottom: 12px;
+  text-shadow: 0 2px 8px rgba(255, 255, 255, 0.4);
+  z-index: 1;
+  position: relative;
 }
 
 .dashboard-subtitle {
-  font-size: 1.2rem;
-  color: #666;
-  margin-bottom: 30px;
+  font-size: 1.3rem;
+  color: #065f46;
+  margin-bottom: 40px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  z-index: 1;
+  position: relative;
 }
 
 .carousel-container {
   display: flex;
   overflow-x: auto;
   scroll-behavior: smooth;
-  gap: 20px;
-  padding: 10px;
-  scrollbar-width: none; /* Firefox */
+  gap: 24px;
+  padding: 15px 10px;
+  scrollbar-width: none;
+  position: relative;
+  z-index: 1;
 }
 
 .carousel-container::-webkit-scrollbar {
-  display: none; /* Chrome, Safari */
+  display: none;
 }
 
 .shop-card {
   flex: 0 0 auto;
-  width: 250px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  padding: 20px;
+  width: 280px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 18px;
+  box-shadow:
+    0 8px 32px 0 rgba(16, 185, 129, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.18);
+  padding: 30px 20px;
   cursor: pointer;
   text-align: center;
-  transition: transform 0.4s ease, box-shadow 0.4s ease;
+  color: #1f2937;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: transform 0.5s, box-shadow 0.5s, background-color 0.4s ease;
+  position: relative;
+}
+
+.shop-card.active {
+  background: rgba(253, 230, 138, 0.6);
+  box-shadow:
+    0 12px 48px 0 rgba(251, 191, 36, 0.5),
+    0 0 0 1.5px rgba(255, 255, 255, 0.4);
+  transform: scale(1.08);
+  z-index: 2;
 }
 
 .shop-card:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  transform: scale(1.1) translateY(-6px);
+  background: rgba(253, 230, 138, 0.4);
+  box-shadow:
+    0 20px 60px 0 rgba(251, 191, 36, 0.6),
+    0 0 0 1.5px rgba(255, 255, 255, 0.35);
 }
 
 .shop-image-placeholder {
-  font-size: 4rem;
-  margin-bottom: 15px;
+  font-size: 5rem;
+  margin-bottom: 20px;
+  user-select: none;
+  filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.6));
 }
 
 .shop-name {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: #2c3e50;
-  margin-top: 15px;
-  margin-bottom: 10px;
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0 0 12px;
+  color: #1f2937;
+  text-shadow: 0 1px 4px rgba(255, 255, 255, 0.6);
 }
 
 .shop-login-cta {
-  font-size: 0.95rem;
-  color: #3578e5;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #059669;
+  letter-spacing: 0.04em;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.4);
+  transition: color 0.3s ease;
 }
-/* Responsive tweaks */
+
+.shop-card:hover .shop-login-cta {
+  color: #065f46;
+  text-shadow: 0 0 10px #bbf7d0;
+}
+
+/* Responsive */
 @media (max-width: 600px) {
-  .shop-card {
-    width: 80vw; /* Cards take ~80% of viewport width on mobile */
+  .dashboard-container {
+    padding: 30px 15px;
   }
 
   .dashboard-title {
-    font-size: 2rem;
+    font-size: 2.4rem;
   }
 
   .dashboard-subtitle {
-    font-size: 1rem;
+    font-size: 1.1rem;
+    margin-bottom: 25px;
+  }
+
+  .carousel-container {
+    gap: 15px;
+    padding: 10px 5px;
+  }
+
+  .shop-card {
+    width: 80vw;
+    padding: 25px 15px;
   }
 
   .shop-image-placeholder {
-    font-size: 3rem;
+    font-size: 4rem;
+    margin-bottom: 15px;
   }
 
   .shop-name {
-    font-size: 1.1rem;
+    font-size: 1.3rem;
+  }
+
+  .shop-login-cta {
+    font-size: 0.9rem;
   }
 }
