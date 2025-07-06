@@ -23,8 +23,7 @@ const EmailTokenLogin = () => {
       try {
         const decoded = jwtDecode(token);
         if (decoded.exp * 1000 > Date.now()) {
-          navigate(`/${shopSlug}/products`);
-        } else {
+          navigate(`/${shopSlug}${shopSlug === 'demo' ? '/dashboard' : '/products'}`);        } else {
           localStorage.removeItem('authToken');
           localStorage.removeItem('userId');
         }
@@ -70,8 +69,7 @@ const EmailTokenLogin = () => {
         localStorage.setItem('userId', data.user.id);
         refreshUser();
         toast.success('🎉 Login successful!');
-        navigate(`/${shopSlug}/products`);
-      } else {
+        navigate(`/${shopSlug}${shopSlug === 'demo' ? '/dashboard' : '/products'}`);      } else {
         toast.error(data.error || 'Invalid OTP');
       }
     } catch {

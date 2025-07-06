@@ -32,10 +32,7 @@ const Header = () => {
 
   // Fetch shop data based on slug
   useEffect(() => {
-    if (!shopSlug) {
-      setShop(null);
-      return;
-    }
+    if (!shopSlug || shopSlug === 'dashboard') return;
     fetch(`${API_BASE_URL}/api/shops/${shopSlug}`)
       .then(res => {
         if (res.ok) return res.json();

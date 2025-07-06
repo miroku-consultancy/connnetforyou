@@ -27,6 +27,8 @@ import VendorDashboard from './components/VendorDashboard';
 import UpdateProduct from './components/UpdateProduct';
 import ConsentPage from './components/ConsentPage';
 import Cart from './components/Cart';
+import DashboardSummary from './components/DashboardSummary';
+
 
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -60,7 +62,9 @@ const AppRoutes = () => (
     <Header />
     <main>
       <Routes>
-        <Route path="/" element={<Navigate to="/demo/login" replace />} />
+        <Route path="/" element={<Navigate to="/demo/dashboard" replace />} />
+        <Route path="/demo/dashboard" element={<DashboardSummary />} />
+        
         <Route path="/:shopSlug/login" element={<EmailTokenLogin />} />
         <Route path="/:shopSlug/products" element={<ProtectedRoute><Product /></ProtectedRoute>} />
         <Route path="/:shopSlug/order" element={<ProtectedRoute><Order /></ProtectedRoute>} />
@@ -76,6 +80,7 @@ const AppRoutes = () => (
         <Route path="/qr-login" element={<QrLoginPage />} />
         <Route path="/qr-codes" element={<ShopQRCodes />} />
         <Route path="/consent" element={<ConsentPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </main>
     <Cart />
@@ -84,6 +89,7 @@ const AppRoutes = () => (
     </footer>
   </CartProviderWithParams>
 );
+
 
 const App = () => {
 useEffect(() => {
