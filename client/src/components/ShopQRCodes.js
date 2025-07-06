@@ -7,7 +7,8 @@ const shops = [
   "Ganga-Medical-hall",
   "ALNazeerMuradabadiChickenBiryani",
   "Janta7DaysChineseFastFood",
-  "QureshiKababCenter"
+  "QureshiKababCenter",
+  " Vow-vista"
 ];
 
 const baseUrl = "https://www.connectfree4u.com/#/";
