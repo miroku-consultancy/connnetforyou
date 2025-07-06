@@ -14,6 +14,7 @@ const shops = [
   "Vow-vista",
   "SanjayVegStore",
   "Ganga-Medical-hall",
+  "Desi-swaad"
 ];
 
 const displayName = (shop) =>
