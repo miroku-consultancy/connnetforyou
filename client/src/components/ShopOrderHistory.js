@@ -3,6 +3,8 @@ import './ShopOrderHistory.css';
 
 const API_BASE_URL = 'https://connnet4you-server.onrender.com';
 
+const MIN_ORDER_FOR_DELIVERY = 200;
+
 const parseJwt = (token) => {
   try {
     return JSON.parse(atob(token.split('.')[1]));
@@ -134,71 +136,86 @@ const ShopOrderHistory = () => {
   return (
     <div className="shop-order-history-container">
       <h2>Shop Order History</h2>
-      {orders.map((order) => (
-        <div
-          key={order.id}
-          className="order-card"
-          onMouseEnter={(e) => e.currentTarget.classList.add('order-card-hover')}
-          onMouseLeave={(e) => e.currentTarget.classList.remove('order-card-hover')}
-        >
-          <div><strong>Order Number:</strong> #{order.orderNumber ?? order.id}</div>
-          <div><strong>Date:</strong> {new Date(order.order_date).toLocaleString()}</div>
-          <div><strong>Payment:</strong> {order.payment_method}</div>
-          <div><strong>Customer:</strong> {order.customer_name} ({order.customer_phone})</div>
+      {orders.map((order) => {
+        const isTakeaway = Number(order.total) < MIN_ORDER_FOR_DELIVERY;
 
-          {order.address && (
+        return (
+          <div
+            key={order.id}
+            className="order-card"
+            onMouseEnter={(e) => e.currentTarget.classList.add('order-card-hover')}
+            onMouseLeave={(e) => e.currentTarget.classList.remove('order-card-hover')}
+          >
             <div>
-              <strong>Address:</strong> {order.address.street}, {order.address.city} - {order.address.zip}
+              <strong>Order Number:</strong> #{order.orderNumber ?? order.id}
             </div>
-          )}
+            <div>
+              <strong>Date:</strong> {new Date(order.order_date).toLocaleString()}
+            </div>
+            <div>
+              <strong>Payment:</strong> {order.payment_method}
+            </div>
+            <div>
+              <strong>Customer:</strong> {order.customer_name} ({order.customer_phone})
+            </div>
 
-          <div>
-            <strong>Status:</strong>{' '}
-            <span
-              className={`order-status order-status-${(order.order_status || 'Pending').replace(/\s+/g, '-').toLowerCase()}`}
-            >
-              {STATUS_LABELS[order.order_status] || 'Pending'}
-            </span>
+            {/* Hide address if order is takeaway */}
+            {!isTakeaway && order.address && (
+              <div>
+                <strong>Address:</strong> {order.address.street}, {order.address.city} - {order.address.zip}
+              </div>
+            )}
+
+            <div>
+              <strong>Status:</strong>{' '}
+              <span
+                className={`order-status order-status-${(order.order_status || 'Pending')
+                  .replace(/\s+/g, '-')
+                  .toLowerCase()}`}
+              >
+                {STATUS_LABELS[order.order_status] || 'Pending'}
+              </span>
+            </div>
+
+            {order.order_status !== 'Delivered' && (
+              <button
+                disabled={updatingOrderId === order.id}
+                onClick={() => updateOrderStatus(order.id, order.order_status || 'Pending')}
+                className="update-status-btn"
+                aria-label={`Update order ${order.id} status to next step`}
+                title={`Mark as ${STATUS_LABELS[STATUS_STEPS[STATUS_STEPS.indexOf(order.order_status || 'Pending') + 1]]}`}
+              >
+                {updatingOrderId === order.id
+                  ? 'Updating...'
+                  : `Mark as ${STATUS_LABELS[STATUS_STEPS[STATUS_STEPS.indexOf(order.order_status || 'Pending') + 1]]}`}
+              </button>
+            )}
+
+            <ul className="order-items-list">
+              {order.items.map((item, index) => {
+                const price = Number(item.price) || 0;
+                const quantity = Number(item.quantity) || 0;
+                const totalPrice = price * quantity;
+
+                return (
+                  <li key={`${order.id}-${item.product_id}-${index}`} className="order-item">
+                    <div>
+                      {quantity} × {item.name}
+                      {item.unit_name ? ` (${item.unit_name})` : ''}
+                    </div>
+                    <div>
+                      ₹{totalPrice.toFixed(2)}{' '}
+                      <span className="unit-price">(@ ₹{price.toFixed(2)} each)</span>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+
+            <div className="order-total">Total: ₹{Number(order.total).toFixed(2)}</div>
           </div>
-
-          {order.order_status !== 'Delivered' && (
-            <button
-              disabled={updatingOrderId === order.id}
-              onClick={() => updateOrderStatus(order.id, order.order_status || 'Pending')}
-              className="update-status-btn"
-              aria-label={`Update order ${order.id} status to next step`}
-              title={`Mark as ${STATUS_LABELS[STATUS_STEPS[STATUS_STEPS.indexOf(order.order_status || 'Pending') + 1]]}`}
-            >
-              {updatingOrderId === order.id
-                ? 'Updating...'
-                : `Mark as ${STATUS_LABELS[STATUS_STEPS[STATUS_STEPS.indexOf(order.order_status || 'Pending') + 1]]}`}
-            </button>
-          )}
-
-          <ul className="order-items-list">
-            {order.items.map((item, index) => {
-              const price = Number(item.price) || 0;
-              const quantity = Number(item.quantity) || 0;
-              const totalPrice = price * quantity;
-
-              return (
-                <li key={`${order.id}-${item.product_id}-${index}`} className="order-item">
-                  <div>
-                    {quantity} × {item.name}
-                    {item.unit_name ? ` (${item.unit_name})` : ''}
-                  </div>
-                  <div>
-                    ₹{totalPrice.toFixed(2)}{' '}
-                    <span className="unit-price">(@ ₹{price.toFixed(2)} each)</span>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-
-          <div className="order-total">Total: ₹{Number(order.total).toFixed(2)}</div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };

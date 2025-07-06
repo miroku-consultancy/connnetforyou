@@ -54,6 +54,7 @@ const OrderSummary = () => {
     return <div style={{ padding: '2rem' }}>Loading summary...</div>;
   }
 
+  // Minimum order for delivery is 200 (can be made dynamic if needed)
   const MIN_ORDER_FOR_DELIVERY = 200;
   const isTakeawayOrder = Number(order.total) < MIN_ORDER_FOR_DELIVERY;
 

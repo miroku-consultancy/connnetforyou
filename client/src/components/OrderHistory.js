@@ -12,6 +12,8 @@ const STATUS_LABELS = {
   'Delivered': 'Delivered',
 };
 
+const MIN_ORDER_FOR_DELIVERY = 200; // Same threshold as in OrderSummary
+
 const OrderHistory = () => {
   const { user, loadingUser } = useUser();
   const [orders, setOrders] = useState([]);
@@ -84,54 +86,63 @@ const OrderHistory = () => {
   return (
     <section className="order-history-page">
       <h2>Your Order History 📜</h2>
-      {orders.map((order) => (
-        <div key={order.id} className="order-card">
-          <p><strong>Order ID:</strong> {order.id}</p>
-          <p>
-            <strong>Status:</strong>{' '}
-            <span
-              className={`order-status order-status-${(order.order_status || 'Pending')
-                .replace(/\s+/g, '-')
-                .toLowerCase()}`}
-            >
-              {STATUS_LABELS[order.order_status] || 'Pending'}
-            </span>
-          </p>
+      {orders.map((order) => {
+        const isTakeaway = Number(order.total) < MIN_ORDER_FOR_DELIVERY;
 
-          <ul className="order-items">
-            {order.items.map((item, index) => {
-              const imageSrc = resolveImageUrl(item.image_url || item.image);
-              return (
-                <li
-                  key={`${item.product_id}-${item.unit_type || 'default'}-${index}`}
-                  className="order-item"
-                >
-                  <img
-                    src={imageSrc}
-                    alt={item.name}
-                    className="item-image"
-                    onError={(e) => {
-                      e.currentTarget.onerror = null;
-                      e.currentTarget.src = 'https://via.placeholder.com/60';
-                    }}
-                  />
-                  <div className="item-details">
-                    <span className="item-name">
-                      {item.name}
-                      {item.unit_type ? ` (${item.unit_type})` : ''}
-                    </span>
-                    <span className="item-qty-price">
-                      {item.quantity} × {formatCurrency(item.price)}
-                    </span>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+        return (
+          <div key={order.id} className="order-card">
+            <p>
+              <strong>Order ID:</strong> {order.id}
+              <br />
+              <strong>Order Type:</strong> {isTakeaway ? 'Takeaway' : 'Delivery'}
+            </p>
 
-          <p><strong>Total:</strong> {formatCurrency(order.total)}</p>
-        </div>
-      ))}
+            <p>
+              <strong>Status:</strong>{' '}
+              <span
+                className={`order-status order-status-${(order.order_status || 'Pending')
+                  .replace(/\s+/g, '-')
+                  .toLowerCase()}`}
+              >
+                {STATUS_LABELS[order.order_status] || 'Pending'}
+              </span>
+            </p>
+
+            <ul className="order-items">
+              {order.items.map((item, index) => {
+                const imageSrc = resolveImageUrl(item.image_url || item.image);
+                return (
+                  <li
+                    key={`${item.product_id}-${item.unit_type || 'default'}-${index}`}
+                    className="order-item"
+                  >
+                    <img
+                      src={imageSrc}
+                      alt={item.name}
+                      className="item-image"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = 'https://via.placeholder.com/60';
+                      }}
+                    />
+                    <div className="item-details">
+                      <span className="item-name">
+                        {item.name}
+                        {item.unit_type ? ` (${item.unit_type})` : ''}
+                      </span>
+                      <span className="item-qty-price">
+                        {item.quantity} × {formatCurrency(item.price)}
+                      </span>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+
+            <p><strong>Total:</strong> {formatCurrency(order.total)}</p>
+          </div>
+        );
+      })}
     </section>
   );
 };

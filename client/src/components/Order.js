@@ -3,7 +3,6 @@ import { useCart } from './CartContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useUser } from './UserContext';
 import AddressPopup from './AddressPopup';
-// import ShopNotifications from './ShopNotifications';  // adjust path as needed
 import './Order.css';
 
 const API_BASE_URL = 'https://connnet4you-server.onrender.com';
@@ -29,14 +28,17 @@ const Order = () => {
   });
   const [selectedItem, setSelectedItem] = useState(null);
 
-  // New state to disable the "Pay Online" option
-  const [isOnlinePaymentDisabled, setIsOnlinePaymentDisabled] = useState(true); // true = disabled
+  // Always disable online payment for now
+  const isOnlinePaymentDisabled = true;
 
-  // State for showing minimum order warning message
+  // Show minimum order warning if total < minOrderValue
   const [showMinOrderWarning, setShowMinOrderWarning] = useState(false);
 
-  // New state for takeaway (true = takeaway, false = delivery)
+  // Takeaway only if order below minOrderValue
   const [isTakeaway, setIsTakeaway] = useState(false);
+
+  // Dynamic min order value fetched from shop
+  const [minOrderValue, setMinOrderValue] = useState(200);
 
   const effectiveShopSlug = user?.shop_slug || paramShopSlug || 'demo';
 
@@ -71,25 +73,35 @@ const Order = () => {
     fetchAddresses();
   }, [user]);
 
-  // ** Updated useEffect to handle takeaway and payment method **
-
   useEffect(() => {
-    const MIN_ORDER_FOR_ONLINE = 200; // minimum order value for online payment
+    const fetchShopData = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/shops/${effectiveShopSlug}`);
+        if (!res.ok) throw new Error('Failed to fetch shop data');
+        const data = await res.json();
+        setMinOrderValue(Number(data.minordervalue) || 200);
+      } catch (err) {
+        console.error(err);
+        setMinOrderValue(200);
+      }
+    };
 
-    if (total >= MIN_ORDER_FOR_ONLINE) {
-      setIsOnlinePaymentDisabled(false);
+    fetchShopData();
+  }, [effectiveShopSlug]);
+
+  // Update takeaway and warning based on total and minOrderValue
+  useEffect(() => {
+    if (total >= minOrderValue) {
       setShowMinOrderWarning(false);
-      setIsTakeaway(false); // delivery allowed
+      setIsTakeaway(false);
     } else {
-      // total < minimum order
-      setIsOnlinePaymentDisabled(true);
       setShowMinOrderWarning(true);
-      setIsTakeaway(true); // only takeaway allowed
+      setIsTakeaway(true);
       if (paymentMethod === 'online') {
-        setPaymentMethod('cod'); // fallback to COD if online payment disabled
+        setPaymentMethod('cod'); // fallback
       }
     }
-  }, [total, paymentMethod]);
+  }, [total, paymentMethod, minOrderValue]);
 
   const handleAddressSubmit = async () => {
     try {
@@ -146,7 +158,6 @@ const Order = () => {
       return;
     }
 
-    // Add takeaway info in orderData
     const orderData = {
       items: items.map(i => ({
         id: i.id,
@@ -190,11 +201,8 @@ const Order = () => {
       const fullOrder = { ...orderData, orderId: result.orderId };
       localStorage.setItem('orderSummary', JSON.stringify(fullOrder));
 
-      if (paymentMethod === 'cod') {
-        navigate(`/${effectiveShopSlug}/order-summary`);
-      } else {
-        navigate(`/${effectiveShopSlug}/payment`, { state: { order: fullOrder } });
-      }
+      // Pay Online disabled, so navigate only COD summary
+      navigate(`/${effectiveShopSlug}/order-summary`);
     } catch (error) {
       console.error('[handleOrder] Order placement failed:', error);
       alert('Failed to place order. Please check your address and try again.');
@@ -213,8 +221,6 @@ const Order = () => {
   return (
     <div className="order-page">
       <h1>🧺 Your Cart</h1>
-
-      {/* <ShopNotifications refreshSignal={refreshNotifications} /> */}
 
       <div className="order-list">
         {items.map((item) => (
@@ -243,8 +249,8 @@ const Order = () => {
       </div>
 
       {isTakeaway ? (
-        <div className="takeaway-info" style={{marginBottom: '1em', color: 'blue'}}>
-          <strong>Your order total is less than ₹200.</strong> This order will be <em>Takeaway</em> only with <strong>Cash on Delivery</strong>.
+        <div className="takeaway-info" style={{ marginBottom: '1em', color: 'blue' }}>
+          <strong>Your order total is less than ₹{minOrderValue}.</strong> This will be a <em>Takeaway</em> order with payment to be made <strong>directly at the restaurant</strong>.
         </div>
       ) : (
         addresses.length > 0 ? (
@@ -288,48 +294,46 @@ const Order = () => {
             </button>
           </div>
         ) : (
-          <button
-            onClick={() => {
-              setTempAddress({ name: '', street: '', city: '', zip: '', phone: '' });
-              setShowAddressPopup(true);
-            }}
-          >
-            ➕ Enter Address
-          </button>
+          <button onClick={() => setShowAddressPopup(true)}>Add Delivery Address</button>
         )
       )}
 
+      {showMinOrderWarning && !isTakeaway && (
+        <div className="min-order-warning" style={{ color: 'red', marginBottom: '1em' }}>
+          Minimum order value for delivery is ₹{minOrderValue}.
+        </div>
+      )}
+
       <div className="payment-options">
+        <h3>Choose Payment Method</h3>
         <label>
           <input
             type="radio"
             value="cod"
             checked={paymentMethod === 'cod'}
             onChange={() => setPaymentMethod('cod')}
-            disabled={false} // Always allow COD
           />
-          Cash on Delivery
+          Cash on Delivery (COD)
         </label>
         <label>
           <input
             type="radio"
             value="online"
             checked={paymentMethod === 'online'}
-            onChange={() => setPaymentMethod('online')}
             disabled={isOnlinePaymentDisabled}
+            onChange={() => setPaymentMethod('online')}
           />
-          Pay Online
+          Pay Online (disabled)
         </label>
       </div>
 
-      {/* Show minimum order warning message */}
-      {showMinOrderWarning && !isTakeaway && (
-        <div className="min-order-warning" style={{ color: 'red', marginBottom: '1em' }}>
-          Minimum order value for online payment is ₹200.
-        </div>
-      )}
-
-      <button onClick={handleOrder}>✅ Place Order</button>
+      <button
+        className="order-button"
+        disabled={!paymentMethod || (isTakeaway === false && !address)}
+        onClick={handleOrder}
+      >
+        Place Order
+      </button>
 
       {showAddressPopup && (
         <AddressPopup
@@ -341,13 +345,16 @@ const Order = () => {
       )}
 
       {selectedItem && (
-        <div className="address-popup-overlay" onClick={() => setSelectedItem(null)}>
-          <div className="address-popup" onClick={(e) => e.stopPropagation()}>
-            <button className="close-btn" onClick={() => setSelectedItem(null)}>&times;</button>
+        <div className="popup-overlay" onClick={() => setSelectedItem(null)}>
+          <div className="popup-content" onClick={(e) => e.stopPropagation()}>
             <h2>{selectedItem.name}</h2>
-            <img src={resolveImageUrl(selectedItem.image)} alt={selectedItem.name} />
-            <p>{selectedItem.description || 'No description available.'}</p>
-            <p><strong>Price:</strong> ₹{Number(selectedItem.price).toFixed(2)}</p>
+            <img
+              src={resolveImageUrl(selectedItem.image)}
+              alt={selectedItem.name}
+              className="popup-img"
+            />
+            <p>Price: ₹{selectedItem.price}</p>
+            <button onClick={() => setSelectedItem(null)}>Close</button>
           </div>
         </div>
       )}
