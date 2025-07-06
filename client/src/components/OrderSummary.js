@@ -54,22 +54,19 @@ const OrderSummary = () => {
     return <div style={{ padding: '2rem' }}>Loading summary...</div>;
   }
 
-  // Defensive helper for orderId display
+  const isTakeawayOrder = order.takeaway === true;
+
   const getOrderIdDisplay = () => {
     if (!order.orderId) return null;
 
-    // order.orderId might be object or primitive
     if (typeof order.orderId === 'object' && order.orderId !== null) {
-      // Example: { orderId: 5, orderNumber: 1 }
       return order.orderId.orderId ?? JSON.stringify(order.orderId);
     }
-    // If primitive (string or number)
+
     return order.orderId;
   };
 
-  // Defensive helper for item price and quantity (ensure numbers)
   const getItemPrice = (item) => {
-    // if item.price is string, parseFloat to number; else use as is
     if (typeof item.price === 'string') {
       const p = parseFloat(item.price);
       return isNaN(p) ? 0 : p;
@@ -98,8 +95,7 @@ const OrderSummary = () => {
       )}
 
       <h3>
-        Ordered On:{' '}
-        <span>{new Date(order.orderDate).toLocaleString()}</span>
+        Ordered On: <span>{new Date(order.orderDate).toLocaleString()}</span>
       </h3>
 
       <ul className="order-items">
@@ -113,9 +109,11 @@ const OrderSummary = () => {
             >
               <img
                 src={
-                  item.image.startsWith('http')
-                    ? item.image
-                    : process.env.PUBLIC_URL + item.image
+                  item.image
+                    ? (item.image.startsWith('http')
+                        ? item.image
+                        : process.env.PUBLIC_URL + item.image)
+                    : '/default-image.png'
                 }
                 alt={item.name}
                 className="summary-image"
@@ -133,27 +131,41 @@ const OrderSummary = () => {
       </ul>
 
       <h3>Total Amount: ₹{Number(order.total).toFixed(2)}</h3>
+
       <h4>
         Payment Method:{' '}
         <span>
-          {order.paymentMethod === 'cod'
+          {isTakeawayOrder
+            ? 'Takeaway - Cash on Delivery'
+            : order.paymentMethod === 'cod'
             ? 'Cash on Delivery'
             : 'Online Payment'}
         </span>
       </h4>
 
-      <div className="summary-address">
-        <h4>Delivering To:</h4>
-        <p>
-          {order.address.name}
-          <br />
-          {order.address.street}
-          <br />
-          {order.address.city} – {order.address.zip}
-          <br />
-          Phone: {order.address.phone}
-        </p>
-      </div>
+      {!isTakeawayOrder ? (
+        <div className="summary-address">
+          <h4>Delivering To:</h4>
+          {order.address ? (
+            <p>
+              {order.address.name}
+              <br />
+              {order.address.street}
+              <br />
+              {order.address.city} – {order.address.zip}
+              <br />
+              Phone: {order.address.phone}
+            </p>
+          ) : (
+            <p>No delivery address provided.</p>
+          )}
+        </div>
+      ) : (
+        <div className="summary-address">
+          <h4>Pickup / Takeaway Order</h4>
+          <p>This order is a takeaway and does not require delivery.</p>
+        </div>
+      )}
 
       <button className="go-to-products-btn" onClick={handleGoToProducts}>
         🛒 Go to Products

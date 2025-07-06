@@ -32,6 +32,12 @@ const Order = () => {
   // New state to disable the "Pay Online" option
   const [isOnlinePaymentDisabled, setIsOnlinePaymentDisabled] = useState(true); // true = disabled
 
+  // State for showing minimum order warning message
+  const [showMinOrderWarning, setShowMinOrderWarning] = useState(false);
+
+  // New state for takeaway (true = takeaway, false = delivery)
+  const [isTakeaway, setIsTakeaway] = useState(false);
+
   const effectiveShopSlug = user?.shop_slug || paramShopSlug || 'demo';
 
   const resolveImageUrl = (image) => {
@@ -64,6 +70,26 @@ const Order = () => {
 
     fetchAddresses();
   }, [user]);
+
+  // ** Updated useEffect to handle takeaway and payment method **
+
+  useEffect(() => {
+    const MIN_ORDER_FOR_ONLINE = 200; // minimum order value for online payment
+
+    if (total >= MIN_ORDER_FOR_ONLINE) {
+      setIsOnlinePaymentDisabled(false);
+      setShowMinOrderWarning(false);
+      setIsTakeaway(false); // delivery allowed
+    } else {
+      // total < minimum order
+      setIsOnlinePaymentDisabled(true);
+      setShowMinOrderWarning(true);
+      setIsTakeaway(true); // only takeaway allowed
+      if (paymentMethod === 'online') {
+        setPaymentMethod('cod'); // fallback to COD if online payment disabled
+      }
+    }
+  }, [total, paymentMethod]);
 
   const handleAddressSubmit = async () => {
     try {
@@ -107,7 +133,7 @@ const Order = () => {
 
   const handleOrder = async () => {
     if (!paymentMethod) return alert('Please select a payment method');
-    if (!address) {
+    if (!isTakeaway && !address) {
       alert('Please select or enter your address.');
       setShowAddressPopup(true);
       return;
@@ -120,6 +146,7 @@ const Order = () => {
       return;
     }
 
+    // Add takeaway info in orderData
     const orderData = {
       items: items.map(i => ({
         id: i.id,
@@ -132,8 +159,9 @@ const Order = () => {
         unit_type: i.unit_type ?? null,
       })),
       total,
-      address,
+      address: isTakeaway ? null : address,
       paymentMethod,
+      takeaway: isTakeaway,
       orderDate: new Date().toISOString(),
     };
 
@@ -214,55 +242,61 @@ const Order = () => {
         <h2>Total: ₹{total.toFixed(2)}</h2>
       </div>
 
-      {addresses.length > 0 ? (
-        <div className="address-list">
-          <h3>Select Delivery Address</h3>
-          {addresses.map((addr) => (
-            <div key={addr.id} className="address-item-wrapper">
-              <label className="address-item">
-                <input
-                  type="radio"
-                  name="selectedAddress"
-                  value={addr.id}
-                  checked={address?.id === addr.id}
-                  onChange={() => setAddress(addr)}
-                />
-                <div>
-                  {addr.name}, {addr.street}, {addr.city} - {addr.zip}
-                  <br />
-                  Phone: {addr.phone}
-                </div>
-              </label>
-              <button
-                className="edit-address-btn"
-                onClick={() => {
-                  setTempAddress(addr);
-                  setShowAddressPopup(true);
-                }}
-              >
-                Edit
-              </button>
-            </div>
-          ))}
+      {isTakeaway ? (
+        <div className="takeaway-info" style={{marginBottom: '1em', color: 'blue'}}>
+          <strong>Your order total is less than ₹200.</strong> This order will be <em>Takeaway</em> only with <strong>Cash on Delivery</strong>.
+        </div>
+      ) : (
+        addresses.length > 0 ? (
+          <div className="address-list">
+            <h3>Select Delivery Address</h3>
+            {addresses.map((addr) => (
+              <div key={addr.id} className="address-item-wrapper">
+                <label className="address-item">
+                  <input
+                    type="radio"
+                    name="selectedAddress"
+                    value={addr.id}
+                    checked={address?.id === addr.id}
+                    onChange={() => setAddress(addr)}
+                  />
+                  <div>
+                    {addr.name}, {addr.street}, {addr.city} - {addr.zip}
+                    <br />
+                    Phone: {addr.phone}
+                  </div>
+                </label>
+                <button
+                  className="edit-address-btn"
+                  onClick={() => {
+                    setTempAddress(addr);
+                    setShowAddressPopup(true);
+                  }}
+                >
+                  Edit
+                </button>
+              </div>
+            ))}
+            <button
+              className="add-new-address-btn"
+              onClick={() => {
+                setTempAddress({ name: '', street: '', city: '', zip: '', phone: '' });
+                setShowAddressPopup(true);
+              }}
+            >
+              ➕ Add New Address
+            </button>
+          </div>
+        ) : (
           <button
-            className="add-new-address-btn"
             onClick={() => {
               setTempAddress({ name: '', street: '', city: '', zip: '', phone: '' });
               setShowAddressPopup(true);
             }}
           >
-            ➕ Add New Address
+            ➕ Enter Address
           </button>
-        </div>
-      ) : (
-        <button
-          onClick={() => {
-            setTempAddress({ name: '', street: '', city: '', zip: '', phone: '' });
-            setShowAddressPopup(true);
-          }}
-        >
-          ➕ Enter Address
-        </button>
+        )
       )}
 
       <div className="payment-options">
@@ -272,21 +306,28 @@ const Order = () => {
             value="cod"
             checked={paymentMethod === 'cod'}
             onChange={() => setPaymentMethod('cod')}
+            disabled={false} // Always allow COD
           />
           Cash on Delivery
         </label>
-       <label>
-  <input
-    type="radio"
-    value="online"
-    checked={paymentMethod === 'online'}
-    onChange={() => setPaymentMethod('online')}
-    disabled={isOnlinePaymentDisabled}
-  />
-  Pay Online
-</label>
-
+        <label>
+          <input
+            type="radio"
+            value="online"
+            checked={paymentMethod === 'online'}
+            onChange={() => setPaymentMethod('online')}
+            disabled={isOnlinePaymentDisabled}
+          />
+          Pay Online
+        </label>
       </div>
+
+      {/* Show minimum order warning message */}
+      {showMinOrderWarning && !isTakeaway && (
+        <div className="min-order-warning" style={{ color: 'red', marginBottom: '1em' }}>
+          Minimum order value for online payment is ₹200.
+        </div>
+      )}
 
       <button onClick={handleOrder}>✅ Place Order</button>
 

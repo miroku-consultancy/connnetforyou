@@ -8,25 +8,37 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
     console.log('[createOrder] Starting order creation...');
     await client.query('BEGIN');
 
-    // ✅ Step 1: Extract shop_id from first item
     const shopId = items[0].shopId ?? items[0].shop_id;
     if (!shopId) throw new Error('Missing shop ID in order items');
-    console.log('[createOrder] Using shopId:', shopId);
 
-    // ✅ Step 2: Lock rows for this shop (if any)
-    await client.query(`SELECT id FROM orders WHERE shop_id = $1 FOR UPDATE`, [shopId]);
-
-    // ✅ Step 3: Safely get the next order number
-    const { rows } = await client.query(
-      `SELECT COALESCE(MAX(order_number), 0) + 1 AS next_order_number
-       FROM orders
-       WHERE shop_id = $1`,
+    // ✅ Get minOrderValue for shop
+    const shopResult = await client.query(
+      `SELECT minOrderValue FROM shops WHERE id = $1`,
       [shopId]
     );
-    const orderNumber = rows[0].next_order_number;
-    console.log('[createOrder] orderNumber:', orderNumber);
 
-    // ✅ Step 4: Insert order into `orders` table
+    if (shopResult.rows.length === 0) {
+      throw new Error(`Shop with ID ${shopId} not found`);
+    }
+
+    const minOrderValue = parseFloat(shopResult.rows[0].minordervalue);
+    const isTakeaway = total < minOrderValue;
+
+    console.log(`[createOrder] shopId=${shopId}, minOrderValue=${minOrderValue}, isTakeaway=${isTakeaway}`);
+
+    // ✅ Lock rows for this shop
+    await client.query(`SELECT id FROM orders WHERE shop_id = $1 FOR UPDATE`, [shopId]);
+
+    // ✅ Get next order number
+    const { rows } = await client.query(
+      `SELECT COALESCE(MAX(order_number), 0) + 1 AS next_order_number
+       FROM orders WHERE shop_id = $1`,
+      [shopId]
+    );
+
+    const orderNumber = rows[0].next_order_number;
+
+    // ✅ Insert into orders
     const orderInsertResult = await client.query(
       `INSERT INTO orders (
         user_id, total, name, street, city, zip, phone,
@@ -36,11 +48,11 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
       [
         userId,
         total,
-        address.name,
-        address.street,
-        address.city,
-        address.zip,
-        address.phone,
+        isTakeaway ? 'Takeaway' : address.name,
+        isTakeaway ? '' : address.street,
+        isTakeaway ? '' : address.city,
+        isTakeaway ? '' : address.zip,
+        isTakeaway ? '' : address.phone,
         paymentMethod,
         orderDate,
         'Pending',
@@ -52,13 +64,11 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
     const orderId = orderInsertResult.rows[0].id;
     console.log(`[createOrder] Inserted order ID: ${orderId}`);
 
-    // ✅ Step 5: Insert each item into `order_items`
+    // ✅ Insert items
     for (const [index, item] of items.entries()) {
       const productId = parseInt(item.id.toString().split('-')[0], 10);
       const unitIdStr = item.id.toString().split('-')[1];
       const unitId = item.unit_id ?? (unitIdStr ? parseInt(unitIdStr, 10) : null);
-
-      console.log(`[createOrder] Inserting item ${index + 1}: productId=${productId}, unitId=${unitId}`);
 
       await client.query(
         `INSERT INTO order_items (
@@ -91,6 +101,7 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
     client.release();
   }
 }
+
 
 
 
