@@ -7,12 +7,12 @@ export const CartProvider = ({ children, userId, shopSlug }) => {
   const [cart, setCart] = useState({});
   const [cartLoaded, setCartLoaded] = useState(false);
 
-  // Unique key based on userId and shopSlug
+  // Unique cart key
   const getCartKey = () => {
     return userId && shopSlug ? `cart_${userId}_${shopSlug}` : null;
   };
 
-  // Load cart from localStorage when userId/shopSlug changes
+  // Load cart on mount or when user/shop changes
   useEffect(() => {
     const key = getCartKey();
     if (!key) {
@@ -23,11 +23,7 @@ export const CartProvider = ({ children, userId, shopSlug }) => {
 
     try {
       const savedCart = localStorage.getItem(key);
-      if (savedCart) {
-        setCart(JSON.parse(savedCart));
-      } else {
-        setCart({});
-      }
+      setCart(savedCart ? JSON.parse(savedCart) : {});
     } catch (error) {
       console.error('Error loading cart from localStorage:', error);
       setCart({});
@@ -36,18 +32,19 @@ export const CartProvider = ({ children, userId, shopSlug }) => {
     setCartLoaded(true);
   }, [userId, shopSlug]);
 
-  // Save cart to localStorage on change
+  // Persist cart
   useEffect(() => {
     const key = getCartKey();
-    if (!key) return;
-
-    try {
-      localStorage.setItem(key, JSON.stringify(cart));
-    } catch (error) {
-      console.error('Error saving cart to localStorage:', error);
+    if (key) {
+      try {
+        localStorage.setItem(key, JSON.stringify(cart));
+      } catch (error) {
+        console.error('Error saving cart to localStorage:', error);
+      }
     }
   }, [cart, userId, shopSlug]);
 
+  // Add or update item
   const addToCart = (product, quantity = 1) => {
     setCart((prev) => {
       const existing = prev[product.id];
@@ -68,6 +65,7 @@ export const CartProvider = ({ children, userId, shopSlug }) => {
     });
   };
 
+  // Change quantity
   const updateQuantity = (productId, delta) => {
     setCart((prev) => {
       const item = prev[productId];
@@ -86,16 +84,34 @@ export const CartProvider = ({ children, userId, shopSlug }) => {
     });
   };
 
+  // Clear current cart
   const clearCart = () => {
     const key = getCartKey();
-    if (key) {
-      localStorage.removeItem(key);
-    }
+    if (key) localStorage.removeItem(key);
+    setCart({});
+  };
+
+  // ✅ Clear all carts across all shops
+  const clearAllCarts = () => {
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith('cart_')) {
+        localStorage.removeItem(key);
+      }
+    });
     setCart({});
   };
 
   return (
-    <CartContext.Provider value={{ cart, cartLoaded, addToCart, updateQuantity, clearCart }}>
+    <CartContext.Provider
+      value={{
+        cart,
+        cartLoaded,
+        addToCart,
+        updateQuantity,
+        clearCart,
+        clearAllCarts, // ✅ export this
+      }}
+    >
       {children}
     </CartContext.Provider>
   );

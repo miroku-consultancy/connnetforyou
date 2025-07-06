@@ -3,14 +3,17 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './DashboardSummary.css';
 
+import { useCart } from './CartContext';    // ✅ import cart context
+import { useUser } from './UserContext';    // ✅ import user context
+
 const shops = [
   "Kanji-Sweets",
-  "SanjayVegStore",
-  "Ganga-Medical-hall",
   "ALNazeerMuradabadiChickenBiryani",
   "Janta7DaysChineseFastFood",
   "QureshiKababCenter",
-  "Vow-vista"
+  "Vow-vista",
+  "SanjayVegStore",
+  "Ganga-Medical-hall",
 ];
 
 const displayName = (shop) =>
@@ -21,6 +24,20 @@ const DashboardSummary = () => {
   const scrollRef = useRef(null);
   const [index, setIndex] = useState(0);
 
+  const { clearAllCarts } = useCart();      // ✅ get clearAllCarts from context
+  const { setUser } = useUser();             // ✅ get setUser and refreshUser once
+  // Note: We are not using refreshUser here to avoid loop
+
+  // ✅ Clear all session info on dashboard mount
+useEffect(() => {
+  localStorage.removeItem('authToken');
+  clearAllCarts();
+  setUser(null);  // choose one of these, not both
+  // refreshUser();  // DO NOT call this here if you called setUser
+}, [clearAllCarts, setUser]);
+
+
+  // Auto-scroll carousel
   useEffect(() => {
     const interval = setInterval(() => {
       setIndex(prevIndex => {

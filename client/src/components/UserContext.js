@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import {jwtDecode} from 'jwt-decode'; // make sure this import is correct (no curly braces)
+import { jwtDecode } from 'jwt-decode';
 
 const UserContext = createContext();
 
@@ -7,7 +7,7 @@ export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
-  // Function to load user from token in localStorage and validate expiry
+  // Load user from token in localStorage and validate expiry
   const refreshUser = useCallback(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
@@ -36,7 +36,7 @@ export const UserProvider = ({ children }) => {
   }, [refreshUser]);
 
   return (
-    <UserContext.Provider value={{ user, loadingUser, refreshUser }}>
+    <UserContext.Provider value={{ user, setUser, loadingUser, refreshUser }}>
       {children}
     </UserContext.Provider>
   );
