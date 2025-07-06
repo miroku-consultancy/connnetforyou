@@ -22,20 +22,22 @@ const DashboardSummary = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const nextIndex = (index + 1) % shops.length;
-      const scrollContainer = scrollRef.current;
-      if (scrollContainer) {
-        const cardWidth = scrollContainer.firstChild.offsetWidth + 20;
-        scrollContainer.scrollTo({
-          left: cardWidth * nextIndex,
-          behavior: 'smooth',
-        });
-        setIndex(nextIndex);
-      }
+      setIndex(prevIndex => {
+        const nextIndex = (prevIndex + 1) % shops.length;
+        const scrollContainer = scrollRef.current;
+        if (scrollContainer) {
+          const cardWidth = scrollContainer.firstChild.offsetWidth + 20;
+          scrollContainer.scrollTo({
+            left: cardWidth * nextIndex,
+            behavior: 'smooth',
+          });
+        }
+        return nextIndex;
+      });
     }, 2000);
 
     return () => clearInterval(interval);
-  }, [index]);
+  }, []);
 
   const handleClick = (shop) => {
     navigate(`/${shop}/login`);

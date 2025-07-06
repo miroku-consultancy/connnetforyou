@@ -23,20 +23,25 @@
   display: flex;
   overflow-x: auto;
   scroll-behavior: smooth;
-  padding: 10px;
   gap: 20px;
+  padding: 10px;
+  scrollbar-width: none; /* Firefox */
+}
+
+.carousel-container::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
 }
 
 .shop-card {
   flex: 0 0 auto;
-  background: #ffffff;
-  padding: 20px;
   width: 250px;
+  background: white;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  transition: transform 0.4s ease, box-shadow 0.4s ease;
+  padding: 20px;
   cursor: pointer;
   text-align: center;
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
 }
 
 .shop-card:hover {
@@ -52,10 +57,34 @@
 .shop-name {
   font-size: 1.3rem;
   font-weight: 600;
-  margin-bottom: 8px;
+  color: #2c3e50;
+  margin-top: 15px;
+  margin-bottom: 10px;
 }
 
 .shop-login-cta {
   font-size: 0.95rem;
   color: #3578e5;
+}
+/* Responsive tweaks */
+@media (max-width: 600px) {
+  .shop-card {
+    width: 80vw; /* Cards take ~80% of viewport width on mobile */
+  }
+
+  .dashboard-title {
+    font-size: 2rem;
+  }
+
+  .dashboard-subtitle {
+    font-size: 1rem;
+  }
+
+  .shop-image-placeholder {
+    font-size: 3rem;
+  }
+
+  .shop-name {
+    font-size: 1.1rem;
+  }
 }
