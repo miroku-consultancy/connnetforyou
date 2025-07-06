@@ -11,7 +11,7 @@ const OrderSummary = () => {
   const { shopSlug } = useParams();
   const { clearCart } = useCart();
   const navigationHandled = useRef(false);
-  const { user } = useUser(); // Get current user
+  const { user } = useUser();
 
   useEffect(() => {
     if (searchParams.get('success')) {
@@ -54,15 +54,14 @@ const OrderSummary = () => {
     return <div style={{ padding: '2rem' }}>Loading summary...</div>;
   }
 
-  const isTakeawayOrder = order.takeaway === true;
+  const MIN_ORDER_FOR_DELIVERY = 200;
+  const isTakeawayOrder = Number(order.total) < MIN_ORDER_FOR_DELIVERY;
 
   const getOrderIdDisplay = () => {
     if (!order.orderId) return null;
-
     if (typeof order.orderId === 'object' && order.orderId !== null) {
       return order.orderId.orderId ?? JSON.stringify(order.orderId);
     }
-
     return order.orderId;
   };
 
@@ -103,17 +102,12 @@ const OrderSummary = () => {
           const price = getItemPrice(item);
           const quantity = getItemQuantity(item);
           return (
-            <li
-              key={item.product_id || item.id}
-              className="order-summary-item"
-            >
+            <li key={item.product_id || item.id} className="order-summary-item">
               <img
                 src={
-                  item.image
-                    ? (item.image.startsWith('http')
-                        ? item.image
-                        : process.env.PUBLIC_URL + item.image)
-                    : '/default-image.png'
+                  item.image && item.image.startsWith('http')
+                    ? item.image
+                    : process.env.PUBLIC_URL + item.image || '/default-image.png'
                 }
                 alt={item.name}
                 className="summary-image"
@@ -141,6 +135,10 @@ const OrderSummary = () => {
             ? 'Cash on Delivery'
             : 'Online Payment'}
         </span>
+      </h4>
+
+      <h4>
+        Order Type: <span>{isTakeawayOrder ? 'Takeaway' : 'Delivery'}</span>
       </h4>
 
       {!isTakeawayOrder ? (
