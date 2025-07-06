@@ -297,16 +297,18 @@ const Product = () => {
           </div>
 
           <div className="user-actions">
-            <LogoutButton />
-            <button
-              onClick={() => navigate(`/${safeShopSlug}/order-history`)}
-              className="order-history-btn"
-            >
-              📜 Order History
-            </button>
+            <div className="user-actions-row general-actions">
+              <LogoutButton />
+              <button
+                onClick={() => navigate(`/${safeShopSlug}/order-history`)}
+                className="order-history-btn"
+              >
+                📜 Order History
+              </button>
+            </div>
 
             {isVendor && (
-              <>
+              <div className="user-actions-row vendor-actions">
                 <button
                   onClick={() => navigate(`/vendor/dashboard`)}
                   className="dashboard-btn"
@@ -325,9 +327,10 @@ const Product = () => {
                 >
                   ➕ Add Product
                 </button>
-              </>
+              </div>
             )}
           </div>
+
         </div>
       )}
 
