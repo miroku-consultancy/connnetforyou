@@ -90,7 +90,6 @@ const Product = () => {
         setShopId(shop.id);
       } catch (error) {
         console.error('Error fetching shop info:', error);
-        alert('Error loading shop details');
         navigate('/');
       }
     };
