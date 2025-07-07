@@ -1,10 +1,10 @@
-// DashboardSummary.jsx
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import './DashboardSummary.css';
 
-import { useCart } from './CartContext';    // ✅ import cart context
-import { useUser } from './UserContext';    // ✅ import user context
+import { useCart } from './CartContext';
+import { useUser } from './UserContext';
 
 const shops = [
   "Kanji-Sweets",
@@ -20,46 +20,71 @@ const shops = [
 const displayName = (shop) =>
   shop.replace(/-/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2');
 
+const shopIcons = {
+  "Kanji-Sweets": "🍬",
+  "ALNazeerMuradabadiChickenBiryani": "🍗",
+  "Janta7DaysChineseFastFood": "🥡",
+  "QureshiKababCenter": "🍢",
+  "Vow-vista": "🌅",
+  "SanjayVegStore": "🥬",
+  "Ganga-Medical-hall": "💊",
+  "Desi-swaad": "🍛"
+};
+
 const DashboardSummary = () => {
   const navigate = useNavigate();
   const scrollRef = useRef(null);
+  const intervalRef = useRef(null);
   const [index, setIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
-  const { clearAllCarts } = useCart();      // ✅ get clearAllCarts from context
-  const { setUser } = useUser();             // ✅ get setUser and refreshUser once
-  // Note: We are not using refreshUser here to avoid loop
+  const { clearAllCarts } = useCart();
+  const { setUser } = useUser();
 
-  // ✅ Clear all session info on dashboard mount
-useEffect(() => {
-  localStorage.removeItem('authToken');
-  clearAllCarts();
-  setUser(null);  // choose one of these, not both
-  // refreshUser();  // DO NOT call this here if you called setUser
-}, [clearAllCarts, setUser]);
-
-
-  // Auto-scroll carousel
+  // Clear session info on mount
   useEffect(() => {
-    const interval = setInterval(() => {
-      setIndex(prevIndex => {
-        const nextIndex = (prevIndex + 1) % shops.length;
-        const scrollContainer = scrollRef.current;
-        if (scrollContainer) {
-          const cardWidth = scrollContainer.firstChild.offsetWidth + 20;
-          scrollContainer.scrollTo({
-            left: cardWidth * nextIndex,
-            behavior: 'smooth',
-          });
-        }
-        return nextIndex;
-      });
-    }, 2000);
+    localStorage.removeItem('authToken');
+    clearAllCarts();
+    setUser(null);
+  }, [clearAllCarts, setUser]);
 
-    return () => clearInterval(interval);
-  }, []);
+  // Auto-scroll logic
+  useEffect(() => {
+    const startAutoScroll = () => {
+      intervalRef.current = setInterval(() => {
+        setIndex(prevIndex => {
+          const nextIndex = (prevIndex + 1) % shops.length;
+          const scrollContainer = scrollRef.current;
+          if (scrollContainer) {
+            const cardWidth = scrollContainer.firstChild.offsetWidth + 24;
+            scrollContainer.scrollTo({
+              left: cardWidth * nextIndex,
+              behavior: 'smooth',
+            });
+          }
+          return nextIndex;
+        });
+      }, 3000);
+    };
+
+    if (!isPaused) {
+      startAutoScroll();
+    }
+
+    return () => clearInterval(intervalRef.current);
+  }, [isPaused]);
 
   const handleClick = (shop) => {
     navigate(`/${shop}/login`);
+  };
+
+  const handleUserInteractionStart = () => {
+    setIsPaused(true);
+    clearInterval(intervalRef.current);
+  };
+
+  const handleUserInteractionEnd = () => {
+    setIsPaused(false);
   };
 
   return (
@@ -69,15 +94,23 @@ useEffect(() => {
 
       <div className="carousel-container" ref={scrollRef}>
         {shops.map((shop, i) => (
-          <div
+          <motion.div
             className={`shop-card ${i === index ? 'active' : ''}`}
             key={shop}
+            onMouseDown={handleUserInteractionStart}
+            onMouseUp={handleUserInteractionEnd}
+            onTouchStart={handleUserInteractionStart}
+            onTouchEnd={handleUserInteractionEnd}
             onClick={() => handleClick(shop)}
+            whileHover={{ scale: 1.1 }}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: i * 0.1 }}
           >
-            <div className="shop-image-placeholder">🏬</div>
+            <div className="shop-image-placeholder">{shopIcons[shop] || "🏬"}</div>
             <div className="shop-name">{displayName(shop)}</div>
             <div className="shop-login-cta">Click to login</div>
-          </div>
+          </motion.div>
         ))}
       </div>
     </div>
