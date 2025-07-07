@@ -40,7 +40,7 @@ const Order = () => {
   // Dynamic min order value fetched from shop
   const [minOrderValue, setMinOrderValue] = useState(200);
 
-  const effectiveShopSlug = user?.shop_slug || paramShopSlug || 'demo';
+  const effectiveShopSlug = user?.shop_slug || paramShopSlug || 'ConnectFREE4U';
 
   const resolveImageUrl = (image) => {
     if (!image) return '';
