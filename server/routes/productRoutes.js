@@ -31,7 +31,8 @@ router.get('/', productController.getProducts); // ✅ Public access
 
 
 // GET product by ID
-router.get('/:id', authMiddleware, productController.getProduct);
+router.get('/:id', productController.getProduct); // 🔓 Now public
+
 
 // POST new product (admin/vendor only) with image upload
 router.post(
