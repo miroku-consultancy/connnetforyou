@@ -10,7 +10,7 @@ import { jwtDecode } from 'jwt-decode';
 const API_BASE_URL = 'https://connnet4you-server.onrender.com';
 
 const Product = () => {
-  const [isVendor, setIsVendor] = useState(false);
+  const [isVendor, setIsVendor] = useState(false); // ✅ Correct placement
   const [products, setProducts] = useState([]);
   const [quantities, setQuantities] = useState({});
   const [showCartPopup, setShowCartPopup] = useState(false);
@@ -44,6 +44,7 @@ const Product = () => {
     return `${API_BASE_URL}/images/${image}`;
   };
 
+  // ✅ Check token and vendor status
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
@@ -67,9 +68,19 @@ const Product = () => {
   useEffect(() => {
     const fetchShopInfo = async () => {
       if (!safeShopSlug) return;
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        navigate('/');
+        return;
+      }
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/shops/${safeShopSlug}`);
+        const response = await fetch(`${API_BASE_URL}/api/shops/${safeShopSlug}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
         if (!response.ok) {
           alert('Shop not found');
           navigate('/');
@@ -88,11 +99,27 @@ const Product = () => {
 
   useEffect(() => {
     const fetchProducts = async () => {
-      if (!shopId) return;
+      const token = localStorage.getItem('authToken');
+      if (!token || !shopId) return;
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/products?shopId=${shopId}`);
-        if (!response.ok) throw new Error('Failed to fetch products');
+        const response = await fetch(`${API_BASE_URL}/api/products?shopId=${shopId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            alert('Session expired. Please log in again.');
+            localStorage.removeItem('authToken');
+            navigate('/');
+          } else {
+            throw new Error('Failed to fetch products');
+          }
+        }
+
         const data = await response.json();
         setProducts(data);
       } catch (error) {
@@ -101,7 +128,7 @@ const Product = () => {
     };
 
     fetchProducts();
-  }, [shopId]);
+  }, [shopId, navigate]);
 
   useEffect(() => {
     const fetchAddresses = async () => {
@@ -302,6 +329,7 @@ const Product = () => {
               </div>
             )}
           </div>
+
         </div>
       )}
 
@@ -324,7 +352,7 @@ const Product = () => {
                   cart={cart}
                   addToCart={addToCart}
                   resolveImageUrl={resolveImageUrl}
-                  isVendor={isVendor}
+                  isVendor={isVendor} // ✅ pass down
                   safeShopSlug={safeShopSlug}
                 />
               ))}
@@ -393,7 +421,7 @@ const ProductCard = ({
   cart,
   addToCart,
   resolveImageUrl,
-  isVendor,
+  isVendor, // ✅ added
   safeShopSlug,
 }) => {
   const hasUnits = Array.isArray(product.units) && product.units.length > 0;
@@ -468,10 +496,13 @@ const ProductCard = ({
         <button
           className="edit-product-btn"
           onClick={() => navigate(`/${safeShopSlug}/admin/edit-product/${product.id}`)}
+          disabled={true} // or some condition like isDisabled
         >
           ✏️ Edit Product
         </button>
+
       )}
+
     </div>
   );
 };
