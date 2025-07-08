@@ -35,24 +35,28 @@ const DashboardSummary = () => {
   const navigate = useNavigate();
   const scrollRef = useRef(null);
   const intervalRef = useRef(null);
+  const hasInitialized = useRef(false); // 🔒 guard to prevent infinite loop
   const [index, setIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
   const { clearAllCarts } = useCart();
   const { setUser } = useUser();
 
-  // Clear session info on mount
+  // Clear session info on first mount only
   useEffect(() => {
-    localStorage.removeItem('authToken');
-    clearAllCarts();
-    setUser(null);
+    if (!hasInitialized.current) {
+      hasInitialized.current = true;
+      localStorage.removeItem('authToken');
+      clearAllCarts();
+      setUser(null);
+    }
   }, [clearAllCarts, setUser]);
 
-  // Auto-scroll logic
+  // Auto-scroll carousel
   useEffect(() => {
     const startAutoScroll = () => {
       intervalRef.current = setInterval(() => {
-        setIndex(prevIndex => {
+        setIndex((prevIndex) => {
           const nextIndex = (prevIndex + 1) % shops.length;
           const scrollContainer = scrollRef.current;
           if (scrollContainer) {
@@ -75,7 +79,7 @@ const DashboardSummary = () => {
   }, [isPaused]);
 
   const handleClick = (shop) => {
-    navigate(`/${shop}/login`);
+    navigate(`/${shop}/products`); // ✅ Direct to product page
   };
 
   const handleUserInteractionStart = () => {
@@ -90,7 +94,7 @@ const DashboardSummary = () => {
   return (
     <div className="dashboard-container">
       <h1 className="dashboard-title">🛒 Welcome to ConnectFREE4U</h1>
-      <p className="dashboard-subtitle">Select a shop below to login</p>
+      <p className="dashboard-subtitle">Select a shop below to browse products</p>
 
       <div className="carousel-container" ref={scrollRef}>
         {shops.map((shop, i) => (
@@ -107,9 +111,11 @@ const DashboardSummary = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: i * 0.1 }}
           >
-            <div className="shop-image-placeholder">{shopIcons[shop] || "🏬"}</div>
+            <div className="shop-image-placeholder">
+              {shopIcons[shop] || "🏬"}
+            </div>
             <div className="shop-name">{displayName(shop)}</div>
-            <div className="shop-login-cta">Click to login</div>
+            <div className="shop-login-cta">Click to browse</div>
           </motion.div>
         ))}
       </div>

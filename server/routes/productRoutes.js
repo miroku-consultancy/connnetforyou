@@ -27,7 +27,8 @@ router.use((req, res, next) => {
 });
 
 // GET all products
-router.get('/', authMiddleware, productController.getProducts);
+router.get('/', productController.getProducts); // ✅ Public access
+
 
 // GET product by ID
 router.get('/:id', authMiddleware, productController.getProduct);
