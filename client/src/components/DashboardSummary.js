@@ -75,7 +75,7 @@ const DashboardSummary = () => {
   }, [isPaused]);
 
   const handleClick = (shop) => {
-    navigate(`/${shop}/products`); // You can change `/login` if needed
+    navigate(`/${shop}/products`);
   };
 
   const handleUserInteractionStart = () => {
@@ -90,17 +90,22 @@ const DashboardSummary = () => {
   return (
     <div className="dashboard-container">
       <h1 className="dashboard-title">🛒 Welcome to ConnectFREE4U</h1>
-      <p className="dashboard-subtitle">Select a shop below to login</p>
+      <p className="dashboard-subtitle">Select a shop below to see the product list</p>
 
-      <div className="carousel-container" ref={scrollRef}>
+      <div
+        className="carousel-container"
+        ref={scrollRef}
+        onMouseEnter={handleUserInteractionStart}
+        onMouseLeave={handleUserInteractionEnd}
+        onTouchStart={handleUserInteractionStart}
+        onTouchEnd={handleUserInteractionEnd}
+      >
         {shops.map((shop, i) => (
           <motion.div
             className={`shop-card ${i === index ? 'active' : ''}`}
             key={shop}
-            onMouseDown={handleUserInteractionStart}
-            onMouseUp={handleUserInteractionEnd}
-            onTouchStart={handleUserInteractionStart}
-            onTouchEnd={handleUserInteractionEnd}
+            role="button"
+            aria-label={`Explore ${displayName(shop)}`}
             onClick={() => handleClick(shop)}
             whileHover={{ scale: 1.1 }}
             initial={{ opacity: 0, y: 30 }}
@@ -108,9 +113,15 @@ const DashboardSummary = () => {
             transition={{ duration: 0.5, delay: i * 0.1 }}
           >
             <div className="shop-image-placeholder">{shopIcons[shop] || "🏬"}</div>
-            <div className="shop-name">{displayName(shop)}</div>
-            <div className="shop-login-cta">Click to login</div>
+            <h2 className="shop-name">{displayName(shop)}</h2>
+            <div className="shop-login-cta">Click to explore the products</div>
           </motion.div>
+        ))}
+      </div>
+
+      <div className="carousel-dots">
+        {shops.map((_, i) => (
+          <span key={i} className={`dot ${i === index ? 'active' : ''}`} />
         ))}
       </div>
     </div>
