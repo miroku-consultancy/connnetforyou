@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+// components/Header.js
+import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import './Header.css';
+import MenuBar from './MenuBar';
+import { FaBars, FaTimes } from 'react-icons/fa'; // for menu icons
 
 const API_BASE_URL = 'https://connnet4you-server.onrender.com';
 
 const Header = () => {
   const location = useLocation();
-  const shopSlug = location.pathname.split('/')[1] || null;
-
-  const [navItems, setNavItems] = useState([]);
+  const shopSlug = location.pathname.split('/')[1] || '';
   const [shop, setShop] = useState(null);
-  const [expandedIndex, setExpandedIndex] = useState(null);
+  const [menuOpen, setMenuOpen] = useState(false); // for toggling menu
 
-  // Format 24h time string ("HH:mm:ss") to 12h with AM/PM, e.g. "14:30:00" => "2:30 PM"
   const formatTime = (timeStr) => {
     if (!timeStr) return '';
     const [hour, minute] = timeStr.split(':');
@@ -22,21 +22,17 @@ const Header = () => {
     return `${h}:${minute} ${suffix}`;
   };
 
-  // Fetch navigation menu
-  useEffect(() => {
-    fetch(`${API_BASE_URL}/api/navigation`)
-      .then(res => (res.ok ? res.json() : Promise.reject()))
-      .then(data => setNavItems(data.navItems || []))
-      .catch(err => console.error('Nav fetch error:', err));
-  }, []);
+  const toggleMenu = () => {
+    setMenuOpen((prev) => !prev);
+  };
 
-  // Fetch shop data based on slug
   useEffect(() => {
     if (!shopSlug || shopSlug === 'dashboard') return;
     fetch(`${API_BASE_URL}/api/shops/${shopSlug}`)
       .then(res => {
         if (res.ok) return res.json();
-        if (res.status === 404) return { name: 'Shop Not Found', slug: null, address: '', phone: '' };
+        if (res.status === 404)
+          return { name: 'Shop Not Found', slug: null, address: '', phone: '' };
         return Promise.reject();
       })
       .then(setShop)
@@ -46,20 +42,19 @@ const Header = () => {
       });
   }, [shopSlug]);
 
-  // Build image path
   const shopLogoSrc = shop?.slug
     ? `/images/shops/${shop.slug}.JPG`
     : '/images/shops/logo.png';
 
   return (
     <header className="header">
-      {/* Left side: Shop logo & info */}
+      {/* Left: Logo and shop info */}
       <div className="left-box">
         <img
           src={shopLogoSrc}
           alt={`${shop?.name || 'Shop'} logo`}
           className="logo"
-          onError={e => {
+          onError={(e) => {
             e.currentTarget.onerror = null;
             e.currentTarget.src = '/images/shops/logo.png';
           }}
@@ -81,38 +76,23 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Center: Navigation */}
-      <nav className="nav">
-        <ul className="nav-list">
-          {navItems.map((itm, idx) => (
-            <li
-              key={idx}
-              onMouseEnter={() => setExpandedIndex(idx)}
-              onMouseLeave={() => setExpandedIndex(null)}
-            >
-              <Link to={`/${shopSlug || ''}${itm.id}`} className="dropdown-toggle">
-                {itm.name}
-              </Link>
-              {expandedIndex === idx && itm.description?.length > 0 && (
-                <div className="dropdown-content">
-                  {itm.description.map((d, i2) => (
-                    <div key={i2} className="dropdown-item">{d}</div>
-                  ))}
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
+      {/* Toggle Menu Button for mobile */}
+      <button className="menu-toggle" onClick={toggleMenu} aria-label="Toggle Menu">
+        {menuOpen ? <FaTimes /> : <FaBars />}
+      </button>
+
+      {/* Center: MenuBar */}
+      <nav className={`nav ${menuOpen ? 'open' : ''}`}>
+        <MenuBar />
       </nav>
 
-      {/* Right side: Branding */}
+      {/* Right: Shop hours + branding */}
       <div className="right-box">
         {shop?.open_time && shop?.close_time && (
           <span className="shop-hours">
             🕒 <strong>Open Hours:</strong> {formatTime(shop.open_time)} – {formatTime(shop.close_time)}
           </span>
         )}
-
         <span className="powered-by">
           Powered by <strong>ConnectFREE4U</strong>
         </span>

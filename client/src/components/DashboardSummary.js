@@ -41,18 +41,18 @@ const DashboardSummary = () => {
   const { clearAllCarts } = useCart();
   const { setUser } = useUser();
 
-  // Clear session info on mount
+  // ✅ Clear session info on mount (only once)
   useEffect(() => {
     localStorage.removeItem('authToken');
     clearAllCarts();
     setUser(null);
-  }, [clearAllCarts, setUser]);
+  }, []); // ✅ Empty dependency array ensures it only runs once
 
   // Auto-scroll logic
   useEffect(() => {
     const startAutoScroll = () => {
       intervalRef.current = setInterval(() => {
-        setIndex(prevIndex => {
+        setIndex((prevIndex) => {
           const nextIndex = (prevIndex + 1) % shops.length;
           const scrollContainer = scrollRef.current;
           if (scrollContainer) {

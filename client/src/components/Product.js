@@ -245,172 +245,137 @@ const Product = () => {
 
   return (
     <section className="product-section">
-      {!loadingUser && user && (
-        <div className="user-profile-banner">
-          <span role="img" aria-label="user" className="user-icon">👤</span>
-          <div className="user-info-container">
-            <p>
-              Welcome back, <strong>{user.name || user.email?.split('@')[0]}</strong>
-            </p>
+  {!loadingUser && user && (
+    <div className="user-profile-banner">
+      <span role="img" aria-label="user" className="user-icon">👤</span>
+      <div className="user-info-container">
+        <p>
+          Welcome back, <strong>{user.name || user.email?.split('@')[0]}</strong>
+        </p>
 
-            {addresses.length > 0 ? (
-              <p className="user-address-banner">
-                <strong>Delivering to:</strong>{' '}
-                <select
-                  value={selectedAddressId || ''}
-                  onChange={handleAddressSelect}
-                  className="address-select"
-                >
-                  {addresses.map((addr) => (
-                    <option key={addr.id} value={addr.id}>
-                      {addr.name}, {addr.street}, {addr.city} - {addr.zip} (📞 {addr.phone})
-                    </option>
-                  ))}
-                </select>
-                <br />
-                <button
-                  onClick={() => setShowAddressPopup(true)}
-                  className="edit-btn"
-                >
-                  ✏️ Edit Address
-                </button>
-              </p>
-            ) : (
-              <button
-                onClick={() => {
-                  setTempAddress({
-                    name: '',
-                    street: '',
-                    city: '',
-                    zip: '',
-                    phone: '',
-                  });
-                  setSelectedAddressId(null);
-                  setShowAddressPopup(true);
-                }}
-                className="edit-btn"
-              >
-                ➕ Add Address
-              </button>
-            )}
-          </div>
-
-          <div className="user-actions">
-            <div className="user-actions-row general-actions">
-              <LogoutButton />
-              <button
-                onClick={() => navigate(`/${safeShopSlug}/order-history`)}
-                className="order-history-btn"
-              >
-                📜 Order History
-              </button>
-            </div>
-
-            {isVendor && (
-              <div className="user-actions-row vendor-actions">
-                <button
-                  onClick={() => navigate(`/vendor/dashboard`)}
-                  className="dashboard-btn"
-                >
-                  📊 Dashboard
-                </button>
-                <button
-                  onClick={() => navigate(`/${safeShopSlug}/shop-orders`)}
-                  className="shop-orders-btn"
-                >
-                  🛍️ Shop Orders
-                </button>
-                <button
-                  onClick={() => navigate(`/${safeShopSlug}/admin/add-product`)}
-                  className="add-product-btn"
-                >
-                  ➕ Add Product
-                </button>
-              </div>
-            )}
-          </div>
-
-        </div>
-      )}
-
-      <h1 className="page-title">Explore Fresh Picks</h1>
-
-      {groupedProducts.map(({ subcategory, items }, index) => (
-        items.length > 0 && (
-          <div
-            key={subcategory}
-            className={`subcategory-section ${index % 2 === 0 ? 'light-bg' : 'dark-bg'}`}
-          >
-            <h2 className="subcategory-title">{subcategory}</h2>
-            <div className="product-grid">
-              {items.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  quantities={quantities}
-                  setQuantities={setQuantities}
-                  cart={cart}
-                  addToCart={addToCart}
-                  resolveImageUrl={resolveImageUrl}
-                  isVendor={isVendor} // ✅ pass down
-                  safeShopSlug={safeShopSlug}
-                />
-              ))}
-            </div>
-          </div>
-        )
-      ))}
-
-      {Object.keys(cart).length > 0 && (
-        <div className="floating-cart" onClick={() => setShowCartPopup(true)}>
-          🛒{' '}
-          {Object.values(cart).reduce((sum, item) => sum + item.quantity, 0)} item(s)
-          | ₹
-          {Object.values(cart)
-            .reduce((sum, item) => sum + item.quantity * item.price, 0)
-            .toFixed(2)}{' '}
-          → View Cart
-        </div>
-      )}
-
-      {showCartPopup && (
-        <div className="cart-popup" onClick={() => setShowCartPopup(false)}>
-          <div className="cart-popup-content" onClick={(e) => e.stopPropagation()}>
-            <button className="cart-close-btn" onClick={() => setShowCartPopup(false)}>
-              &times;
-            </button>
-            <h2>Your Cart</h2>
-            <ul>
-              {Object.values(cart).map((item) => (
-                <li key={item.id}>
-                  <img
-                    src={resolveImageUrl(item.image)}
-                    alt={item.name}
-                    className="cart-item-image"
-                  />
-                  {item.name} × {item.quantity} = ₹{item.quantity * item.price}
-                </li>
-              ))}
-            </ul>
-            <button
-              onClick={() => navigate(`/${safeShopSlug}/order`)}
-              className="login-btn"
+        {addresses.length > 0 ? (
+          <p className="user-address-banner">
+            <strong>Delivering to:</strong>{' '}
+            <select
+              value={selectedAddressId || ''}
+              onChange={handleAddressSelect}
+              className="address-select"
             >
-              Proceed to Order
+              {addresses.map((addr) => (
+                <option key={addr.id} value={addr.id}>
+                  {addr.name}, {addr.street}, {addr.city} - {addr.zip} (📞 {addr.phone})
+                </option>
+              ))}
+            </select>
+            <br />
+            <button
+              onClick={() => setShowAddressPopup(true)}
+              className="edit-btn"
+            >
+              ✏️ Edit Address
             </button>
-          </div>
-        </div>
-      )}
+          </p>
+        ) : (
+          <button
+            onClick={() => {
+              setTempAddress({
+                name: '',
+                street: '',
+                city: '',
+                zip: '',
+                phone: '',
+              });
+              setSelectedAddressId(null);
+              setShowAddressPopup(true);
+            }}
+            className="edit-btn"
+          >
+            ➕ Add Address
+          </button>
+        )}
+      </div>
+    </div>
+  )}
 
-      {showAddressPopup && (
-        <AddressPopup
-          tempAddress={tempAddress}
-          setTempAddress={setTempAddress}
-          onClose={() => setShowAddressPopup(false)}
-          onSubmit={handleAddressSubmit}
-        />
-      )}
-    </section>
+  <h1 className="page-title">Explore Fresh Picks</h1>
+
+  {groupedProducts.map(({ subcategory, items }, index) => (
+    items.length > 0 && (
+      <div
+        key={subcategory}
+        className={`subcategory-section ${index % 2 === 0 ? 'light-bg' : 'dark-bg'}`}
+      >
+        <h2 className="subcategory-title">{subcategory}</h2>
+        <div className="product-grid">
+          {items.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              quantities={quantities}
+              setQuantities={setQuantities}
+              cart={cart}
+              addToCart={addToCart}
+              resolveImageUrl={resolveImageUrl}
+              isVendor={isVendor}
+              safeShopSlug={safeShopSlug}
+            />
+          ))}
+        </div>
+      </div>
+    )
+  ))}
+
+  {Object.keys(cart).length > 0 && (
+    <div className="floating-cart" onClick={() => setShowCartPopup(true)}>
+      🛒{' '}
+      {Object.values(cart).reduce((sum, item) => sum + item.quantity, 0)} item(s)
+      | ₹
+      {Object.values(cart)
+        .reduce((sum, item) => sum + item.quantity * item.price, 0)
+        .toFixed(2)}{' '}
+      → View Cart
+    </div>
+  )}
+
+  {showCartPopup && (
+    <div className="cart-popup" onClick={() => setShowCartPopup(false)}>
+      <div className="cart-popup-content" onClick={(e) => e.stopPropagation()}>
+        <button className="cart-close-btn" onClick={() => setShowCartPopup(false)}>
+          &times;
+        </button>
+        <h2>Your Cart</h2>
+        <ul>
+          {Object.values(cart).map((item) => (
+            <li key={item.id}>
+              <img
+                src={resolveImageUrl(item.image)}
+                alt={item.name}
+                className="cart-item-image"
+              />
+              {item.name} × {item.quantity} = ₹{item.quantity * item.price}
+            </li>
+          ))}
+        </ul>
+        <button
+          onClick={() => navigate(`/${safeShopSlug}/order`)}
+          className="login-btn"
+        >
+          Proceed to Order
+        </button>
+      </div>
+    </div>
+  )}
+
+  {showAddressPopup && (
+    <AddressPopup
+      tempAddress={tempAddress}
+      setTempAddress={setTempAddress}
+      onClose={() => setShowAddressPopup(false)}
+      onSubmit={handleAddressSubmit}
+    />
+  )}
+</section>
+
   );
 };
 
