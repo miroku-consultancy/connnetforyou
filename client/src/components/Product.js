@@ -453,15 +453,7 @@ const ProductCard = ({
         ₹{(selectedUnit?.price || product.price) * qty || 0}
       </div>
 
-      {!isVendor && (
-        <button
-          className="login-btn"
-          onClick={() => navigate(`/login`)}
-          style={{ display: qty === 0 ? 'inline-block' : 'none' }}
-        >
-          Log in to order
-        </button>
-      )}
+     
     </div>
   );
 };
