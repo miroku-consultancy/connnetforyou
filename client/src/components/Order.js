@@ -13,7 +13,6 @@ const Order = () => {
   const navigate = useNavigate();
   const { user } = useUser();
   const { shopSlug: paramShopSlug } = useParams();
-  const [refreshNotifications, setRefreshNotifications] = useState(0);
 
   const [showAddressPopup, setShowAddressPopup] = useState(false);
   const [addresses, setAddresses] = useState([]);
@@ -28,16 +27,9 @@ const Order = () => {
   });
   const [selectedItem, setSelectedItem] = useState(null);
 
-  // Always disable online payment for now
   const isOnlinePaymentDisabled = true;
-
-  // Show minimum order warning if total < minOrderValue
   const [showMinOrderWarning, setShowMinOrderWarning] = useState(false);
-
-  // Takeaway only if order below minOrderValue
   const [isTakeaway, setIsTakeaway] = useState(false);
-
-  // Dynamic min order value fetched from shop
   const [minOrderValue, setMinOrderValue] = useState(200);
 
   const effectiveShopSlug = user?.shop_slug || paramShopSlug || 'ConnectFREE4U';
@@ -69,7 +61,6 @@ const Order = () => {
         setAddress(null);
       }
     };
-
     fetchAddresses();
   }, [user]);
 
@@ -85,11 +76,9 @@ const Order = () => {
         setMinOrderValue(200);
       }
     };
-
     fetchShopData();
   }, [effectiveShopSlug]);
 
-  // Update takeaway and warning based on total and minOrderValue
   useEffect(() => {
     if (total >= minOrderValue) {
       setShowMinOrderWarning(false);
@@ -98,7 +87,7 @@ const Order = () => {
       setShowMinOrderWarning(true);
       setIsTakeaway(true);
       if (paymentMethod === 'online') {
-        setPaymentMethod('cod'); // fallback
+        setPaymentMethod('cod');
       }
     }
   }, [total, paymentMethod, minOrderValue]);
@@ -143,6 +132,7 @@ const Order = () => {
     }
   };
 
+  // --- UPDATED handleOrder: check login first ---
   const handleOrder = async () => {
     if (!paymentMethod) return alert('Please select a payment method');
     if (!isTakeaway && !address) {
@@ -153,8 +143,9 @@ const Order = () => {
 
     const token = localStorage.getItem('authToken');
     if (!token) {
+      // Redirect to EmailTokenLogin page with redirect param
       alert('You must be logged in to place an order.');
-      navigate('/login');
+      navigate(`/${effectiveShopSlug}/login?redirect=/order`);
       return;
     }
 
@@ -176,8 +167,6 @@ const Order = () => {
       orderDate: new Date().toISOString(),
     };
 
-    console.log('[handleOrder] Submitting order with payload:', orderData);
-
     try {
       const response = await fetch(`${API_BASE_URL}/api/orders`, {
         method: 'POST',
@@ -189,7 +178,6 @@ const Order = () => {
       });
 
       const responseText = await response.text();
-      console.log('[handleOrder] Raw response from server:', responseText);
 
       if (!response.ok) {
         throw new Error(`Failed to place order: ${response.status} ${response.statusText}`);
@@ -197,11 +185,9 @@ const Order = () => {
 
       const result = JSON.parse(responseText);
 
-      setRefreshNotifications((prev) => prev + 1);
       const fullOrder = { ...orderData, orderId: result.orderId };
       localStorage.setItem('orderSummary', JSON.stringify(fullOrder));
 
-      // Pay Online disabled, so navigate only COD summary
       navigate(`/${effectiveShopSlug}/order-summary`);
     } catch (error) {
       console.error('[handleOrder] Order placement failed:', error);
@@ -345,15 +331,12 @@ const Order = () => {
       )}
 
       {selectedItem && (
-        <div className="popup-overlay" onClick={() => setSelectedItem(null)}>
-          <div className="popup-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-backdrop" onClick={() => setSelectedItem(null)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
             <h2>{selectedItem.name}</h2>
-            <img
-              src={resolveImageUrl(selectedItem.image)}
-              alt={selectedItem.name}
-              className="popup-img"
-            />
+            <img src={resolveImageUrl(selectedItem.image)} alt={selectedItem.name} />
             <p>Price: ₹{selectedItem.price}</p>
+            <p>Description: {selectedItem.description || 'No description available'}</p>
             <button onClick={() => setSelectedItem(null)}>Close</button>
           </div>
         </div>

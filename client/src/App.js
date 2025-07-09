@@ -69,7 +69,8 @@ const AppRoutes = () => (
         {/* <Route path="/:shopSlug/login" element={<EmailTokenLogin />} /> */}
         {/* <Route path="/:shopSlug/products" element={<ProtectedRoute><Product /></ProtectedRoute>} /> */}
         <Route path="/:shopSlug/products" element={<Product />} />
-        <Route path="/:shopSlug/order" element={<ProtectedRoute><Order /></ProtectedRoute>} />
+        {/* <Route path="/:shopSlug/order" element={<ProtectedRoute><Order /></ProtectedRoute>} /> */}
+        <Route path="/:shopSlug/order" element={<Order />} />
         <Route path="/:shopSlug/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
         <Route path="/:shopSlug/order-summary" element={<ProtectedRoute><OrderSummary /></ProtectedRoute>} />
         <Route path="/:shopSlug/order-history" element={<OrderHistory />} />
@@ -83,7 +84,7 @@ const AppRoutes = () => (
         <Route path="/qr-codes" element={<ShopQRCodes />} />
         <Route path="/consent" element={<ConsentPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
-        <Route path="/:shopSlug/order" element={<OrderPage />} />
+        {/* <Route path="/:shopSlug/order" element={<OrderPage />} /> */}
       </Routes>
     </main>
     <Cart />
