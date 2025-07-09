@@ -155,7 +155,8 @@ const Order = () => {
     const token = localStorage.getItem('authToken');
     if (!token) {
       // Redirect user to login page with redirect back to /order after login
-      navigate(`/${paramShopSlug || 'ConnectFREE4U'}/login?redirect=/order`);
+      navigate(`/${paramShopSlug || 'ConnectFREE4U'}/login?redirect=${window.location.pathname}`);
+
       return;
     }
 

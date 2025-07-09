@@ -23,7 +23,12 @@ const EmailTokenLogin = () => {
       try {
         const decoded = jwtDecode(token);
         if (decoded.exp * 1000 > Date.now()) {
-          navigate(`/${shopSlug}${shopSlug === 'ConnectFREE4U' ? '/dashboard' : '/order'}`);        } else {
+          // Inside your EmailTokenLogin.js after login success:
+const params = new URLSearchParams(window.location.search);
+const redirectPath = params.get('redirect') || `/${shopSlug}${shopSlug === 'ConnectFREE4U' ? '/dashboard' : '/products'}`;
+navigate(redirectPath);
+
+             } else {
           localStorage.removeItem('authToken');
           localStorage.removeItem('userId');
         }
@@ -69,7 +74,11 @@ const EmailTokenLogin = () => {
         localStorage.setItem('userId', data.user.id);
         refreshUser();
         toast.success('🎉 Login successful!');
-        navigate(`/${shopSlug}${shopSlug === 'ConnectFREE4U' ? '/dashboard' : '/products'}`);      } else {
+        const searchParams = new URLSearchParams(window.location.search);
+const redirectPath = searchParams.get('redirect') || (shopSlug === 'ConnectFREE4U' ? '/dashboard' : '/order');
+navigate(`/${shopSlug}${redirectPath}`);
+
+            } else {
         toast.error(data.error || 'Invalid OTP');
       }
     } catch {
