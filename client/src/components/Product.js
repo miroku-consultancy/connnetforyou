@@ -97,13 +97,17 @@ const Product = () => {
 
       try {
         const response = await fetch(`${API_BASE_URL}/api/products?shopId=${shopId}`);
+        console.log(response,'response')
 
         if (!response.ok) {
           throw new Error('Failed to fetch products');
         }
 
         const data = await response.json();
+        console.log('data',data)
         setProducts(data);
+        console.log('Bound products to state:', data);
+
       } catch (error) {
         console.error('Error fetching products:', error);
       }
@@ -215,19 +219,19 @@ const Product = () => {
     if (diff !== 0) addToCart(product, diff);
   };
 
-  const freshProducts = products.filter((p) => !!p.subcategory);
-  const groupedProductsMap = freshProducts.reduce((acc, product) => {
-    const sub = product.subcategory || 'Uncategorized';
-    if (!acc[sub]) acc[sub] = [];
-    acc[sub].push(product);
-    return acc;
-  }, {});
+  const freshProducts = products;
+const groupedProductsMap = freshProducts.reduce((acc, product) => {
+  const sub = product.subcategory || 'Uncategorized';
+  if (!acc[sub]) acc[sub] = [];
+  acc[sub].push(product);
+  return acc;
+}, {});
 
   const groupedProducts = Object.entries(groupedProductsMap)
     .map(([subcategory, items]) => ({ subcategory, items }))
     .sort((a, b) => a.subcategory.localeCompare(b.subcategory));
 
-  if (!cartLoaded || products.length === 0) {
+  if (products.length === 0) {
     return <div className="loading">Loading fresh picks...</div>;
   }
 
