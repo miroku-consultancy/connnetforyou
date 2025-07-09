@@ -1,22 +1,27 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from 'react';
 import { jwtDecode } from 'jwt-decode';
 
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  // 🟡 Initial value undefined = loading state
+  const [user, setUser] = useState(undefined);
   const [loadingUser, setLoadingUser] = useState(true);
 
-  // Load user from token in localStorage and validate expiry
   const refreshUser = useCallback(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
       try {
-        const decoded = jwtDecode(token); // { id, email, iat, exp }
+        const decoded = jwtDecode(token);
         if (decoded.exp * 1000 > Date.now()) {
           setUser(decoded);
         } else {
-          // Token expired
           localStorage.removeItem('authToken');
           setUser(null);
         }

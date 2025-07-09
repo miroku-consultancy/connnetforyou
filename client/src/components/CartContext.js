@@ -8,28 +8,54 @@ export const CartProvider = ({ children, userId, shopSlug }) => {
   const [cartLoaded, setCartLoaded] = useState(false);
   const lastKey = useRef(null);
 
-  const getCartKey = () => {
-    return userId && shopSlug ? `cart_${userId}_${shopSlug}` : null;
+  const getCartKey = (uid = userId) => {
+    return shopSlug ? `cart_${uid || 'guest'}_${shopSlug}` : null;
   };
 
-  // Load cart whenever userId or shopSlug changes
+  // Load cart when userId or shopSlug changes
   useEffect(() => {
-    const key = getCartKey();
-    if (!key || key === lastKey.current) return;
+    const currentKey = getCartKey();
+    if (!currentKey || currentKey === lastKey.current) return;
 
-    try {
-      const savedCart = localStorage.getItem(key);
-      setCart(savedCart ? JSON.parse(savedCart) : {});
-      lastKey.current = key;
-    } catch (error) {
-      console.error('Error loading cart from localStorage:', error);
-      setCart({});
-    }
+    const guestKey = getCartKey(null); // cart_guest_shopSlug
+    const newCart = (() => {
+      try {
+        const userCart = localStorage.getItem(currentKey);
+        const guestCart = localStorage.getItem(guestKey);
 
+        if (userId && guestCart) {
+          // Merge guest cart into user cart
+          const parsedGuest = JSON.parse(guestCart);
+          const parsedUser = userCart ? JSON.parse(userCart) : {};
+
+          const merged = { ...parsedUser };
+          for (const [id, item] of Object.entries(parsedGuest)) {
+            if (merged[id]) {
+              merged[id].quantity += item.quantity;
+            } else {
+              merged[id] = item;
+            }
+          }
+
+          // Save merged cart to user key
+          localStorage.setItem(currentKey, JSON.stringify(merged));
+          localStorage.removeItem(guestKey);
+          return merged;
+        }
+
+        return userCart ? JSON.parse(userCart) : guestCart ? JSON.parse(guestCart) : {};
+      } catch (error) {
+        console.error('Error loading cart from localStorage:', error);
+        return {};
+      }
+    })();
+
+    setCart(newCart);
+    lastKey.current = currentKey;
     setCartLoaded(true);
   }, [userId, shopSlug]);
 
-  // Save cart when it changes
+  // Save cart whenever it changes
   useEffect(() => {
     const key = getCartKey();
     if (key) {

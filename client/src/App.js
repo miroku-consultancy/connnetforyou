@@ -50,6 +50,7 @@ const CartProviderWithParams = ({ children }) => {
   const { user } = useUser();
   const location = useLocation();
   const shopSlug = extractShopSlug(location.pathname);
+   if (user === undefined) return null;
 
   return (
     <CartProvider userId={user?.id} shopSlug={shopSlug}>
