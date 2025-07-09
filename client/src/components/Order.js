@@ -13,6 +13,8 @@ const Order = () => {
   const navigate = useNavigate();
   const { user } = useUser();
   const { shopSlug: paramShopSlug } = useParams();
+  const [initialAddressLoadComplete, setInitialAddressLoadComplete] = useState(false);
+
 
   // Removed redirect from useEffect so it does NOT auto-redirect on mount
   useEffect(() => {
@@ -69,6 +71,8 @@ const Order = () => {
         console.error('Error fetching addresses:', error);
         setAddresses([]);
         setAddress(null);
+      } finally {
+        setInitialAddressLoadComplete(true); // ✅ done loading
       }
     };
     fetchAddresses();
@@ -89,6 +93,13 @@ const Order = () => {
     };
     fetchShopData();
   }, [effectiveShopSlug]);
+
+useEffect(() => {
+  if (cartLoaded && items.length === 0) {
+    navigate(`/${effectiveShopSlug}/products`);
+  }
+}, [cartLoaded, items, navigate, effectiveShopSlug]);
+
 
   // Manage takeaway and min order warning based on total
   useEffect(() => {
@@ -144,84 +155,95 @@ const Order = () => {
     }
   };
 
-const handleOrder = async () => {
-  const token = localStorage.getItem('authToken');
+  const handleOrder = async () => {
+    const token = localStorage.getItem('authToken');
 
-  // 👉 If no token, redirect to login page
-  if (!token) {
-    navigate(`/${paramShopSlug || 'ConnectFREE4U'}/login?redirect=${window.location.pathname}`);
-    return;
-  }
-
-  // 👉 If payment method not selected
-  if (!paymentMethod) {
-    alert('Please select a payment method');
-    return;
-  }
-
-  // 👉 If NOT takeaway, check address
-  if (!isTakeaway) {
-    console.log('isTakeaway',isTakeaway)
-    if (addresses.length === 0 || !address) {
-      alert('Please add your delivery address before placing the order.');
-      setShowAddressPopup(true);
+    // 👉 If no token, redirect to login page
+    if (!token) {
+      navigate(`/${paramShopSlug || 'ConnectFREE4U'}/login?redirect=${window.location.pathname}`);
       return;
     }
-  }
 
-  const orderData = {
-    items: items.map((i) => ({
-      id: i.id,
-      name: i.name,
-      price: i.price,
-      quantity: i.quantity,
-      image: i.image,
-      shopId: i.shopId ?? i.shop_id,
-      unit_id: i.unit_id ?? null,
-      unit_type: i.unit_type ?? null,
-    })),
-    total,
-    address: isTakeaway ? null : address,
-    paymentMethod,
-    takeaway: isTakeaway,
-    orderDate: new Date().toISOString(),
-  };
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/orders`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(orderData),
-    });
-
-    const responseText = await response.text();
-
-    if (!response.ok) {
-      throw new Error(`Failed to place order: ${response.status} ${response.statusText}`);
+    // 👉 If payment method not selected
+    if (!paymentMethod) {
+      alert('Please select a payment method');
+      return;
     }
 
-    const result = JSON.parse(responseText);
-    const fullOrder = { ...orderData, orderId: result.orderId };
-    localStorage.setItem('orderSummary', JSON.stringify(fullOrder));
+    // 👉 If NOT takeaway, check address
+    if (!isTakeaway) {
+      console.log('isTakeaway', isTakeaway)
+      if (addresses.length === 0 || !address) {
+        alert('Please add your delivery address before placing the order.');
+        setShowAddressPopup(true);
+        return;
+      }
+    }
 
-    navigate(`/${effectiveShopSlug}/order-summary`);
-  } catch (error) {
-    console.error('[handleOrder] Order placement failed:', error);
-    alert('Failed to place order. Please try again.');
-  }
-};
+    const orderData = {
+      items: items.map((i) => ({
+        id: i.id,
+        name: i.name,
+        price: i.price,
+        quantity: i.quantity,
+        image: i.image,
+        shopId: i.shopId ?? i.shop_id,
+        unit_id: i.unit_id ?? null,
+        unit_type: i.unit_type ?? null,
+      })),
+      total,
+      address: isTakeaway ? null : address,
+      paymentMethod,
+      takeaway: isTakeaway,
+      orderDate: new Date().toISOString(),
+    };
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(orderData),
+      });
+
+      const responseText = await response.text();
+
+      if (!response.ok) {
+        throw new Error(`Failed to place order: ${response.status} ${response.statusText}`);
+      }
+
+      const result = JSON.parse(responseText);
+      const fullOrder = { ...orderData, orderId: result.orderId };
+      localStorage.setItem('orderSummary', JSON.stringify(fullOrder));
+
+      navigate(`/${effectiveShopSlug}/order-summary`);
+    } catch (error) {
+      console.error('[handleOrder] Order placement failed:', error);
+      alert('Failed to place order. Please try again.');
+    }
+  };
 
 
   const handleQtyChange = (item, delta) => {
-    const newQty = Math.max(0, item.quantity + delta);
+    const newQty = item.quantity + delta;
+
+    if (newQty <= 0) {
+      // Remove item from cart entirely
+      addToCart(item, -item.quantity); // assuming your CartContext reduces/removes item on negative delta
+      return;
+    }
+
     const diff = newQty - item.quantity;
-    if (diff !== 0) addToCart(item, diff);
+    addToCart(item, diff);
   };
 
-  // if (!cartLoaded) return <div className="order-page"><h2>Loading cart...</h2></div>;
+
+  if (!cartLoaded) {
+  return <div className="order-page"><h2>Loading cart...</h2></div>;
+}
+
   if (items.length === 0) return <div className="order-page"><h2>No items in cart to order.</h2></div>;
 
   return (
@@ -240,7 +262,7 @@ const handleOrder = async () => {
             <div className="order-details">
               <h3>{item.name}</h3>
               <div className="qty-controls">
-                <button onClick={() => handleQtyChange(item, -1)} disabled={item.quantity <= 1}>−</button>
+                <button onClick={() => handleQtyChange(item, -1)}>−</button>
                 <span>{item.quantity}</span>
                 <button onClick={() => handleQtyChange(item, 1)}>+</button>
               </div>
@@ -300,9 +322,12 @@ const handleOrder = async () => {
             </button>
           </div>
         ) : (
-          <button onClick={() => setShowAddressPopup(true)}>Add Delivery Address</button>
+          initialAddressLoadComplete && (
+            <button onClick={() => setShowAddressPopup(true)}>Add Delivery Address</button>
+          )
         )
       )}
+
 
       {showMinOrderWarning && !isTakeaway && (
         <div className="min-order-warning" style={{ color: 'red', marginBottom: '1em' }}>
@@ -335,7 +360,7 @@ const handleOrder = async () => {
 
       <button
         className="order-button"
-       // disabled={!paymentMethod || (isTakeaway === false && !address)}
+        // disabled={!paymentMethod || (isTakeaway === false && !address)}
         onClick={handleOrder}
       >
         Place Order
