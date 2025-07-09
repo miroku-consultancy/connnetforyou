@@ -212,7 +212,7 @@ const Order = () => {
     if (diff !== 0) addToCart(item, diff);
   };
 
-  if (!cartLoaded) return <div className="order-page"><h2>Loading cart...</h2></div>;
+  // if (!cartLoaded) return <div className="order-page"><h2>Loading cart...</h2></div>;
   if (items.length === 0) return <div className="order-page"><h2>No items in cart to order.</h2></div>;
 
   return (

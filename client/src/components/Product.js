@@ -231,6 +231,7 @@ const groupedProductsMap = freshProducts.reduce((acc, product) => {
     .map(([subcategory, items]) => ({ subcategory, items }))
     .sort((a, b) => a.subcategory.localeCompare(b.subcategory));
 
+  // if (!cartLoaded || products.length === 0) {
   if (products.length === 0) {
     return <div className="loading">Loading fresh picks...</div>;
   }
