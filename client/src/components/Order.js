@@ -144,67 +144,76 @@ const Order = () => {
     }
   };
 
-  const handleOrder = async () => {
-    if (!paymentMethod) return alert('Please select a payment method');
-    if (!isTakeaway && !address) {
-      alert('Please select or enter your address.');
+const handleOrder = async () => {
+  const token = localStorage.getItem('authToken');
+
+  // 👉 If no token, redirect to login page
+  if (!token) {
+    navigate(`/${paramShopSlug || 'ConnectFREE4U'}/login?redirect=${window.location.pathname}`);
+    return;
+  }
+
+  // 👉 If payment method not selected
+  if (!paymentMethod) {
+    alert('Please select a payment method');
+    return;
+  }
+
+  // 👉 If NOT takeaway, check address
+  if (!isTakeaway) {
+    console.log('isTakeaway',isTakeaway)
+    if (addresses.length === 0 || !address) {
+      alert('Please add your delivery address before placing the order.');
       setShowAddressPopup(true);
       return;
     }
+  }
 
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      // Redirect user to login page with redirect back to /order after login
-      navigate(`/${paramShopSlug || 'ConnectFREE4U'}/login?redirect=${window.location.pathname}`);
-
-      return;
-    }
-
-    const orderData = {
-      items: items.map((i) => ({
-        id: i.id,
-        name: i.name,
-        price: i.price,
-        quantity: i.quantity,
-        image: i.image,
-        shopId: i.shopId ?? i.shop_id,
-        unit_id: i.unit_id ?? null,
-        unit_type: i.unit_type ?? null,
-      })),
-      total,
-      address: isTakeaway ? null : address,
-      paymentMethod,
-      takeaway: isTakeaway,
-      orderDate: new Date().toISOString(),
-    };
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/orders`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(orderData),
-      });
-
-      const responseText = await response.text();
-
-      if (!response.ok) {
-        throw new Error(`Failed to place order: ${response.status} ${response.statusText}`);
-      }
-
-      const result = JSON.parse(responseText);
-
-      const fullOrder = { ...orderData, orderId: result.orderId };
-      localStorage.setItem('orderSummary', JSON.stringify(fullOrder));
-
-      navigate(`/${effectiveShopSlug}/order-summary`);
-    } catch (error) {
-      console.error('[handleOrder] Order placement failed:', error);
-      alert('Failed to place order. Please check your address and try again.');
-    }
+  const orderData = {
+    items: items.map((i) => ({
+      id: i.id,
+      name: i.name,
+      price: i.price,
+      quantity: i.quantity,
+      image: i.image,
+      shopId: i.shopId ?? i.shop_id,
+      unit_id: i.unit_id ?? null,
+      unit_type: i.unit_type ?? null,
+    })),
+    total,
+    address: isTakeaway ? null : address,
+    paymentMethod,
+    takeaway: isTakeaway,
+    orderDate: new Date().toISOString(),
   };
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/orders`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(orderData),
+    });
+
+    const responseText = await response.text();
+
+    if (!response.ok) {
+      throw new Error(`Failed to place order: ${response.status} ${response.statusText}`);
+    }
+
+    const result = JSON.parse(responseText);
+    const fullOrder = { ...orderData, orderId: result.orderId };
+    localStorage.setItem('orderSummary', JSON.stringify(fullOrder));
+
+    navigate(`/${effectiveShopSlug}/order-summary`);
+  } catch (error) {
+    console.error('[handleOrder] Order placement failed:', error);
+    alert('Failed to place order. Please try again.');
+  }
+};
+
 
   const handleQtyChange = (item, delta) => {
     const newQty = Math.max(0, item.quantity + delta);
@@ -326,7 +335,7 @@ const Order = () => {
 
       <button
         className="order-button"
-        disabled={!paymentMethod || (isTakeaway === false && !address)}
+       // disabled={!paymentMethod || (isTakeaway === false && !address)}
         onClick={handleOrder}
       >
         Place Order

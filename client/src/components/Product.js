@@ -429,7 +429,7 @@ const ProductCard = ({
 
       {hasUnits && (
         <select
-          value={selectedUnit?.unit_id}
+         value={selectedUnit?.unit_id}
           onChange={(e) => {
             const selected = product.units.find(
               (unit) => unit.unit_id === Number(e.target.value)
@@ -440,7 +440,7 @@ const ProductCard = ({
         >
           {product.units.map((unit) => (
             <option key={unit.unit_id} value={unit.unit_id}>
-              {unit.unit} @ ₹{unit.price}
+              {unit.name}  ₹{unit.price}
             </option>
           ))}
         </select>
@@ -455,7 +455,7 @@ const ProductCard = ({
       </div>
 
       <div className="price-display">
-        ₹{(selectedUnit?.price || product.price) * qty || 0}
+        ₹{(selectedUnit?.price || product.price) * qty || product.price}
       </div>
 
      
