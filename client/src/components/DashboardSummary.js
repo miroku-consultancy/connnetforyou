@@ -41,12 +41,12 @@ const DashboardSummary = () => {
   const { clearAllCarts } = useCart();
   const { setUser } = useUser();
 
-  // ✅ Clear session info on mount (only once)
+  // Clear session info on mount
   useEffect(() => {
     localStorage.removeItem('authToken');
     clearAllCarts();
     setUser(null);
-  }, []); // ✅ Empty dependency array ensures it only runs once
+  }, []); 
 
   // Auto-scroll logic
   useEffect(() => {
@@ -55,7 +55,7 @@ const DashboardSummary = () => {
         setIndex((prevIndex) => {
           const nextIndex = (prevIndex + 1) % shops.length;
           const scrollContainer = scrollRef.current;
-          if (scrollContainer) {
+          if (scrollContainer && scrollContainer.firstChild) {
             const cardWidth = scrollContainer.firstChild.offsetWidth + 24;
             scrollContainer.scrollTo({
               left: cardWidth * nextIndex,
@@ -75,7 +75,7 @@ const DashboardSummary = () => {
   }, [isPaused]);
 
   const handleClick = (shop) => {
-    navigate(`/${shop}/login`);
+    navigate(`/${shop}/products`); // You can change `/login` if needed
   };
 
   const handleUserInteractionStart = () => {

@@ -28,7 +28,7 @@ import UpdateProduct from './components/UpdateProduct';
 import ConsentPage from './components/ConsentPage';
 import Cart from './components/Cart';
 import DashboardSummary from './components/DashboardSummary';
-
+import OrderPage from './components/OrderPage';
 
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -45,6 +45,7 @@ const extractShopSlug = (pathname) => {
   return match ? match[1] : null;
 };
 const API_BASE = 'https://connnet4you-server.onrender.com';
+
 const CartProviderWithParams = ({ children }) => {
   const { user } = useUser();
   const location = useLocation();
@@ -65,8 +66,9 @@ const AppRoutes = () => (
         <Route path="/" element={<Navigate to="/ConnectFREE4U/dashboard" replace />} />
         <Route path="/ConnectFREE4U/dashboard" element={<DashboardSummary />} />
         
-        <Route path="/:shopSlug/login" element={<EmailTokenLogin />} />
-        <Route path="/:shopSlug/products" element={<ProtectedRoute><Product /></ProtectedRoute>} />
+        {/* <Route path="/:shopSlug/login" element={<EmailTokenLogin />} /> */}
+        {/* <Route path="/:shopSlug/products" element={<ProtectedRoute><Product /></ProtectedRoute>} /> */}
+        <Route path="/:shopSlug/products" element={<Product />} />
         <Route path="/:shopSlug/order" element={<ProtectedRoute><Order /></ProtectedRoute>} />
         <Route path="/:shopSlug/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
         <Route path="/:shopSlug/order-summary" element={<ProtectedRoute><OrderSummary /></ProtectedRoute>} />
@@ -81,6 +83,7 @@ const AppRoutes = () => (
         <Route path="/qr-codes" element={<ShopQRCodes />} />
         <Route path="/consent" element={<ConsentPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="/:shopSlug/order" element={<OrderPage />} />
       </Routes>
     </main>
     <Cart />
@@ -90,39 +93,36 @@ const AppRoutes = () => (
   </CartProviderWithParams>
 );
 
-
 const App = () => {
-useEffect(() => {
-  console.log('App init');
-  registerServiceWorker();
+  useEffect(() => {
+    console.log('App init');
+    registerServiceWorker();
 
-  (async () => {
-    const token = await requestForToken();
-    console.log('👉 requestForToken returned token:', token);
-    if (token) {
-      const res = await fetch(`${API_BASE}/api/save-fcm-token`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-        },
-        body: JSON.stringify({ fcm_token: token }),
-      });
-      const data = await res.json();
-      console.log('🔁 save-fcm-token response:', res.status, data);
-    }
-  })();
+    (async () => {
+      const token = await requestForToken();
+      console.log('👉 requestForToken returned token:', token);
+      if (token) {
+        const res = await fetch(`${API_BASE}/api/save-fcm-token`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+          },
+          body: JSON.stringify({ fcm_token: token }),
+        });
+        const data = await res.json();
+        console.log('🔁 save-fcm-token response:', res.status, data);
+      }
+    })();
 
-  const unsub = onMessageListener(payload => {
-    console.log('📩 foreground payload:', payload);
-    const notif = payload.notification || payload.data;
-    toast.info(`${notif.title}: ${notif.body}`, { position: 'top-right' });
-  });
+    const unsub = onMessageListener(payload => {
+      console.log('📩 foreground payload:', payload);
+      const notif = payload.notification || payload.data;
+      toast.info(`${notif.title}: ${notif.body}`, { position: 'top-right' });
+    });
 
-  return () => unsub();
-}, []);
-
-
+    return () => unsub();
+  }, []);
 
   return (
     <Router>

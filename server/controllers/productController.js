@@ -1,10 +1,11 @@
 const productModel = require('../models/productModel');
 
-// GET all products
 const getProducts = async (req, res) => {
   try {
     const shopId = req.user?.shop_id;
-    if (!shopId) return res.status(400).json({ message: 'Missing shop_id' });
+    if (!shopId) {
+      return res.status(400).json({ message: 'Missing shop_id in user token' });
+    }
 
     const products = await productModel.getAllProducts(shopId);
     res.json(products);
@@ -14,89 +15,92 @@ const getProducts = async (req, res) => {
   }
 };
 
-// GET one product
+// 🆕 Public (no auth)
+const getPublicProducts = async (req, res) => {
+  try {
+    const { shopId } = req.query;
+
+    if (!shopId) {
+      return res.status(400).json({ message: 'Missing shopId query parameter' });
+    }
+
+    const products = await productModel.getAllProducts(shopId);
+    res.json(products);
+  } catch (err) {
+    console.error('Error fetching public products:', err);
+    res.status(500).json({ message: 'Error fetching public products', error: err.message });
+  }
+};
+
 const getProduct = async (req, res) => {
   try {
     const product = await productModel.getProductById(req.params.id);
-    product
-      ? res.json(product)
-      : res.status(404).json({ message: 'Product not found' });
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    res.json(product);
   } catch (err) {
     console.error('Error fetching product:', err);
     res.status(500).json({ message: 'Error fetching product', error: err.message });
   }
 };
 
-// ADD new product or unit
 const addProduct = async (req, res) => {
   try {
-    const user = req.user;
-    if (!user || (user.role !== 'admin' && user.role !== 'vendor')) {
-      return res.status(403).json({ message: 'Unauthorized' });
-    }
+    const { name, description, price, subcategory } = req.body;
+    const shopId = req.user?.shop_id;
 
-    const {
-      name, description, price, stock, barcode, category, subcategory,
-      unit, unitPrice, unitStock,
-    } = req.body;
-
-    if (!name || !price || !stock || !category || !subcategory || !unit) {
-      return res.status(400).json({ message: 'Required fields missing' });
+    if (!name || !price || !shopId) {
+      return res.status(400).json({ message: 'Missing required fields' });
     }
 
     const image = req.file ? req.file.filename : null;
-    const shop_id = user.shop_id;
 
-    const product = await productModel.addProduct({
-      name, description, price, stock, barcode, category, subcategory,
-      image, shop_id, unit, unitPrice, unitStock,
+    const newProduct = await productModel.createProduct({
+      name,
+      description,
+      price,
+      subcategory,
+      image,
+      shopId,
     });
 
-    res.status(201).json({
-      message: '✅ Product added/updated successfully',
-      product,
-    });
+    res.status(201).json(newProduct);
   } catch (err) {
-    console.error('❌ Error adding product:', err);
-    res.status(500).json({ message: 'Server error', error: err.message });
+    console.error('Error adding product:', err);
+    res.status(500).json({ message: 'Error adding product', error: err.message });
   }
 };
 
 const updateProduct = async (req, res) => {
   try {
-    const shopId = req.user?.shop_id;
-    const productId = req.params.id;
+    const { id } = req.params;
+    const { name, description, price, subcategory } = req.body;
+    const image = req.file ? req.file.filename : null;
 
-    const {
-      name, description, price, stock,
-      barcode, category, subcategory,
-      units, // <-- will come as JSON string
-    } = req.body;
-
-    const parsedUnits = units ? JSON.parse(units) : [];
-    const image = req.file?.filename;
-
-    await productModel.updateProductWithUnits({
-      id: productId,
-      shop_id: shopId,
+    const updatedProduct = await productModel.updateProduct(id, {
       name,
       description,
       price,
-      stock,
-      barcode,
-      category,
       subcategory,
       image,
-      units: parsedUnits,
     });
 
-    res.json({ message: '✅ Product updated!' });
+    if (!updatedProduct) {
+      return res.status(404).json({ message: 'Product not found or not updated' });
+    }
+
+    res.json(updatedProduct);
   } catch (err) {
-    console.error('❌ Error updating product:', err);
-    res.status(500).json({ message: 'Failed to update product', error: err.message });
+    console.error('Error updating product:', err);
+    res.status(500).json({ message: 'Error updating product', error: err.message });
   }
 };
 
-
-module.exports = { addProduct, getProducts, getProduct, updateProduct };
-
+module.exports = {
+  getProducts,
+  getPublicProducts,
+  getProduct,
+  addProduct,
+  updateProduct,
+};

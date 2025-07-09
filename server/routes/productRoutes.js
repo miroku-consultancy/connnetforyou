@@ -6,46 +6,23 @@ const path = require('path');
 const authMiddleware = require('../middleware/authMiddleware');
 const productController = require('../controllers/productController');
 
-// 📦 Set up Multer for handling image uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, '..', 'images')); // Save to /images folder
+    cb(null, path.join(__dirname, '..', 'images'));
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
-    const filename = `product-${Date.now()}${ext}`;
-    cb(null, filename);
+    cb(null, `product-${Date.now()}${ext}`);
   },
 });
-
 const upload = multer({ storage });
 
-// 🧭 Log all product route requests
-router.use((req, res, next) => {
-  console.log(`📦 Product route hit: ${req.method} ${req.originalUrl}`);
-  next();
-});
+// ✅ Public route
+router.get('/', productController.getPublicProducts);
 
-// GET all products
-router.get('/', authMiddleware, productController.getProducts);
-
-// GET product by ID
+// ✅ Protected routes
 router.get('/:id', authMiddleware, productController.getProduct);
-
-// POST new product (admin/vendor only) with image upload
-router.post(
-  '/',
-  authMiddleware,
-  upload.single('image'), // 👈 handle 'image' file field
-  productController.addProduct
-);
-
-// In routes/productRoutes.js
-router.put(
-  '/:id',
-  authMiddleware,
-  upload.single('image'),
-  productController.updateProduct
-);
+router.post('/', authMiddleware, upload.single('image'), productController.addProduct);
+router.put('/:id', authMiddleware, upload.single('image'), productController.updateProduct);
 
 module.exports = router;
