@@ -14,6 +14,15 @@ const Order = () => {
   const { user } = useUser();
   const { shopSlug: paramShopSlug } = useParams();
 
+  // Check token on component mount, redirect to login if not present
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      //alert('You must be logged in to access the order page.');
+      navigate(`/${paramShopSlug || 'ConnectFREE4U'}/login?redirect=/order`);
+    }
+  }, [navigate, paramShopSlug]);
+
   const [showAddressPopup, setShowAddressPopup] = useState(false);
   const [addresses, setAddresses] = useState([]);
   const [address, setAddress] = useState(null);
@@ -42,6 +51,7 @@ const Order = () => {
 
   const total = items.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
 
+  // Fetch user addresses on user change
   useEffect(() => {
     const fetchAddresses = async () => {
       if (!user?.id) return;
@@ -64,6 +74,7 @@ const Order = () => {
     fetchAddresses();
   }, [user]);
 
+  // Fetch shop min order value on shopSlug change
   useEffect(() => {
     const fetchShopData = async () => {
       try {
@@ -79,6 +90,7 @@ const Order = () => {
     fetchShopData();
   }, [effectiveShopSlug]);
 
+  // Manage takeaway and min order warning based on total
   useEffect(() => {
     if (total >= minOrderValue) {
       setShowMinOrderWarning(false);
@@ -132,7 +144,6 @@ const Order = () => {
     }
   };
 
-  // --- UPDATED handleOrder: check login first ---
   const handleOrder = async () => {
     if (!paymentMethod) return alert('Please select a payment method');
     if (!isTakeaway && !address) {
@@ -143,14 +154,13 @@ const Order = () => {
 
     const token = localStorage.getItem('authToken');
     if (!token) {
-      // Redirect to EmailTokenLogin page with redirect param
-      alert('You must be logged in to place an order.');
-      navigate(`/${effectiveShopSlug}/login?redirect=/order`);
+      // Redirect to email-token login if no token found
+     // navigate(`/${effectiveShopSlug}/login?redirect=/order`);
       return;
     }
 
     const orderData = {
-      items: items.map(i => ({
+      items: items.map((i) => ({
         id: i.id,
         name: i.name,
         price: i.price,

@@ -66,7 +66,7 @@ const AppRoutes = () => (
         <Route path="/" element={<Navigate to="/ConnectFREE4U/dashboard" replace />} />
         <Route path="/ConnectFREE4U/dashboard" element={<DashboardSummary />} />
         
-        {/* <Route path="/:shopSlug/login" element={<EmailTokenLogin />} /> */}
+        <Route path="/:shopSlug/login" element={<EmailTokenLogin />} />
         {/* <Route path="/:shopSlug/products" element={<ProtectedRoute><Product /></ProtectedRoute>} /> */}
         <Route path="/:shopSlug/products" element={<Product />} />
         {/* <Route path="/:shopSlug/order" element={<ProtectedRoute><Order /></ProtectedRoute>} /> */}

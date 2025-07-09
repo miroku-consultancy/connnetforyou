@@ -345,11 +345,20 @@ const Product = () => {
               ))}
             </ul>
             <button
-              onClick={() => navigate(`/${safeShopSlug}/order`)}
-              className="login-btn"
-            >
-              Proceed to Order
-            </button>
+  onClick={() => {
+    if (!user) {
+       navigate(`/${safeShopSlug}/order`);
+      // User not logged in, navigate to login page
+      //navigate('/login');
+    } else {
+      // User logged in, go to order page
+      navigate(`/${safeShopSlug}/order`);
+    }
+  }}
+  className="login-btn"
+>
+  Proceed to Order
+</button>
           </div>
         </div>
       )}
