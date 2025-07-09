@@ -23,7 +23,7 @@ const EmailTokenLogin = () => {
       try {
         const decoded = jwtDecode(token);
         if (decoded.exp * 1000 > Date.now()) {
-          navigate(`/${shopSlug}${shopSlug === 'ConnectFREE4U' ? '/dashboard' : '/products'}`);        } else {
+          navigate(`/${shopSlug}${shopSlug === 'ConnectFREE4U' ? '/dashboard' : '/order'}`);        } else {
           localStorage.removeItem('authToken');
           localStorage.removeItem('userId');
         }

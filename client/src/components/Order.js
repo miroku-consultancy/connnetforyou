@@ -14,13 +14,13 @@ const Order = () => {
   const { user } = useUser();
   const { shopSlug: paramShopSlug } = useParams();
 
-  // Check token on component mount, redirect to login if not present
+  // Removed redirect from useEffect so it does NOT auto-redirect on mount
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      //alert('You must be logged in to access the order page.');
-      navigate(`/${paramShopSlug || 'ConnectFREE4U'}/login?redirect=/order`);
-    }
+    // Just a token check if you want, or leave empty if not needed
+    // const token = localStorage.getItem('authToken');
+    // if (!token) {
+    //   // No redirect here to avoid automatic redirect on load
+    // }
   }, [navigate, paramShopSlug]);
 
   const [showAddressPopup, setShowAddressPopup] = useState(false);
@@ -154,8 +154,8 @@ const Order = () => {
 
     const token = localStorage.getItem('authToken');
     if (!token) {
-      // Redirect to email-token login if no token found
-     // navigate(`/${effectiveShopSlug}/login?redirect=/order`);
+      // Redirect user to login page with redirect back to /order after login
+      navigate(`/${paramShopSlug || 'ConnectFREE4U'}/login?redirect=/order`);
       return;
     }
 
