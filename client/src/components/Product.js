@@ -396,40 +396,63 @@ const ProductCard = ({
   const qty = quantities[uniqueKey] || 0;
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Sync quantity for product/unit combo
-    if (qty === 0 && cart[uniqueKey]) {
-      // Remove from cart if quantity zero
-      // (assuming addToCart with negative qty or separate remove method)
-    }
-  }, [qty, cart, uniqueKey]);
+  const handleAdd = () => {
+    const price = selectedUnit?.price || product.price;
+    const item = {
+      ...product,
+      id: uniqueKey,
+      unit: selectedUnit?.unit,
+      price,
+    };
+    addToCart(item, 1);
+    setQuantities((prev) => ({ ...prev, [uniqueKey]: 1 }));
+  };
 
   const handleQtyChange = (delta) => {
     const newQty = Math.max(0, qty + delta);
-    setQuantities((prev) => ({ ...prev, [uniqueKey]: newQty }));
-    addToCart(
-      {
-        ...product,
-        id: uniqueKey,
-        unit: selectedUnit?.unit,
-        price: selectedUnit?.price || product.price,
-      },
-      delta
-    );
+    const price = selectedUnit?.price || product.price;
+    const item = {
+      ...product,
+      id: uniqueKey,
+      unit: selectedUnit?.unit,
+      price,
+    };
+
+    if (delta !== 0) {
+      addToCart(item, delta);
+      setQuantities((prev) => ({ ...prev, [uniqueKey]: newQty }));
+    }
   };
 
   return (
     <div className="product-card">
-      <img
-        src={resolveImageUrl(product.image)}
-        alt={product.name}
-        className="product-image"
-      />
+      <div className="image-container">
+        <img
+          src={resolveImageUrl(product.image)}
+          alt={product.name}
+          className="product-image"
+        />
+
+        {qty > 0 ? (
+          <div className="qty-controls-overlay">
+            <button className="qty-btn" onClick={() => handleQtyChange(-1)} disabled={qty <= 0}>
+              −
+            </button>
+            <span className="qty-number">{qty}</span>
+            <button className="qty-btn" onClick={() => handleQtyChange(1)}>
+              +
+            </button>
+          </div>
+        ) : (
+          <button className="add-btn-overlay" onClick={handleAdd}>Add</button>
+        )}
+      </div>
+
       <h3 className="product-name">{product.name}</h3>
 
       {hasUnits && (
         <select
-         value={selectedUnit?.unit_id}
+          value={selectedUnit?.unit_id}
           onChange={(e) => {
             const selected = product.units.find(
               (unit) => unit.unit_id === Number(e.target.value)
@@ -440,27 +463,18 @@ const ProductCard = ({
         >
           {product.units.map((unit) => (
             <option key={unit.unit_id} value={unit.unit_id}>
-              {unit.name}  ₹{unit.price}
+              {unit.name} ₹{unit.price}
             </option>
           ))}
         </select>
       )}
 
-      <div className="quantity-controls">
-        <button onClick={() => handleQtyChange(-1)} disabled={qty <= 0}>
-          -
-        </button>
-        <span className="quantity">{qty}</span>
-        <button onClick={() => handleQtyChange(1)}>+</button>
-      </div>
-
       <div className="price-display">
-        ₹{(selectedUnit?.price || product.price) * qty || product.price}
+        ₹{(selectedUnit?.price || product.price) * (qty || 1)}
       </div>
-
-     
     </div>
   );
 };
+
 
 export default Product;
