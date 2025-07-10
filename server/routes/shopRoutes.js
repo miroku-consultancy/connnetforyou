@@ -63,7 +63,7 @@ router.get('/', async (req, res) => {
 
   const userLat = parseFloat(lat);
   const userLng = parseFloat(lng);
-  const maxDistance = 5; // in km
+  const maxDistance = 45; // in km
 
   const getDistance = (lat1, lon1, lat2, lon2) => {
     const R = 6371;

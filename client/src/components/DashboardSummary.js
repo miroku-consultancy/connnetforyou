@@ -22,22 +22,35 @@ const DashboardSummary = () => {
   }, []);
 
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(async (position) => {
-        const { latitude, longitude } = position.coords;
-        try {
-          const res = await fetch(
-            `https://connnet4you-server.onrender.com/api/shops?lat=${latitude}&lng=${longitude}`
-          );
-          const data = await res.json();
-          setShops(data || []);
-        } catch (err) {
-          console.error('❌ Failed to fetch nearby shops:', err);
-        }
-      }, (err) => {
-        console.warn('⚠️ Location access denied or failed.', err);
-      });
-    }
+    const fetchNearbyShops = async () => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const { latitude, longitude } = position.coords;
+            try {
+              const res = await fetch(
+                `https://connnet4you-server.onrender.com/api/shops?lat=${latitude}&lng=${longitude}`
+              );
+              const data = await res.json();
+              if (Array.isArray(data)) {
+                setShops(data);
+              } else {
+                console.error('Invalid data format:', data);
+              }
+            } catch (err) {
+              console.error('❌ Failed to fetch nearby shops:', err);
+            }
+          },
+          (err) => {
+            console.warn('⚠️ Location access denied or failed.', err);
+          }
+        );
+      } else {
+        console.warn('⚠️ Geolocation is not supported by this browser.');
+      }
+    };
+
+    fetchNearbyShops();
   }, []);
 
   useEffect(() => {
@@ -86,33 +99,37 @@ const DashboardSummary = () => {
         onTouchStart={handleUserInteractionStart}
         onTouchEnd={handleUserInteractionEnd}
       >
-        {shops.map((shop, i) => (
-          <motion.div
-            className={`shop-card ${i === index ? 'active' : ''}`}
-            key={shop.slug}
-            role="button"
-            onClick={() => handleClick(shop.slug)}
-            whileHover={{ scale: 1.1 }}
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: i * 0.1 }}
-          >
-            <div className="shop-image-placeholder">
-              {shop.image_url ? (
-                <img
-                  src={`https://connnet4you-server.onrender.com/${shop.image_url}`}
-                  alt={shop.name}
-                  className="shop-image"
-                />
-              ) : (
-                '🏬'
-              )}
-            </div>
-            <h2 className="shop-name">{displayName(shop.slug)}</h2>
-            <p className="shop-address">{shop.address}</p>
-            <div className="shop-login-cta">Click to explore the products</div>
-          </motion.div>
-        ))}
+        {shops.length > 0 ? (
+          shops.map((shop, i) => (
+            <motion.div
+              className={`shop-card ${i === index ? 'active' : ''}`}
+              key={shop.slug}
+              role="button"
+              onClick={() => handleClick(shop.slug)}
+              whileHover={{ scale: 1.1 }}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
+            >
+              <div className="shop-image-placeholder">
+                {shop.image_url ? (
+                  <img
+                    src={`https://connnet4you-server.onrender.com/${shop.image_url}`}
+                    alt={shop.name}
+                    className="shop-image"
+                  />
+                ) : (
+                  '🏬'
+                )}
+              </div>
+              <h2 className="shop-name">{displayName(shop.slug)}</h2>
+              <p className="shop-address">{shop.address}</p>
+              <div className="shop-login-cta">Click to explore the products</div>
+            </motion.div>
+          ))
+        ) : (
+          <p>No nearby shops found.</p>
+        )}
       </div>
 
       <div className="carousel-dots">
