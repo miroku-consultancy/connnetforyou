@@ -176,3 +176,9 @@
   object-fit: cover;
   border-radius: 10px;
 }
+.shop-address {
+  font-size: 0.9rem;
+  color: rgba(0, 0, 0, 0.85); /* dark grey text, slightly transparent */
+  /* or simply: color: #333; */
+  margin-top: 4px;
+}
