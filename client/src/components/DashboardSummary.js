@@ -2,81 +2,67 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import './DashboardSummary.css';
-
 import { useCart } from './CartContext';
 import { useUser } from './UserContext';
-
-const shops = [
-  "Kanji-Sweets",
-  "ALNazeerMuradabadiChickenBiryani",
-  "Janta7DaysChineseFastFood",
-  "QureshiKababCenter",
-  "Vow-vista",
-  "SanjayVegStore",
-  "Ganga-Medical-hall",
-  "Desi-swaad"
-];
-
-const displayName = (shop) =>
-  shop.replace(/-/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2');
-
-const shopIcons = {
-  "Kanji-Sweets": "🍬",
-  "ALNazeerMuradabadiChickenBiryani": "🍗",
-  "Janta7DaysChineseFastFood": "🥡",
-  "QureshiKababCenter": "🍢",
-  "Vow-vista": "🌅",
-  "SanjayVegStore": "🥬",
-  "Ganga-Medical-hall": "💊",
-  "Desi-swaad": "🍛"
-};
 
 const DashboardSummary = () => {
   const navigate = useNavigate();
   const scrollRef = useRef(null);
   const intervalRef = useRef(null);
+  const [shops, setShops] = useState([]);
   const [index, setIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-
   const { clearAllCarts } = useCart();
   const { setUser } = useUser();
 
-  // Clear session info on mount
   useEffect(() => {
     localStorage.removeItem('authToken');
     clearAllCarts();
     setUser(null);
-  }, []); 
+  }, []);
 
-  // Auto-scroll logic
   useEffect(() => {
-    const startAutoScroll = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const { latitude, longitude } = position.coords;
+        try {
+          const res = await fetch(
+            `https://connnet4you-server.onrender.com/api/shops?lat=${latitude}&lng=${longitude}`
+          );
+          const data = await res.json();
+          setShops(data || []);
+        } catch (err) {
+          console.error('❌ Failed to fetch nearby shops:', err);
+        }
+      }, (err) => {
+        console.warn('⚠️ Location access denied or failed.', err);
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isPaused && shops.length > 0) {
       intervalRef.current = setInterval(() => {
-        setIndex((prevIndex) => {
-          const nextIndex = (prevIndex + 1) % shops.length;
+        setIndex((prev) => {
+          const next = (prev + 1) % shops.length;
           const scrollContainer = scrollRef.current;
-          if (scrollContainer && scrollContainer.firstChild) {
+          if (scrollContainer?.firstChild) {
             const cardWidth = scrollContainer.firstChild.offsetWidth + 24;
-            scrollContainer.scrollTo({
-              left: cardWidth * nextIndex,
-              behavior: 'smooth',
-            });
+            scrollContainer.scrollTo({ left: cardWidth * next, behavior: 'smooth' });
           }
-          return nextIndex;
+          return next;
         });
       }, 3000);
-    };
-
-    if (!isPaused) {
-      startAutoScroll();
     }
-
     return () => clearInterval(intervalRef.current);
-  }, [isPaused]);
+  }, [isPaused, shops]);
 
-  const handleClick = (shop) => {
-    navigate(`/${shop}/products`);
+  const handleClick = (slug) => {
+    navigate(`/${slug}/products`);
   };
+
+  const displayName = (slug) =>
+    slug.replace(/-/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2');
 
   const handleUserInteractionStart = () => {
     setIsPaused(true);
@@ -103,17 +89,27 @@ const DashboardSummary = () => {
         {shops.map((shop, i) => (
           <motion.div
             className={`shop-card ${i === index ? 'active' : ''}`}
-            key={shop}
+            key={shop.slug}
             role="button"
-            aria-label={`Explore ${displayName(shop)}`}
-            onClick={() => handleClick(shop)}
+            onClick={() => handleClick(shop.slug)}
             whileHover={{ scale: 1.1 }}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: i * 0.1 }}
           >
-            <div className="shop-image-placeholder">{shopIcons[shop] || "🏬"}</div>
-            <h2 className="shop-name">{displayName(shop)}</h2>
+            <div className="shop-image-placeholder">
+              {shop.image_url ? (
+                <img
+                  src={`https://connnet4you-server.onrender.com/${shop.image_url}`}
+                  alt={shop.name}
+                  className="shop-image"
+                />
+              ) : (
+                '🏬'
+              )}
+            </div>
+            <h2 className="shop-name">{displayName(shop.slug)}</h2>
+            <p className="shop-address">{shop.address}</p>
             <div className="shop-login-cta">Click to explore the products</div>
           </motion.div>
         ))}

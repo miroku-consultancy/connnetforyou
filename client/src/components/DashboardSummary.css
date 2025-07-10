@@ -170,3 +170,9 @@
     font-size: 0.9rem;
   }
 }
+.shop-image {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 10px;
+}
