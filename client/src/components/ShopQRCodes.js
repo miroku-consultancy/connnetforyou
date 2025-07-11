@@ -9,7 +9,8 @@ const shops = [
   "Janta7DaysChineseFastFood",
   "QureshiKababCenter",
   "Vow-vista",
-  "Desi-swaad"
+  "Desi-swaad",
+  "Home-chef"
 ];
 
 const baseUrl = "https://www.connectfree4u.com/#/";
