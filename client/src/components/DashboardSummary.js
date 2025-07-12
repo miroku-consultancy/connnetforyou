@@ -13,7 +13,8 @@ const shopIcons = {
   "Vow-vista": "🌅",
   "SanjayVegStore": "🥬",
   "Ganga-Medical-hall": "💊",
-  "Desi-swaad": "🍛"
+  "Desi-swaad": "🍛",
+  "Home-chef": "🥮"
 };
 
 const displayName = (slug) =>
