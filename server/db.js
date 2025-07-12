@@ -7,6 +7,7 @@ const pool = new Pool({
   user: process.env.PGUSER || process.env.PG_USER,
   password: process.env.PGPASSWORD || process.env.PG_PASSWORD,
   database: process.env.PGDATABASE || process.env.PG_DATABASE,
+  ssl: { rejectUnauthorized: false }  // 🔐 This is required for Neon
 });
 
 module.exports = pool;
