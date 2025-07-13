@@ -4,13 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import BarcodeScanner from './BarcodeScanner';
 import './AddProduct.css';
 
-const categoryOptions = {
-  Fresh: ['Fresh Fruits', 'Mangoes & Melons', 'Plants & Gardening', 'Fresh Vegetables', 'Exotics & Premium', 'Leafy, Herbs & Seasonings', 'Organics & Hydroponics', 'Flowers & Leaves', 'Cuts & Sprouts', 'Dried & Dehydrated'],
-  Dairy: ['Milk', 'Cheese', 'Yogurt'],
-  Bakery: ['Breads', 'Cakes', 'Cookies'],
-  Beverages: ['Tea', 'Coffee', 'Juice'],
-};
-
 const API_BASE_URL = 'https://connnet4you-server.onrender.com';
 
 const AddProduct = () => {
@@ -18,6 +11,11 @@ const AddProduct = () => {
   const navigate = useNavigate();
 
   const [unitList, setUnitList] = useState([]);
+  const [categoryTree, setCategoryTree] = useState([]);
+  const [categoryIdMap, setCategoryIdMap] = useState({});
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedSubcategory, setSelectedSubcategory] = useState('');
+
   const [addingNewUnit, setAddingNewUnit] = useState(false);
   const [newUnitName, setNewUnitName] = useState('');
   const [previewImage, setPreviewImage] = useState(null);
@@ -29,50 +27,60 @@ const AddProduct = () => {
     price: '',
     stock: '',
     barcode: '',
-    category: '',
-    subcategory: '',
     unit: '',
     unitPrice: '',
     unitStock: '',
     image: null,
   });
 
-  // 🔄 Load units on mount
   useEffect(() => {
-    const fetchUnits = async () => {
-      const token = localStorage.getItem('authToken');
-      if (!token) return;
+    const token = localStorage.getItem('authToken');
+    if (!token) return;
 
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/units`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
+    // Fetch units
+    fetch(`${API_BASE_URL}/api/units`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(res => res.json())
+      .then(data => {
         if (Array.isArray(data)) setUnitList(data);
-      } catch (err) {
-        console.error('Failed to load units:', err);
-      }
-    };
+      });
 
-    fetchUnits();
+    // Fetch categories tree
+    fetch(`${API_BASE_URL}/api/categories`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(res => res.json())
+      .then(data => {
+        setCategoryTree(data);
+        const map = {};
+        const flatten = (cats) => {
+          cats.forEach(c => {
+            map[c.name] = c.id;
+            if (c.children) flatten(c.children);
+          });
+        };
+        flatten(data);
+        setCategoryIdMap(map);
+      });
   }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setProductData((prev) => ({ ...prev, [name]: value }));
+    setProductData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    setProductData((prev) => ({ ...prev, image: file }));
+    setProductData(prev => ({ ...prev, image: file }));
     setPreviewImage(URL.createObjectURL(file));
   };
 
   const handleAddNewUnit = async () => {
     if (!newUnitName.trim()) return alert('Unit name required');
+    const token = localStorage.getItem('authToken');
     try {
-      const token = localStorage.getItem('authToken');
       const res = await fetch(`${API_BASE_URL}/api/units`, {
         method: 'POST',
         headers: {
@@ -84,8 +92,8 @@ const AddProduct = () => {
 
       if (res.ok) {
         const newUnit = await res.json();
-        setUnitList((prev) => [...prev, newUnit]);
-        setProductData((prev) => ({ ...prev, unit: newUnit.name }));
+        setUnitList(prev => [...prev, newUnit]);
+        setProductData(prev => ({ ...prev, unit: newUnit.name }));
         setNewUnitName('');
         setAddingNewUnit(false);
       } else {
@@ -101,14 +109,18 @@ const AddProduct = () => {
     e.preventDefault();
     const token = localStorage.getItem('authToken');
 
-    if (!productData.name || !productData.price || !productData.stock || !productData.category || !productData.subcategory || !productData.unit) {
+    if (!productData.name || !productData.price || !productData.stock || !selectedSubcategory || !productData.unit) {
       return alert('Please fill in all required fields');
     }
+
+    const category_id = categoryIdMap[selectedSubcategory];
+    if (!category_id) return alert('Invalid subcategory selected');
 
     const formData = new FormData();
     Object.entries(productData).forEach(([key, value]) => {
       if (value) formData.append(key, value);
     });
+    formData.append('category_id', category_id);
 
     try {
       const res = await fetch(`${API_BASE_URL}/api/products`, {
@@ -134,24 +146,19 @@ const AddProduct = () => {
     <div className="add-product-container">
       <h2>➕ Add Product or Unit</h2>
       <form onSubmit={handleSubmit} className="add-product-form" encType="multipart/form-data">
-        {/* Product Name */}
         <label>Product Name <span className="required">*</span></label>
         <input type="text" name="name" value={productData.name} onChange={handleInputChange} required />
 
-        {/* Description */}
         <label>Description</label>
         <textarea name="description" value={productData.description} onChange={handleInputChange} />
 
-        {/* Price */}
         <label>Default Price <span className="required">*</span></label>
         <input type="number" name="price" value={productData.price} onChange={handleInputChange} required />
 
-        {/* Stock */}
         <label>Default Stock <span className="required">*</span></label>
         <input type="number" name="stock" value={productData.stock} onChange={handleInputChange} required />
 
-        {/* Barcode */}
-        <label>Barcode (Optional)</label>
+        <label>Barcode (optional)</label>
         <input type="text" name="barcode" value={productData.barcode} onChange={handleInputChange} />
         <button type="button" className="barcode-btn" onClick={() => setShowScanner(!showScanner)}>
           {showScanner ? '📷 Close Scanner' : '📷 Scan Barcode'}
@@ -159,83 +166,58 @@ const AddProduct = () => {
         {showScanner && (
           <BarcodeScanner
             onScanSuccess={(code) => {
-              setProductData((prev) => ({ ...prev, barcode: code }));
+              setProductData(prev => ({ ...prev, barcode: code }));
               setShowScanner(false);
             }}
           />
         )}
 
-        {/* Category */}
         <label>Category <span className="required">*</span></label>
-        <select
-          name="category"
-          value={productData.category}
-          onChange={(e) => setProductData((prev) => ({
-            ...prev,
-            category: e.target.value,
-            subcategory: '',
-          }))}
-          required
-        >
+        <select value={selectedCategory} onChange={(e) => {
+          setSelectedCategory(e.target.value);
+          setSelectedSubcategory('');
+        }} required>
           <option value="">-- Select Category --</option>
-          {Object.keys(categoryOptions).map((cat) => (
-            <option key={cat} value={cat}>{cat}</option>
+          {categoryTree.map(cat => (
+            <option key={cat.id} value={cat.name}>{cat.name}</option>
           ))}
         </select>
 
-        {/* Subcategory */}
         <label>Subcategory <span className="required">*</span></label>
-        <select
-          name="subcategory"
-          value={productData.subcategory}
-          onChange={handleInputChange}
-          disabled={!productData.category}
-          required
-        >
+        <select value={selectedSubcategory} onChange={(e) => setSelectedSubcategory(e.target.value)} required>
           <option value="">-- Select Subcategory --</option>
-          {categoryOptions[productData.category]?.map((sub) => (
-            <option key={sub} value={sub}>{sub}</option>
+          {categoryTree.find(c => c.name === selectedCategory)?.children?.map(sub => (
+            <option key={sub.id} value={sub.name}>{sub.name}</option>
           ))}
         </select>
 
-        {/* Unit selection */}
         <label>Unit <span className="required">*</span></label>
         <div className="unit-input">
           <select name="unit" value={productData.unit} onChange={handleInputChange} required>
             <option value="">-- Select Unit --</option>
-            {unitList.map((unit) => (
+            {unitList.map(unit => (
               <option key={unit.id} value={unit.name}>{unit.name}</option>
             ))}
           </select>
           <button type="button" onClick={() => setAddingNewUnit(!addingNewUnit)}>➕ Add Unit</button>
         </div>
 
-        {/* Add new unit inline */}
         {addingNewUnit && (
           <div className="new-unit-form">
-            <input
-              type="text"
-              placeholder="New Unit Name"
-              value={newUnitName}
-              onChange={(e) => setNewUnitName(e.target.value)}
-            />
+            <input type="text" placeholder="New Unit Name" value={newUnitName} onChange={(e) => setNewUnitName(e.target.value)} />
             <button type="button" onClick={handleAddNewUnit}>Save</button>
           </div>
         )}
 
-        {/* Unit-specific price and stock */}
         <label>Unit Price (optional)</label>
         <input type="number" name="unitPrice" value={productData.unitPrice} onChange={handleInputChange} />
 
         <label>Unit Stock (optional)</label>
         <input type="number" name="unitStock" value={productData.unitStock} onChange={handleInputChange} />
 
-        {/* Image upload */}
         <label>Product Image</label>
         <input type="file" accept="image/*" onChange={handleFileChange} />
-        {previewImage && (
-          <img src={previewImage} alt="Preview" className="preview-image" />
-        )}
+        {previewImage && <img src={previewImage} alt="Preview" className="preview-image" />}
 
         <button type="submit" className="submit-btn">📦 Submit Product</button>
       </form>

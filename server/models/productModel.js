@@ -65,14 +65,14 @@ const getProductById = async (id) => {
 
 // ➕ Add or update product & unit
 const addProduct = async ({
-  name, description, price, stock, barcode, category, subcategory, image, shop_id,
-  unit, unitPrice, unitStock,
+  name, description, price, stock, barcode, image, shop_id,
+  unit, unitPrice, unitStock, category_id
 }) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
 
-    // Insert unit if not exists
+    // 1. Insert unit if not exists
     await client.query(
       `INSERT INTO units(name, category)
        VALUES ($1, 'quantity')
@@ -84,29 +84,28 @@ const addProduct = async ({
     const unit_id = unitRes.rows[0]?.id;
     if (!unit_id) throw new Error('Unit not found or failed to insert');
 
-    // Check if product exists
-    let productRes = await client.query(
+    // 2. Check if product exists
+    const productRes = await client.query(
       `SELECT id FROM products WHERE name = $1 AND shop_id = $2`,
       [name, shop_id]
     );
 
     let product_id;
-
     if (productRes.rowCount > 0) {
-      // Product exists
+      // Update existing
       product_id = productRes.rows[0].id;
     } else {
-      // Create product
+      // Insert new
       const insertRes = await client.query(
-        `INSERT INTO products(name, description, price, stock, barcode, category, subcategory, image, shop_id)
-         VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)
+        `INSERT INTO products(name, description, price, stock, barcode, image, shop_id, category_id)
+         VALUES($1, $2, $3, $4, $5, $6, $7, $8)
          RETURNING id`,
-        [name, description, price, stock, barcode, category, subcategory, image, shop_id]
+        [name, description, price, stock, barcode, image, shop_id, category_id]
       );
       product_id = insertRes.rows[0].id;
     }
 
-    // Upsert unit for the product
+    // 3. Upsert unit
     const unitExistsRes = await client.query(
       `SELECT id FROM product_units WHERE product_id = $1 AND unit_id = $2`,
       [product_id, unit_id]
@@ -138,9 +137,10 @@ const addProduct = async ({
   }
 };
 
+
 const updateProductWithUnits = async ({
   id, shop_id, name, description, price, stock,
-  barcode, category, subcategory, image, units
+  barcode, image, category_id, units
 }) => {
   const client = await pool.connect();
   try {
@@ -153,7 +153,7 @@ const updateProductWithUnits = async ({
 
     const fieldMap = {
       name, description, price, stock,
-      barcode, category, subcategory, image
+      barcode, image, category_id
     };
 
     for (const [key, value] of Object.entries(fieldMap)) {
@@ -174,10 +174,8 @@ const updateProductWithUnits = async ({
     // Update units
     for (const unit of units) {
       const { name: unitName, price: unitPrice, stock: unitStock } = unit;
-
       if (!unitName) continue;
 
-      // Ensure unit exists
       await client.query(
         `INSERT INTO units(name, category)
          VALUES ($1, 'quantity')
@@ -218,6 +216,7 @@ const updateProductWithUnits = async ({
     client.release();
   }
 };
+
 
 
 module.exports = {

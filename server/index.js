@@ -18,6 +18,8 @@ const ordersStatusRouter = require('./routes/ordersStatus'); // Adjust path as n
 const unitRoutes = require('./routes/unitRoutes');
 const saveFcmTokenRouter = require('./routes/saveFcmToken'); // adjust path
 
+const categoriesRouter = require('./routes/categories');
+
 const app = express();
 
 const PORT = process.env.PORT || 5000;
@@ -63,6 +65,8 @@ app.use('/api/notifications', notificationRoutes); // ✅ Handles GET /api/notif
 app.use('/api/notifications', sseRouter);          // ✅ Handles /api/notifications/stream
 app.use('/api/units', unitRoutes);
 app.use('/api', saveFcmTokenRouter);
+
+app.use('/api/categories', categoriesRouter);
 // Serve static assets (images and frontend build)
 app.use('/images', express.static(imagesDir));
 app.use(express.static(path.join(__dirname, 'build')));
