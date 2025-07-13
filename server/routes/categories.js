@@ -1,9 +1,8 @@
 const express = require('express');
 const router = express.Router();
-//const { Pool } = require('pg');
 require('dotenv').config();
 
-const pool = require('../db');
+const pool = require('../db');  // make sure your db connection exports a pool
 
 // 🔁 Helper: Recursively build category tree
 async function getCategoriesTree() {
@@ -45,9 +44,9 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    // Check for duplicate name under same parent
+    // Check for duplicate category with the same name under the same parent
     const checkRes = await pool.query(
-      `SELECT * FROM categories WHERE name = $1 AND parent_id IS NOT DISTINCT FROM $2`,
+      `SELECT 1 FROM categories WHERE name = $1 AND parent_id IS NOT DISTINCT FROM $2`,
       [name.trim(), parent_id || null]
     );
 

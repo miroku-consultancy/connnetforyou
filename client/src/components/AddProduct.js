@@ -18,8 +18,10 @@ const AddProduct = () => {
 
   const [addingNewUnit, setAddingNewUnit] = useState(false);
   const [newUnitName, setNewUnitName] = useState('');
+
   const [addingNewCategory, setAddingNewCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
+
   const [addingNewSubcategory, setAddingNewSubcategory] = useState(false);
   const [newSubcategoryName, setNewSubcategoryName] = useState('');
 
@@ -42,6 +44,7 @@ const AddProduct = () => {
     const token = localStorage.getItem('authToken');
     if (!token) return;
 
+    // Fetch units
     fetch(`${API_BASE_URL}/api/units`, {
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -50,22 +53,30 @@ const AddProduct = () => {
         if (Array.isArray(data)) setUnitList(data);
       });
 
+    // Fetch categories tree
     fetch(`${API_BASE_URL}/api/categories`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(res => res.json())
       .then(data => {
+        if (!Array.isArray(data)) {
+          console.error('Invalid category response:', data);
+          return;
+        }
+
         setCategoryTree(data);
         const map = {};
         const flatten = (cats) => {
+          if (!Array.isArray(cats)) return;
           cats.forEach(c => {
             map[c.name] = c.id;
-            if (c.children) flatten(c.children);
+            if (c.children && Array.isArray(c.children)) flatten(c.children);
           });
         };
         flatten(data);
         setCategoryIdMap(map);
-      });
+      })
+      .catch(err => console.error('Failed to load categories:', err));
   }, []);
 
   const handleInputChange = (e) => {
@@ -108,7 +119,7 @@ const AddProduct = () => {
     }
   };
 
-  const handleAddNewCategory = async () => {
+  const handleAddCategory = async () => {
     if (!newCategoryName.trim()) return alert('Category name required');
     const token = localStorage.getItem('authToken');
     try {
@@ -124,7 +135,6 @@ const AddProduct = () => {
       if (res.ok) {
         const newCat = await res.json();
         setCategoryTree(prev => [...prev, { ...newCat, children: [] }]);
-        setSelectedCategory(newCat.name);
         setNewCategoryName('');
         setAddingNewCategory(false);
       } else {
@@ -136,12 +146,13 @@ const AddProduct = () => {
     }
   };
 
-  const handleAddNewSubcategory = async () => {
-    if (!newSubcategoryName.trim() || !selectedCategory) return alert('Subcategory name and category required');
-    const token = localStorage.getItem('authToken');
-    const parentCategoryId = categoryTree.find(cat => cat.name === selectedCategory)?.id;
+  const handleAddSubcategory = async () => {
+    if (!selectedCategory || !newSubcategoryName.trim()) {
+      return alert('Select a category and enter subcategory name');
+    }
 
-    if (!parentCategoryId) return alert('Parent category not found');
+    const parentId = categoryIdMap[selectedCategory];
+    const token = localStorage.getItem('authToken');
 
     try {
       const res = await fetch(`${API_BASE_URL}/api/categories`, {
@@ -150,19 +161,19 @@ const AddProduct = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ name: newSubcategoryName, parent_id: parentCategoryId }),
+        body: JSON.stringify({ name: newSubcategoryName, parent_id: parentId }),
       });
 
       if (res.ok) {
         const newSub = await res.json();
         setCategoryTree(prev =>
           prev.map(cat =>
-            cat.id === parentCategoryId
+            cat.name === selectedCategory
               ? { ...cat, children: [...(cat.children || []), newSub] }
               : cat
           )
         );
-        setSelectedSubcategory(newSub.name);
+        setCategoryIdMap(prev => ({ ...prev, [newSub.name]: newSub.id }));
         setNewSubcategoryName('');
         setAddingNewSubcategory(false);
       } else {
@@ -213,7 +224,7 @@ const AddProduct = () => {
 
   return (
     <div className="add-product-container">
-      <h2>➕ Add Product</h2>
+      <h2>➕ Add Product or Unit</h2>
       <form onSubmit={handleSubmit} className="add-product-form" encType="multipart/form-data">
         <label>Product Name <span className="required">*</span></label>
         <input type="text" name="name" value={productData.name} onChange={handleInputChange} required />
@@ -242,27 +253,27 @@ const AddProduct = () => {
         )}
 
         <label>Category <span className="required">*</span></label>
-        <div className="category-input">
+        <div className="category-group">
           <select value={selectedCategory} onChange={(e) => {
             setSelectedCategory(e.target.value);
             setSelectedSubcategory('');
           }} required>
             <option value="">-- Select Category --</option>
-            {categoryTree.map(cat => (
+            {Array.isArray(categoryTree) && categoryTree.map(cat => (
               <option key={cat.id} value={cat.name}>{cat.name}</option>
             ))}
           </select>
           <button type="button" onClick={() => setAddingNewCategory(!addingNewCategory)}>➕ Add Category</button>
         </div>
         {addingNewCategory && (
-          <div className="new-category-form">
+          <div className="new-unit-form">
             <input type="text" placeholder="New Category Name" value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} />
-            <button type="button" onClick={handleAddNewCategory}>Save</button>
+            <button type="button" onClick={handleAddCategory}>Save</button>
           </div>
         )}
 
         <label>Subcategory <span className="required">*</span></label>
-        <div className="subcategory-input">
+        <div className="category-group">
           <select value={selectedSubcategory} onChange={(e) => setSelectedSubcategory(e.target.value)} required>
             <option value="">-- Select Subcategory --</option>
             {categoryTree.find(c => c.name === selectedCategory)?.children?.map(sub => (
@@ -272,9 +283,9 @@ const AddProduct = () => {
           <button type="button" onClick={() => setAddingNewSubcategory(!addingNewSubcategory)}>➕ Add Subcategory</button>
         </div>
         {addingNewSubcategory && (
-          <div className="new-subcategory-form">
+          <div className="new-unit-form">
             <input type="text" placeholder="New Subcategory Name" value={newSubcategoryName} onChange={(e) => setNewSubcategoryName(e.target.value)} />
-            <button type="button" onClick={handleAddNewSubcategory}>Save</button>
+            <button type="button" onClick={handleAddSubcategory}>Save</button>
           </div>
         )}
 
@@ -288,6 +299,7 @@ const AddProduct = () => {
           </select>
           <button type="button" onClick={() => setAddingNewUnit(!addingNewUnit)}>➕ Add Unit</button>
         </div>
+
         {addingNewUnit && (
           <div className="new-unit-form">
             <input type="text" placeholder="New Unit Name" value={newUnitName} onChange={(e) => setNewUnitName(e.target.value)} />
