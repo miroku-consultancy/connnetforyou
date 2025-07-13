@@ -211,7 +211,7 @@ const AddProduct = () => {
 
       if (res.ok) {
         alert('✅ Product added or updated successfully!');
-        navigate('/demo/products');
+        navigate('/products');
       } else {
         const err = await res.json();
         alert(err.message || '❌ Failed to add product');
