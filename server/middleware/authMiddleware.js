@@ -28,40 +28,41 @@ module.exports = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log('Token decoded:', decoded);
+    console.log('[authMiddleware] Token decoded:', decoded);
 
-    // Fetch user without 'role'
+    // Get basic user info
     const userResult = await pool.query(
-      'SELECT id, email, name, shop_id FROM users WHERE id = $1',
+      'SELECT id, email, name FROM users WHERE id = $1',
       [decoded.id]
     );
 
     if (userResult.rows.length === 0) {
-      console.error('User not found');
+      console.error('[authMiddleware] User not found');
       return res.status(404).json({ error: 'User not found' });
     }
 
     const user = userResult.rows[0];
 
-    // Fetch roles from user_roles table
-    const rolesResult = await pool.query(
-      'SELECT role_name FROM user_roles WHERE user_id = $1',
+    // Get all roles for the user from user_shop_roles
+    const roleResult = await pool.query(
+      'SELECT role, shop_id FROM user_shop_roles WHERE user_id = $1',
       [user.id]
     );
 
-    const roles = rolesResult.rows.map(r => r.role_name);
+    const roles = roleResult.rows;
 
-    // Attach user info and roles
+    // Attach user to request
     req.user = {
       ...user,
-      roles,
-      role: roles[0] || null, // for backward compatibility
+      roles, // e.g. [{ role: 'vendor', shop_id: 12 }, { role: 'admin', shop_id: null }]
+      role: roles.length > 0 ? roles[0].role : null, // for backward compatibility
+      shop_id: roles.length > 0 ? roles[0].shop_id : null, // default shop_id (optional)
     };
 
-    console.log('User authenticated:', req.user);
+    console.log('[authMiddleware] Authenticated user:', req.user);
     next();
   } catch (err) {
-    console.error('Token verification failed:', err.message);
+    console.error('[authMiddleware] Token verification failed:', err.message);
     return res.status(403).json({ error: 'Invalid or expired token' });
   }
 };
