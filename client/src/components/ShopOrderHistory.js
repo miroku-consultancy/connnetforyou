@@ -5,6 +5,14 @@ const API_BASE_URL = 'https://connnet4you-server.onrender.com';
 
 const MIN_ORDER_FOR_DELIVERY = 200;
 
+const parseJwt = (token) => {
+  try {
+    return JSON.parse(atob(token.split('.')[1]));
+  } catch {
+    return null;
+  }
+};
+
 const STATUS_STEPS = ['Pending', 'Accepted', 'In Transit', 'Delivered'];
 
 const STATUS_LABELS = {
@@ -21,7 +29,7 @@ const ShopOrderHistory = () => {
   const [updatingOrderId, setUpdatingOrderId] = useState(null);
 
   useEffect(() => {
-    const fetchShopAndOrders = async () => {
+    const fetchShopOrders = async () => {
       const token = localStorage.getItem('authToken');
       if (!token) {
         setError('No authentication token. Please log in.');
@@ -29,44 +37,38 @@ const ShopOrderHistory = () => {
         return;
       }
 
+      const decoded = parseJwt(token);
+      const shopId = decoded?.shop_id;
+
+      if (!shopId) {
+        setError('Shop ID missing in your account.');
+        setLoading(false);
+        return;
+      }
+
       try {
-        // 1. Fetch shop info securely from backend
-        const resShop = await fetch(`${API_BASE_URL}/api/shops/vendor`, {
+        const res = await fetch(`${API_BASE_URL}/api/orders/shop/${shopId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (!resShop.ok) {
-          const msg = await resShop.text();
-          setError(`Failed to fetch shop info: ${msg}`);
+        if (!res.ok) {
+          const msg = await res.text();
+          setError(`Error: ${res.status} ${msg}`);
           setLoading(false);
           return;
         }
 
-        const shop = await resShop.json();
-
-        // 2. Fetch orders for the shop
-        const resOrders = await fetch(`${API_BASE_URL}/api/orders/shop/${shop.id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!resOrders.ok) {
-          const msg = await resOrders.text();
-          setError(`Failed to fetch orders: ${msg}`);
-          setLoading(false);
-          return;
-        }
-
-        const ordersData = await resOrders.json();
-        setOrders(ordersData);
+        const data = await res.json();
+        setOrders(data);
       } catch (err) {
-        console.error('Error fetching shop or orders:', err);
+        console.error('[ERROR] fetchShopOrders failed:', err);
         setError('Network error, please try again.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchShopAndOrders();
+    fetchShopOrders();
   }, []);
 
   const updateOrderStatus = async (orderId, currentStatus) => {
@@ -157,6 +159,7 @@ const ShopOrderHistory = () => {
               <strong>Customer:</strong> {order.customer_name} ({order.customer_phone})
             </div>
 
+            {/* Hide address if order is takeaway */}
             {!isTakeaway && order.address && (
               <div>
                 <strong>Address:</strong> {order.address.street}, {order.address.city} - {order.address.zip}
@@ -180,19 +183,11 @@ const ShopOrderHistory = () => {
                 onClick={() => updateOrderStatus(order.id, order.order_status || 'Pending')}
                 className="update-status-btn"
                 aria-label={`Update order ${order.id} status to next step`}
-                title={`Mark as ${
-                  STATUS_LABELS[
-                    STATUS_STEPS[STATUS_STEPS.indexOf(order.order_status || 'Pending') + 1]
-                  ]
-                }`}
+                title={`Mark as ${STATUS_LABELS[STATUS_STEPS[STATUS_STEPS.indexOf(order.order_status || 'Pending') + 1]]}`}
               >
                 {updatingOrderId === order.id
                   ? 'Updating...'
-                  : `Mark as ${
-                      STATUS_LABELS[
-                        STATUS_STEPS[STATUS_STEPS.indexOf(order.order_status || 'Pending') + 1]
-                      ]
-                    }`}
+                  : `Mark as ${STATUS_LABELS[STATUS_STEPS[STATUS_STEPS.indexOf(order.order_status || 'Pending') + 1]]}`}
               </button>
             )}
 
