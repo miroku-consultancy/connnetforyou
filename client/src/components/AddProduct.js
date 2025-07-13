@@ -18,6 +18,11 @@ const AddProduct = () => {
 
   const [addingNewUnit, setAddingNewUnit] = useState(false);
   const [newUnitName, setNewUnitName] = useState('');
+  const [addingNewCategory, setAddingNewCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [addingNewSubcategory, setAddingNewSubcategory] = useState(false);
+  const [newSubcategoryName, setNewSubcategoryName] = useState('');
+
   const [previewImage, setPreviewImage] = useState(null);
   const [showScanner, setShowScanner] = useState(false);
 
@@ -37,7 +42,6 @@ const AddProduct = () => {
     const token = localStorage.getItem('authToken');
     if (!token) return;
 
-    // Fetch units
     fetch(`${API_BASE_URL}/api/units`, {
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -46,7 +50,6 @@ const AddProduct = () => {
         if (Array.isArray(data)) setUnitList(data);
       });
 
-    // Fetch categories tree
     fetch(`${API_BASE_URL}/api/categories`, {
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -105,6 +108,72 @@ const AddProduct = () => {
     }
   };
 
+  const handleAddNewCategory = async () => {
+    if (!newCategoryName.trim()) return alert('Category name required');
+    const token = localStorage.getItem('authToken');
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/categories`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ name: newCategoryName }),
+      });
+
+      if (res.ok) {
+        const newCat = await res.json();
+        setCategoryTree(prev => [...prev, { ...newCat, children: [] }]);
+        setSelectedCategory(newCat.name);
+        setNewCategoryName('');
+        setAddingNewCategory(false);
+      } else {
+        alert('❌ Failed to add category');
+      }
+    } catch (err) {
+      console.error('Error adding category:', err);
+      alert('Error adding category');
+    }
+  };
+
+  const handleAddNewSubcategory = async () => {
+    if (!newSubcategoryName.trim() || !selectedCategory) return alert('Subcategory name and category required');
+    const token = localStorage.getItem('authToken');
+    const parentCategoryId = categoryTree.find(cat => cat.name === selectedCategory)?.id;
+
+    if (!parentCategoryId) return alert('Parent category not found');
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/categories`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ name: newSubcategoryName, parent_id: parentCategoryId }),
+      });
+
+      if (res.ok) {
+        const newSub = await res.json();
+        setCategoryTree(prev =>
+          prev.map(cat =>
+            cat.id === parentCategoryId
+              ? { ...cat, children: [...(cat.children || []), newSub] }
+              : cat
+          )
+        );
+        setSelectedSubcategory(newSub.name);
+        setNewSubcategoryName('');
+        setAddingNewSubcategory(false);
+      } else {
+        alert('❌ Failed to add subcategory');
+      }
+    } catch (err) {
+      console.error('Error adding subcategory:', err);
+      alert('Error adding subcategory');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('authToken');
@@ -144,7 +213,7 @@ const AddProduct = () => {
 
   return (
     <div className="add-product-container">
-      <h2>➕ Add Product or Unit</h2>
+      <h2>➕ Add Product</h2>
       <form onSubmit={handleSubmit} className="add-product-form" encType="multipart/form-data">
         <label>Product Name <span className="required">*</span></label>
         <input type="text" name="name" value={productData.name} onChange={handleInputChange} required />
@@ -173,23 +242,41 @@ const AddProduct = () => {
         )}
 
         <label>Category <span className="required">*</span></label>
-        <select value={selectedCategory} onChange={(e) => {
-          setSelectedCategory(e.target.value);
-          setSelectedSubcategory('');
-        }} required>
-          <option value="">-- Select Category --</option>
-          {categoryTree.map(cat => (
-            <option key={cat.id} value={cat.name}>{cat.name}</option>
-          ))}
-        </select>
+        <div className="category-input">
+          <select value={selectedCategory} onChange={(e) => {
+            setSelectedCategory(e.target.value);
+            setSelectedSubcategory('');
+          }} required>
+            <option value="">-- Select Category --</option>
+            {categoryTree.map(cat => (
+              <option key={cat.id} value={cat.name}>{cat.name}</option>
+            ))}
+          </select>
+          <button type="button" onClick={() => setAddingNewCategory(!addingNewCategory)}>➕ Add Category</button>
+        </div>
+        {addingNewCategory && (
+          <div className="new-category-form">
+            <input type="text" placeholder="New Category Name" value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} />
+            <button type="button" onClick={handleAddNewCategory}>Save</button>
+          </div>
+        )}
 
         <label>Subcategory <span className="required">*</span></label>
-        <select value={selectedSubcategory} onChange={(e) => setSelectedSubcategory(e.target.value)} required>
-          <option value="">-- Select Subcategory --</option>
-          {categoryTree.find(c => c.name === selectedCategory)?.children?.map(sub => (
-            <option key={sub.id} value={sub.name}>{sub.name}</option>
-          ))}
-        </select>
+        <div className="subcategory-input">
+          <select value={selectedSubcategory} onChange={(e) => setSelectedSubcategory(e.target.value)} required>
+            <option value="">-- Select Subcategory --</option>
+            {categoryTree.find(c => c.name === selectedCategory)?.children?.map(sub => (
+              <option key={sub.id} value={sub.name}>{sub.name}</option>
+            ))}
+          </select>
+          <button type="button" onClick={() => setAddingNewSubcategory(!addingNewSubcategory)}>➕ Add Subcategory</button>
+        </div>
+        {addingNewSubcategory && (
+          <div className="new-subcategory-form">
+            <input type="text" placeholder="New Subcategory Name" value={newSubcategoryName} onChange={(e) => setNewSubcategoryName(e.target.value)} />
+            <button type="button" onClick={handleAddNewSubcategory}>Save</button>
+          </div>
+        )}
 
         <label>Unit <span className="required">*</span></label>
         <div className="unit-input">
@@ -201,7 +288,6 @@ const AddProduct = () => {
           </select>
           <button type="button" onClick={() => setAddingNewUnit(!addingNewUnit)}>➕ Add Unit</button>
         </div>
-
         {addingNewUnit && (
           <div className="new-unit-form">
             <input type="text" placeholder="New Unit Name" value={newUnitName} onChange={(e) => setNewUnitName(e.target.value)} />

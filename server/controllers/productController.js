@@ -47,30 +47,48 @@ const getProduct = async (req, res) => {
 
 const addProduct = async (req, res) => {
   try {
-    const { name, description, price, subcategory } = req.body;
-    const shopId = req.user?.shop_id;
-
-    if (!name || !price || !shopId) {
-      return res.status(400).json({ message: 'Missing required fields' });
-    }
-
-    const image = req.file ? req.file.filename : null;
-
-    const newProduct = await productModel.createProduct({
+    const {
       name,
       description,
       price,
-      subcategory,
+      stock,
+      barcode,
+      unit,
+      unitPrice,
+      unitStock,
+      category_id,
+    } = req.body;
+
+    const shop_id = req.user?.shop_id;
+    const image = req.file ? req.file.filename : null;
+
+    // 🔍 Basic validation
+    if (!name || !price || !stock || !unit || !category_id || !shop_id) {
+      return res.status(400).json({ message: 'Missing required fields' });
+    }
+
+    const newProduct = await productModel.addProduct({
+      name,
+      description,
+      price,
+      stock,
+      barcode,
       image,
-      shopId,
+      shop_id,
+      unit,
+      unitPrice,
+      unitStock,
+      category_id,
     });
 
+    console.log('✅ New product added:', newProduct);
     res.status(201).json(newProduct);
   } catch (err) {
-    console.error('Error adding product:', err);
+    console.error('❌ Error adding product:', err);
     res.status(500).json({ message: 'Error adding product', error: err.message });
   }
 };
+
 
 const updateProduct = async (req, res) => {
   try {
