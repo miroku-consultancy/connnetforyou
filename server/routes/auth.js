@@ -59,6 +59,7 @@ router.post('/send-token', async (req, res) => {
 // 2️⃣ Verify OTP and generate JWT
 router.post('/login-with-token', async (req, res) => {
   const { email, token, shop_slug } = req.body;
+
   if (!email || !token || !shop_slug) {
     return res.status(400).json({ error: 'Email, OTP, and shop slug are required' });
   }
@@ -71,12 +72,12 @@ router.post('/login-with-token', async (req, res) => {
     }
     const shopId = shopResult.rows[0].id;
 
-    // 2. Get user with matching shop_id
-    const result = await pool.query(
-      'SELECT * FROM public.users WHERE email = $1 AND shop_id = $2',
-      [email, shopId]
+    // 2. Get user by email
+    const userResult = await pool.query(
+      'SELECT * FROM public.users WHERE email = $1',
+      [email]
     );
-    const user = result.rows[0];
+    const user = userResult.rows[0];
 
     if (!user || user.otp !== token) {
       return res.status(401).json({ error: 'Invalid OTP or email' });
@@ -86,41 +87,52 @@ router.post('/login-with-token', async (req, res) => {
       return res.status(401).json({ error: 'OTP expired' });
     }
 
-    // 3. Generate token
+    // 3. Get role from user_shop_roles
+    const roleResult = await pool.query(`
+      SELECT role FROM user_shop_roles
+      WHERE user_id = $1 AND shop_id = $2
+      LIMIT 1
+    `, [user.id, shopId]);
+
+    const roleRow = roleResult.rows[0];
+    const role = roleRow?.role || 'customer'; // Fallback role
+
+    // 4. Generate JWT token
     const jwtToken = jwt.sign(
-  {
-    id: user.id,
-    email: user.email,
-    shop_id: user.shop_id,
-    role: user.role // ✅ Include role here!
-  },
-  process.env.JWT_SECRET,
-  { expiresIn: '1h' }
-);
+      {
+        id: user.id,
+        email: user.email,
+        shop_id: shopId,
+        role: role
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
 
-
-    // 4. Clear OTP and update login timestamp
+    // 5. Clear OTP and update login time
     await pool.query(
       'UPDATE public.users SET otp = NULL, otp_expires_at = NULL, last_login_at = NOW() WHERE id = $1',
       [user.id]
     );
 
-    // 5. Return token and user info
+    // 6. Return token + user info
     res.json({
       message: 'Login successful',
       token: jwtToken,
       user: {
         id: user.id,
         email: user.email,
-        role: user.role,
-        shop_id: user.shop_id
+        shop_id: shopId,
+        role: role
       }
     });
+
   } catch (err) {
-    console.error('Error verifying OTP:', err);
+    console.error('Error during login:', err);
     res.status(500).json({ error: 'Server error during login' });
   }
 });
+
 
 
 module.exports = router;
