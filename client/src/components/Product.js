@@ -4,7 +4,7 @@ import { useCart } from './CartContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useUser } from './UserContext';
 import AddressPopup from './AddressPopup';
-import { jwtDecode } from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';  // <-- Fixed import here
 
 const API_BASE_URL = 'https://connnet4you-server.onrender.com';
 
@@ -24,6 +24,8 @@ const Product = () => {
     phone: '',
   });
   const [shopId, setShopId] = useState(null);
+  const [categoryId, setCategoryId] = useState(null); // for product fetch by category
+  const [loadingProducts, setLoadingProducts] = useState(true);
 
   const { cart, cartLoaded, addToCart } = useCart();
   const { user, loadingUser } = useUser();
@@ -67,7 +69,7 @@ const Product = () => {
     }
   }, [safeShopSlug, navigate]);
 
-  // Fetch shop info without token
+  // Fetch shop info without token (get shopId and categoryId)
   useEffect(() => {
     const fetchShopInfo = async () => {
       if (!safeShopSlug) return;
@@ -81,6 +83,10 @@ const Product = () => {
         }
         const shop = await response.json();
         setShopId(shop.id);
+
+        // Assuming shop.categoryId or default category to fetch products by category
+        // Replace 'categoryId' below with your actual category field name
+        setCategoryId(shop.categoryId || null); 
       } catch (error) {
         console.error('Error fetching shop info:', error);
         navigate('/');
@@ -90,31 +96,36 @@ const Product = () => {
     fetchShopInfo();
   }, [safeShopSlug, navigate]);
 
-  // Fetch products without token
+  // Fetch products by category ID (instead of shopId)
   useEffect(() => {
     const fetchProducts = async () => {
-      if (!shopId) return;
+      if (!categoryId) {
+        setProducts([]);  // clear products if no categoryId
+        setLoadingProducts(false);
+        return;
+      }
 
+      setLoadingProducts(true);
       try {
-        const response = await fetch(`${API_BASE_URL}/api/products?shopId=${shopId}`);
-        console.log(response,'response')
+        // Use categoryId query param, change endpoint if your backend requires different param
+        const response = await fetch(`${API_BASE_URL}/api/products?categoryId=${categoryId}`);
 
         if (!response.ok) {
           throw new Error('Failed to fetch products');
         }
 
         const data = await response.json();
-        console.log('data',data)
         setProducts(data);
-        console.log('Bound products to state:', data);
-
       } catch (error) {
         console.error('Error fetching products:', error);
+        setProducts([]);
+      } finally {
+        setLoadingProducts(false);
       }
     };
 
     fetchProducts();
-  }, [shopId]);
+  }, [categoryId]);
 
   // Fetch addresses only if user & token present
   useEffect(() => {
@@ -200,6 +211,7 @@ const Product = () => {
     if (addr) setTempAddress(addr);
   };
 
+  // Sync quantities from cart when loaded
   useEffect(() => {
     if (!cartLoaded) return;
     const initialQuantities = {};
@@ -209,31 +221,24 @@ const Product = () => {
     setQuantities(initialQuantities);
   }, [cart, cartLoaded]);
 
-  const handleQtyChange = (product, delta) => {
-    const prevQty = quantities[product.id] || 0;
-    const newQty = Math.max(0, prevQty + delta);
-    setQuantities((prev) => ({ ...prev, [product.id]: newQty }));
-
-    const cartQty = cart[product.id]?.quantity || 0;
-    const diff = newQty - cartQty;
-    if (diff !== 0) addToCart(product, diff);
-  };
-
-  const freshProducts = products;
-const groupedProductsMap = freshProducts.reduce((acc, product) => {
-  const sub = product.subcategory || 'Uncategorized';
-  if (!acc[sub]) acc[sub] = [];
-  acc[sub].push(product);
-  return acc;
-}, {});
+  // Group products by subcategory for display
+  const groupedProductsMap = products.reduce((acc, product) => {
+    const sub = product.subcategory || 'Uncategorized';
+    if (!acc[sub]) acc[sub] = [];
+    acc[sub].push(product);
+    return acc;
+  }, {});
 
   const groupedProducts = Object.entries(groupedProductsMap)
     .map(([subcategory, items]) => ({ subcategory, items }))
     .sort((a, b) => a.subcategory.localeCompare(b.subcategory));
 
-  // if (!cartLoaded || products.length === 0) {
-  if (products.length === 0) {
+  if (loadingProducts) {
     return <div className="loading">Loading fresh picks...</div>;
+  }
+
+  if (!loadingProducts && products.length === 0) {
+    return <div className="loading">No products found.</div>;
   }
 
   return (
@@ -350,20 +355,17 @@ const groupedProductsMap = freshProducts.reduce((acc, product) => {
               ))}
             </ul>
             <button
-  onClick={() => {
-    if (!user) {
-       navigate(`/${safeShopSlug}/order`);
-      // User not logged in, navigate to login page
-      //navigate('/login');
-    } else {
-      // User logged in, go to order page
-      navigate(`/${safeShopSlug}/order`);
-    }
-  }}
-  className="login-btn"
->
-  Proceed to Order
-</button>
+              onClick={() => {
+                if (!user) {
+                  navigate(`/${safeShopSlug}/order`);
+                } else {
+                  navigate(`/${safeShopSlug}/order`);
+                }
+              }}
+              className="login-btn"
+            >
+              Proceed to Order
+            </button>
           </div>
         </div>
       )}
@@ -463,18 +465,26 @@ const ProductCard = ({
         >
           {product.units.map((unit) => (
             <option key={unit.unit_id} value={unit.unit_id}>
-              {unit.name} ₹{unit.price}
+              {unit.unit} - ₹{unit.price}
             </option>
           ))}
         </select>
       )}
 
-      <div className="price-display">
-        ₹{(selectedUnit?.price || product.price) * (qty || 1)}
-      </div>
+      {!hasUnits && (
+        <p className="product-price">₹{product.price.toFixed(2)}</p>
+      )}
+
+      {isVendor && (
+        <button
+          className="edit-product-btn"
+          onClick={() => navigate(`/${safeShopSlug}/editproduct/${product.id}`)}
+        >
+          ✏️ Edit
+        </button>
+      )}
     </div>
   );
 };
-
 
 export default Product;

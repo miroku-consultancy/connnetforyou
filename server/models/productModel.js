@@ -7,13 +7,22 @@ const pool = require('../db');
 const getAllProducts = async (shopId) => {
   try {
     const productRes = await pool.query(
-      'SELECT * FROM products WHERE shop_id = $1',
+      `SELECT 
+         p.*, 
+         subcat.name AS subcategory,
+         parent.name AS category_name
+       FROM products p
+       JOIN categories subcat ON p.category_id = subcat.id
+       LEFT JOIN categories parent ON subcat.parent_id = parent.id
+       WHERE p.shop_id = $1`,
       [shopId]
     );
+
     const products = productRes.rows;
     if (products.length === 0) return [];
 
     const productIds = products.map((p) => p.id);
+
     const unitsRes = await pool.query(
       `SELECT pu.id, pu.product_id, pu.unit_id, pu.price, pu.stock, 
               u.name AS unit_name, u.category AS unit_category
@@ -45,6 +54,7 @@ const getAllProducts = async (shopId) => {
     throw err;
   }
 };
+
 
 // 🔍 Get single product
 const getProductById = async (id) => {
