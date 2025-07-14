@@ -6,7 +6,7 @@ import { useCart } from './CartContext';
 import { useUser } from './UserContext';
 
 const shopIcons = {
-  "Kanji-Sweets": "🥜✨",
+  "Kanji-Sweets": "🧁",
   "ALNazeerMuradabadiChickenBiryani": "🍗",
   "Janta7DaysChineseFastFood": "🥡",
   "QureshiKababCenter": "🍢",
