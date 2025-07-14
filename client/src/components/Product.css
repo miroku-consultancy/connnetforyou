@@ -618,7 +618,7 @@ body {
   position: relative;
   font-size: 1.7rem;
   font-weight: 700;
-  color: white;
+  color: #3498db; /* sky blue */
   padding: 12px 20px;
   user-select: none;
   text-align: center;
