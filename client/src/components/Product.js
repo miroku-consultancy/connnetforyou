@@ -284,7 +284,7 @@ const groupedProducts = Object.entries(groupedProductsMap)
       key={category}
       className={`category-section ${index % 2 === 0 ? 'light-bg' : 'dark-bg'}`}
     >
-      <h2 className="category-title">{category}</h2>
+      <h2 className="category-title diamond-bg">{category}</h2>
       <div className="product-grid">
         {items.map((product) => (
           <ProductCard

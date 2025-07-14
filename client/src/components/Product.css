@@ -614,3 +614,27 @@ body {
 .add-btn-overlay:hover {
   background-color: #388e3c;
 }
+.category-title.diamond-bg {
+  position: relative;
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: white;
+  padding: 12px 20px;
+  user-select: none;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.category-title.diamond-bg::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120%;
+  height: 120%;
+  background: #8e44ad;
+  transform: translate(-50%, -50%) rotate(45deg);
+  z-index: -1;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(142, 68, 173, 0.5);
+}
