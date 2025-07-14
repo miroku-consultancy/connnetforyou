@@ -8,13 +8,11 @@ const getAllProducts = async (shopId) => {
   try {
     const productRes = await pool.query(
       `SELECT 
-         p.*, 
-         subcat.name AS subcategory,
-         parent.name AS category_name
-       FROM products p
-       JOIN categories subcat ON p.category_id = subcat.id
-       LEFT JOIN categories parent ON subcat.parent_id = parent.id
-       WHERE p.shop_id = $1`,
+  p.*, 
+  c.name AS category_name
+FROM products p
+JOIN categories c ON p.category_id = c.id
+WHERE p.shop_id = $1`,
       [shopId]
     );
 

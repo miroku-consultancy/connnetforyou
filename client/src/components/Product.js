@@ -4,7 +4,7 @@ import { useCart } from './CartContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useUser } from './UserContext';
 import AddressPopup from './AddressPopup';
-import { jwtDecode } from 'jwt-decode';  // <-- Fixed import here
+import { jwtDecode } from 'jwt-decode'; // fixed import (jwtDecode default export)
 
 const API_BASE_URL = 'https://connnet4you-server.onrender.com';
 
@@ -24,8 +24,6 @@ const Product = () => {
     phone: '',
   });
   const [shopId, setShopId] = useState(null);
-  const [categoryId, setCategoryId] = useState(null); // for product fetch by category
-  const [loadingProducts, setLoadingProducts] = useState(true);
 
   const { cart, cartLoaded, addToCart } = useCart();
   const { user, loadingUser } = useUser();
@@ -42,7 +40,7 @@ const Product = () => {
   const resolveImageUrl = (image) => {
     if (!image) return '';
     if (image.startsWith('http') || image.startsWith('/images/')) return image;
-    return `${API_BASE_URL}/images/${image}`;
+    return `${API_BASE_URL}${image.startsWith('/') ? '' : '/'}${image}`;
   };
 
   // Check vendor status if token exists (no redirect)
@@ -69,7 +67,7 @@ const Product = () => {
     }
   }, [safeShopSlug, navigate]);
 
-  // Fetch shop info without token (get shopId and categoryId)
+  // Fetch shop info without token
   useEffect(() => {
     const fetchShopInfo = async () => {
       if (!safeShopSlug) return;
@@ -83,10 +81,6 @@ const Product = () => {
         }
         const shop = await response.json();
         setShopId(shop.id);
-
-        // Assuming shop.categoryId or default category to fetch products by category
-        // Replace 'categoryId' below with your actual category field name
-        setCategoryId(shop.categoryId || null); 
       } catch (error) {
         console.error('Error fetching shop info:', error);
         navigate('/');
@@ -96,19 +90,13 @@ const Product = () => {
     fetchShopInfo();
   }, [safeShopSlug, navigate]);
 
-  // Fetch products by category ID (instead of shopId)
+  // Fetch products without token
   useEffect(() => {
     const fetchProducts = async () => {
-      if (!categoryId) {
-        setProducts([]);  // clear products if no categoryId
-        setLoadingProducts(false);
-        return;
-      }
+      if (!shopId) return;
 
-      setLoadingProducts(true);
       try {
-        // Use categoryId query param, change endpoint if your backend requires different param
-        const response = await fetch(`${API_BASE_URL}/api/products?categoryId=${categoryId}`);
+        const response = await fetch(`${API_BASE_URL}/api/products?shopId=${shopId}`);
 
         if (!response.ok) {
           throw new Error('Failed to fetch products');
@@ -118,14 +106,11 @@ const Product = () => {
         setProducts(data);
       } catch (error) {
         console.error('Error fetching products:', error);
-        setProducts([]);
-      } finally {
-        setLoadingProducts(false);
       }
     };
 
     fetchProducts();
-  }, [categoryId]);
+  }, [shopId]);
 
   // Fetch addresses only if user & token present
   useEffect(() => {
@@ -211,7 +196,6 @@ const Product = () => {
     if (addr) setTempAddress(addr);
   };
 
-  // Sync quantities from cart when loaded
   useEffect(() => {
     if (!cartLoaded) return;
     const initialQuantities = {};
@@ -221,31 +205,31 @@ const Product = () => {
     setQuantities(initialQuantities);
   }, [cart, cartLoaded]);
 
-  // Group products by subcategory for display
-  const groupedProductsMap = products.reduce((acc, product) => {
-    const sub = product.subcategory || 'Uncategorized';
-    if (!acc[sub]) acc[sub] = [];
-    acc[sub].push(product);
-    return acc;
-  }, {});
+  // Group products by subcategory (or fallback to 'Uncategorized')
+const groupedProductsMap = products.reduce((acc, product) => {
+  const category = product.category_name || 'Uncategorized';
+  if (!acc[category]) acc[category] = [];
+  acc[category].push(product);
+  return acc;
+}, {});
 
-  const groupedProducts = Object.entries(groupedProductsMap)
-    .map(([subcategory, items]) => ({ subcategory, items }))
-    .sort((a, b) => a.subcategory.localeCompare(b.subcategory));
 
-  if (loadingProducts) {
+const groupedProducts = Object.entries(groupedProductsMap)
+  .map(([category, items]) => ({ category, items }))
+  .sort((a, b) => a.category.localeCompare(b.category));
+
+
+  if (products.length === 0) {
     return <div className="loading">Loading fresh picks...</div>;
-  }
-
-  if (!loadingProducts && products.length === 0) {
-    return <div className="loading">No products found.</div>;
   }
 
   return (
     <section className="product-section">
       {!loadingUser && user && (
         <div className="user-profile-banner">
-          <span role="img" aria-label="user" className="user-icon">👤</span>
+          <span role="img" aria-label="user" className="user-icon">
+            👤
+          </span>
           <div className="user-info-container">
             <p>
               Welcome back, <strong>{user.name || user.email?.split('@')[0]}</strong>
@@ -266,10 +250,7 @@ const Product = () => {
                   ))}
                 </select>
                 <br />
-                <button
-                  onClick={() => setShowAddressPopup(true)}
-                  className="edit-btn"
-                >
+                <button onClick={() => setShowAddressPopup(true)} className="edit-btn">
                   ✏️ Edit Address
                 </button>
               </p>
@@ -297,37 +278,37 @@ const Product = () => {
 
       <h1 className="page-title">Explore Fresh Picks</h1>
 
-      {groupedProducts.map(({ subcategory, items }, index) =>
-        items.length > 0 ? (
-          <div
-            key={subcategory}
-            className={`subcategory-section ${index % 2 === 0 ? 'light-bg' : 'dark-bg'}`}
-          >
-            <h2 className="subcategory-title">{subcategory}</h2>
-            <div className="product-grid">
-              {items.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  quantities={quantities}
-                  setQuantities={setQuantities}
-                  cart={cart}
-                  addToCart={addToCart}
-                  resolveImageUrl={resolveImageUrl}
-                  isVendor={isVendor}
-                  safeShopSlug={safeShopSlug}
-                />
-              ))}
-            </div>
-          </div>
-        ) : null
-      )}
+      {groupedProducts.map(({ category, items }, index) =>
+  items.length > 0 ? (
+    <div
+      key={category}
+      className={`category-section ${index % 2 === 0 ? 'light-bg' : 'dark-bg'}`}
+    >
+      <h2 className="category-title">{category}</h2>
+      <div className="product-grid">
+        {items.map((product) => (
+          <ProductCard
+            key={product.id}
+            product={product}
+            quantities={quantities}
+            setQuantities={setQuantities}
+            cart={cart}
+            addToCart={addToCart}
+            resolveImageUrl={resolveImageUrl}
+            isVendor={isVendor}
+            safeShopSlug={safeShopSlug}
+          />
+        ))}
+      </div>
+    </div>
+  ) : null
+)}
+
 
       {Object.keys(cart).length > 0 && (
         <div className="floating-cart" onClick={() => setShowCartPopup(true)}>
           🛒{' '}
-          {Object.values(cart).reduce((sum, item) => sum + item.quantity, 0)} item(s)
-          | ₹
+          {Object.values(cart).reduce((sum, item) => sum + item.quantity, 0)} item(s) | ₹
           {Object.values(cart)
             .reduce((sum, item) => sum + item.quantity * item.price, 0)
             .toFixed(2)}{' '}
@@ -350,7 +331,7 @@ const Product = () => {
                     alt={item.name}
                     className="cart-item-image"
                   />
-                  {item.name} × {item.quantity} = ₹{item.quantity * item.price}
+                  {item.name} × {item.quantity} = ₹{(item.quantity * item.price).toFixed(2)}
                 </li>
               ))}
             </ul>
@@ -394,7 +375,9 @@ const ProductCard = ({
 }) => {
   const hasUnits = Array.isArray(product.units) && product.units.length > 0;
   const [selectedUnit, setSelectedUnit] = useState(hasUnits ? product.units[0] : null);
-  const uniqueKey = hasUnits ? `${product.id}-${selectedUnit?.unit_id}` : product.id;
+
+  // Use unique key per product + unit for quantity tracking
+  const uniqueKey = hasUnits ? `${product.id}-${selectedUnit?.unit_id}` : `${product.id}`;
   const qty = quantities[uniqueKey] || 0;
   const navigate = useNavigate();
 
@@ -446,7 +429,9 @@ const ProductCard = ({
             </button>
           </div>
         ) : (
-          <button className="add-btn-overlay" onClick={handleAdd}>Add</button>
+          <button className="add-btn-overlay" onClick={handleAdd}>
+            Add
+          </button>
         )}
       </div>
 
@@ -465,24 +450,15 @@ const ProductCard = ({
         >
           {product.units.map((unit) => (
             <option key={unit.unit_id} value={unit.unit_id}>
-              {unit.unit} - ₹{unit.price}
+              {unit.name} ₹{unit.price}
             </option>
           ))}
         </select>
       )}
 
-      {!hasUnits && (
-        <p className="product-price">₹{product.price.toFixed(2)}</p>
-      )}
-
-      {isVendor && (
-        <button
-          className="edit-product-btn"
-          onClick={() => navigate(`/${safeShopSlug}/editproduct/${product.id}`)}
-        >
-          ✏️ Edit
-        </button>
-      )}
+      <div className="price-display">
+        ₹{((selectedUnit?.price || product.price) * (qty || 1)).toFixed(2)}
+      </div>
     </div>
   );
 };
