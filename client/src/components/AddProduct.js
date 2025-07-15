@@ -222,7 +222,7 @@ const AddProduct = () => {
         alert('✅ Product added successfully!');
         const effectiveShopSlug = user?.shop_slug;
         console.log('effectiveShopSlug',effectiveShopSlug)
-        navigate(`/${shop_slug}/products`);
+        navigate(`/${effectiveShopSlug}/products`);
       } else {
         const err = await res.json();
         alert(err.message || '❌ Failed to add product');
