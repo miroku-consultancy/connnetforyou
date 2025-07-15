@@ -2,10 +2,12 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import { useCart } from './CartContext';
 import { useUser } from './UserContext';
+import BluetoothPrinter from './BluetoothPrinter'; // ✅ Import printer component
 import './OrderSummary.css';
 
 const OrderSummary = () => {
   const [order, setOrder] = useState(null);
+  const [showPrinter, setShowPrinter] = useState(false);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { shopSlug } = useParams();
@@ -50,11 +52,18 @@ const OrderSummary = () => {
     navigate(`/${shopSlug}/products`);
   };
 
+  const handlePrint = () => {
+    if (!order) {
+      alert('No order data to print.');
+      return;
+    }
+    setShowPrinter(true);
+  };
+
   if (!order) {
     return <div style={{ padding: '2rem' }}>Loading summary...</div>;
   }
 
-  // Minimum order for delivery is 200 (can be made dynamic if needed)
   const MIN_ORDER_FOR_DELIVERY = 200;
   const isTakeawayOrder = Number(order.total) < MIN_ORDER_FOR_DELIVERY;
 
@@ -87,6 +96,8 @@ const OrderSummary = () => {
   return (
     <div className="order-summary">
       <h1>Order Summary</h1>
+
+      {showPrinter && <BluetoothPrinter order={order} />}
 
       {order.orderId && (
         <h4>
@@ -166,9 +177,14 @@ const OrderSummary = () => {
         </div>
       )}
 
-      <button className="go-to-products-btn" onClick={handleGoToProducts}>
-        🛒 Go to Products
-      </button>
+      <div className="summary-actions">
+        {/* <button className="print-btn" onClick={handlePrint}>
+          🖨️ Print Receipt
+        </button> */}
+        <button className="go-to-products-btn" onClick={handleGoToProducts}>
+          🛒 Go to Products
+        </button>
+      </div>
     </div>
   );
 };
