@@ -94,11 +94,11 @@ const Order = () => {
     fetchShopData();
   }, [effectiveShopSlug]);
 
-useEffect(() => {
-  if (cartLoaded && items.length === 0) {
-    navigate(`/${effectiveShopSlug}/products`);
-  }
-}, [cartLoaded, items, navigate, effectiveShopSlug]);
+  useEffect(() => {
+    if (cartLoaded && items.length === 0) {
+      navigate(`/${effectiveShopSlug}/products`);
+    }
+  }, [cartLoaded, items, navigate, effectiveShopSlug]);
 
 
   // Manage takeaway and min order warning based on total
@@ -241,8 +241,8 @@ useEffect(() => {
 
 
   if (!cartLoaded) {
-  return <div className="order-page"><h2>Loading cart...</h2></div>;
-}
+    return <div className="order-page"><h2>Loading cart...</h2></div>;
+  }
 
   if (items.length === 0) return <div className="order-page"><h2>No items in cart to order.</h2></div>;
 
@@ -260,7 +260,12 @@ useEffect(() => {
               onClick={() => setSelectedItem(item)}
             />
             <div className="order-details">
-              <h3>{item.name}</h3>
+              <h3>
+                {item.name}
+                {item.unit && (
+                  <span className="unit-label"> ({item.unit.toUpperCase()})</span>
+                )}
+              </h3>
               <div className="qty-controls">
                 <button onClick={() => handleQtyChange(item, -1)}>−</button>
                 <span>{item.quantity}</span>
@@ -270,6 +275,7 @@ useEffect(() => {
             <div className="order-price">₹{(item.price * item.quantity).toFixed(2)}</div>
           </div>
         ))}
+
       </div>
 
       <div className="order-total">

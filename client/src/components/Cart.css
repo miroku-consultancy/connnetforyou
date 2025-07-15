@@ -141,3 +141,33 @@ h3 {
 .proceed-btn:hover {
   background-color: #3d8c36;
 }
+.item-name-with-unit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.unit-tag {
+  background-color: #f0f0f0;
+  color: #444;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: capitalize;
+  border: 1px solid #ccc;
+}
+
+/* Optional: distinct styles per unit type */
+.unit-tag.half {
+  background-color: #fff3f3;
+  color: #c00;
+  border-color: #f5c2c2;
+}
+
+.unit-tag.full {
+  background-color: #f3fff3;
+  color: #080;
+  border-color: #c2f5c2;
+}

@@ -11,7 +11,6 @@ const Cart = () => {
   const items = Object.values(cart);
   const [visible, setVisible] = useState(false);
 
-  // Show popup for 5 seconds when items change
   useEffect(() => {
     if (items.length > 0) {
       setVisible(true);
@@ -41,17 +40,37 @@ const Cart = () => {
               src={item.image?.startsWith('http') ? item.image : process.env.PUBLIC_URL + item.image}
               alt={item.name}
               className="cart-item-image"
-              style={{ width: '50px', height: '50px', objectFit: 'cover', marginRight: '10px' }}
+              style={{
+                width: '50px',
+                height: '50px',
+                objectFit: 'cover',
+                marginRight: '10px',
+              }}
             />
             <div style={{ flex: 1 }}>
-              <strong>{item.name}</strong> - ₹{item.price} × {item.quantity}
+              <div className="item-name-with-unit">
+                <strong>{item.name}</strong>
+                {item.unit && (
+                  <span className={`unit-tag ${item.unit.toLowerCase()}`}>
+                    {item.unit}
+                  </span>
+                )}
+              </div>
+              ₹{item.price} × {item.quantity}
             </div>
+
             <div className="cart-controls">
-              <button onClick={() => updateQuantity(item.id, -1)} aria-label={`Decrease quantity of ${item.name}`}>
+              <button
+                onClick={() => updateQuantity(item.id, -1)}
+                aria-label={`Decrease quantity of ${item.name}`}
+              >
                 −
               </button>
               <span aria-live="polite" aria-atomic="true">{item.quantity}</span>
-              <button onClick={() => updateQuantity(item.id, 1)} aria-label={`Increase quantity of ${item.name}`}>
+              <button
+                onClick={() => updateQuantity(item.id, 1)}
+                aria-label={`Increase quantity of ${item.name}`}
+              >
                 +
               </button>
             </div>

@@ -324,16 +324,24 @@ const groupedProducts = Object.entries(groupedProductsMap)
             </button>
             <h2>Your Cart</h2>
             <ul>
-              {Object.values(cart).map((item) => (
-                <li key={item.id}>
-                  <img
-                    src={resolveImageUrl(item.image)}
-                    alt={item.name}
-                    className="cart-item-image"
-                  />
-                  {item.name} × {item.quantity} = ₹{(item.quantity * item.price).toFixed(2)}
-                </li>
-              ))}
+             {Object.values(cart).map((item) => (
+  <li key={item.id} className="cart-item-list">
+    <img
+      src={resolveImageUrl(item.image)}
+      alt={item.name}
+      className="cart-item-image"
+    />
+    <div className="cart-item-details">
+      <span className="cart-item-name">{item.name}</span>
+      {item.unit && <span className="unit-label"> ({item.unit.toUpperCase()})</span>}
+      <span className="cart-item-quantity">
+        × {item.quantity}
+      </span>
+    </div>
+    <span className="cart-item-price">₹{(item.quantity * item.price).toFixed(2)}</span>
+  </li>
+))}
+
             </ul>
             <button
               onClick={() => {
@@ -386,7 +394,7 @@ const ProductCard = ({
     const item = {
       ...product,
       id: uniqueKey,
-      unit: selectedUnit?.unit,
+      unit: selectedUnit?.name,
       price,
     };
     addToCart(item, 1);
@@ -399,7 +407,7 @@ const ProductCard = ({
     const item = {
       ...product,
       id: uniqueKey,
-      unit: selectedUnit?.unit,
+      unit: selectedUnit?.name,
       price,
     };
 
@@ -436,6 +444,8 @@ const ProductCard = ({
       </div>
 
       <h3 className="product-name">{product.name}</h3>
+      <p className="product-description">{product.description}</p>
+
 
       {hasUnits && (
         <select
