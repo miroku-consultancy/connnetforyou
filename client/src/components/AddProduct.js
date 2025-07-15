@@ -15,6 +15,7 @@ const AddProduct = () => {
   const [categoryIdMap, setCategoryIdMap] = useState({});
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSubcategory, setSelectedSubcategory] = useState('');
+  const [subcategories, setSubcategories] = useState([]);
 
   const [addingNewUnit, setAddingNewUnit] = useState(false);
   const [newUnitName, setNewUnitName] = useState('');
@@ -49,28 +50,22 @@ const AddProduct = () => {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) setUnitList(data);
-      });
+      .then(data => Array.isArray(data) && setUnitList(data));
 
-    // Fetch categories tree
+    // Fetch categories
     fetch(`${API_BASE_URL}/api/categories`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(res => res.json())
       .then(data => {
-        if (!Array.isArray(data)) {
-          console.error('Invalid category response:', data);
-          return;
-        }
-
+        if (!Array.isArray(data)) return;
         setCategoryTree(data);
+
         const map = {};
         const flatten = (cats) => {
-          if (!Array.isArray(cats)) return;
           cats.forEach(c => {
             map[c.name] = c.id;
-            if (c.children && Array.isArray(c.children)) flatten(c.children);
+            if (c.children) flatten(c.children);
           });
         };
         flatten(data);
@@ -78,6 +73,12 @@ const AddProduct = () => {
       })
       .catch(err => console.error('Failed to load categories:', err));
   }, []);
+
+  // Update subcategory list when selectedCategory changes
+  useEffect(() => {
+    const category = categoryTree.find(cat => cat.name === selectedCategory);
+    setSubcategories(category?.children || []);
+  }, [selectedCategory, categoryTree]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -122,6 +123,7 @@ const AddProduct = () => {
   const handleAddCategory = async () => {
     if (!newCategoryName.trim()) return alert('Category name required');
     const token = localStorage.getItem('authToken');
+
     try {
       const res = await fetch(`${API_BASE_URL}/api/categories`, {
         method: 'POST',
@@ -134,9 +136,15 @@ const AddProduct = () => {
 
       if (res.ok) {
         const newCat = await res.json();
-        setCategoryTree(prev => [...prev, { ...newCat, children: [] }]);
+        const newTreeItem = { ...newCat, children: [] };
+
+        setCategoryTree(prev => [...prev, newTreeItem]);
+        setCategoryIdMap(prev => ({ ...prev, [newCat.name]: newCat.id }));
         setNewCategoryName('');
         setAddingNewCategory(false);
+
+        // Auto-select after state update
+        setTimeout(() => setSelectedCategory(newCat.name), 0);
       } else {
         alert('❌ Failed to add category');
       }
@@ -174,6 +182,7 @@ const AddProduct = () => {
           )
         );
         setCategoryIdMap(prev => ({ ...prev, [newSub.name]: newSub.id }));
+        setSelectedSubcategory(newSub.name); // Auto-select
         setNewSubcategoryName('');
         setAddingNewSubcategory(false);
       } else {
@@ -210,8 +219,8 @@ const AddProduct = () => {
       });
 
       if (res.ok) {
-        alert('✅ Product added or updated successfully!');
-        navigate('/products');
+        alert('✅ Product added successfully!');
+        navigate('/product'); // ✅ Adjusted redirect
       } else {
         const err = await res.json();
         alert(err.message || '❌ Failed to add product');
@@ -224,7 +233,7 @@ const AddProduct = () => {
 
   return (
     <div className="add-product-container">
-      <h2>➕ Add Product or Unit</h2>
+      <h2>➕ Add Product</h2>
       <form onSubmit={handleSubmit} className="add-product-form" encType="multipart/form-data">
         <label>Product Name <span className="required">*</span></label>
         <input type="text" name="name" value={productData.name} onChange={handleInputChange} required />
@@ -232,10 +241,10 @@ const AddProduct = () => {
         <label>Description</label>
         <textarea name="description" value={productData.description} onChange={handleInputChange} />
 
-        <label>Default Price <span className="required">*</span></label>
+        <label>Price <span className="required">*</span></label>
         <input type="number" name="price" value={productData.price} onChange={handleInputChange} required />
 
-        <label>Default Stock <span className="required">*</span></label>
+        <label>Stock <span className="required">*</span></label>
         <input type="number" name="stock" value={productData.stock} onChange={handleInputChange} required />
 
         <label>Barcode (optional)</label>
@@ -252,14 +261,12 @@ const AddProduct = () => {
           />
         )}
 
+        {/* Category */}
         <label>Category <span className="required">*</span></label>
         <div className="category-group">
-          <select value={selectedCategory} onChange={(e) => {
-            setSelectedCategory(e.target.value);
-            setSelectedSubcategory('');
-          }} required>
+          <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} required>
             <option value="">-- Select Category --</option>
-            {Array.isArray(categoryTree) && categoryTree.map(cat => (
+            {categoryTree.map(cat => (
               <option key={cat.id} value={cat.name}>{cat.name}</option>
             ))}
           </select>
@@ -272,11 +279,12 @@ const AddProduct = () => {
           </div>
         )}
 
+        {/* Subcategory */}
         <label>Subcategory <span className="required">*</span></label>
         <div className="category-group">
           <select value={selectedSubcategory} onChange={(e) => setSelectedSubcategory(e.target.value)} required>
             <option value="">-- Select Subcategory --</option>
-            {categoryTree.find(c => c.name === selectedCategory)?.children?.map(sub => (
+            {subcategories.map(sub => (
               <option key={sub.id} value={sub.name}>{sub.name}</option>
             ))}
           </select>
@@ -289,6 +297,7 @@ const AddProduct = () => {
           </div>
         )}
 
+        {/* Unit */}
         <label>Unit <span className="required">*</span></label>
         <div className="unit-input">
           <select name="unit" value={productData.unit} onChange={handleInputChange} required>
@@ -299,7 +308,6 @@ const AddProduct = () => {
           </select>
           <button type="button" onClick={() => setAddingNewUnit(!addingNewUnit)}>➕ Add Unit</button>
         </div>
-
         {addingNewUnit && (
           <div className="new-unit-form">
             <input type="text" placeholder="New Unit Name" value={newUnitName} onChange={(e) => setNewUnitName(e.target.value)} />
@@ -307,6 +315,7 @@ const AddProduct = () => {
           </div>
         )}
 
+        {/* Optional fields */}
         <label>Unit Price (optional)</label>
         <input type="number" name="unitPrice" value={productData.unitPrice} onChange={handleInputChange} />
 
