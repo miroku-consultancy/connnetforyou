@@ -220,7 +220,9 @@ const AddProduct = () => {
 
       if (res.ok) {
         alert('✅ Product added successfully!');
-        navigate('/product'); // ✅ Adjusted redirect
+        const effectiveShopSlug = user?.shop_slug;
+        console.log('effectiveShopSlug',effectiveShopSlug)
+        navigate(`/${shop_slug}/products`);
       } else {
         const err = await res.json();
         alert(err.message || '❌ Failed to add product');
@@ -230,6 +232,7 @@ const AddProduct = () => {
       alert('An error occurred. Please try again.');
     }
   };
+
 
   return (
     <div className="add-product-container">
