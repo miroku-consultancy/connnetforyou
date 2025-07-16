@@ -121,7 +121,7 @@ const DashboardSummary = () => {
               {shop.image_url ? (
                 <img
                   className="shop-image"
-                  src={`https://connnet4you-server.onrender.com/${shop.image_url}`}
+                  src={`https://www.connectfree4u.com/${shop.image_url}`}
                   alt={shop.name || displayName(shop.slug)}
                 />
               ) : (
