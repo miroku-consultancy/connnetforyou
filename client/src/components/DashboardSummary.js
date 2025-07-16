@@ -45,7 +45,6 @@ const DashboardSummary = () => {
               `https://connnet4you-server.onrender.com/api/shops?lat=${latitude}&lng=${longitude}`
             );
             const data = await res.json();
-            console.log('Fetched shops:', data);
             if (Array.isArray(data)) {
               setShops(data);
             } else {
@@ -59,7 +58,7 @@ const DashboardSummary = () => {
         },
         (err) => {
           console.warn('Geolocation error:', err);
-          setShops([]); // default to empty
+          setShops([]);
         }
       );
     } else {
@@ -92,12 +91,41 @@ const DashboardSummary = () => {
   };
   const handleUserInteractionEnd = () => setIsPaused(false);
 
+  const getImageElement = (shop) => {
+    const baseUrl = "https://www.connectfree4u.com/images/shops";
+    const extensions = ['jpeg', 'jpg', 'png'];
+    let attempt = 0;
+
+    return (
+      <img
+        className="shop-image"
+        src={`${baseUrl}/${shop.slug}.${extensions[0]}`}
+        alt={shop.name || displayName(shop.slug)}
+        onError={(e) => {
+          attempt++;
+          if (attempt < extensions.length) {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = `${baseUrl}/${shop.slug}.${extensions[attempt]}`;
+          } else {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = `${baseUrl}/logo.png`;
+          }
+        }}
+      />
+    );
+  };
+
+  const fallbackShops = Object.keys(shopIcons).map((slug) => ({ slug }));
+
   return (
     <div className="dashboard-container">
       <h1 className="dashboard-title">🛒 Welcome to ConnectFREE4U</h1>
       <p className="dashboard-subtitle">
-        {shops.length > 0 ? "Select a shop below to see the product list" : "No nearby shops found."}
+        {shops.length > 0
+          ? "Please enable location access to discover shops near you!"
+          : "No nearby shops found."}
       </p>
+
       <div
         className="carousel-container"
         ref={scrollRef}
@@ -106,7 +134,7 @@ const DashboardSummary = () => {
         onTouchStart={handleUserInteractionStart}
         onTouchEnd={handleUserInteractionEnd}
       >
-        {(shops.length > 0 ? shops : Object.keys(shopIcons).map((slug) => ({ slug }))).map((shop, i) => (
+        {(shops.length > 0 ? shops : fallbackShops).map((shop, i) => (
           <motion.div
             key={shop.slug}
             className={`shop-card ${i === index ? 'active' : ''}`}
@@ -118,15 +146,7 @@ const DashboardSummary = () => {
             transition={{ duration: 0.5, delay: i * 0.1 }}
           >
             <div className="shop-image-placeholder">
-              {shop.image_url ? (
-                <img
-                  className="shop-image"
-                  src={`https://www.connectfree4u.com/${shop.image_url}`}
-                  alt={shop.name || displayName(shop.slug)}
-                />
-              ) : (
-                shopIcons[shop.slug] || "🏬"
-              )}
+              {getImageElement(shop)}
             </div>
             <h2 className="shop-name">{displayName(shop.slug)}</h2>
             {shop.address && <p className="shop-address">{shop.address}</p>}
@@ -136,7 +156,7 @@ const DashboardSummary = () => {
       </div>
 
       <div className="carousel-dots">
-        {(shops.length > 0 ? shops : Object.keys(shopIcons)).map((_, i) => (
+        {(shops.length > 0 ? shops : fallbackShops).map((_, i) => (
           <span key={i} className={`dot ${i === index ? 'active' : ''}`} />
         ))}
       </div>
