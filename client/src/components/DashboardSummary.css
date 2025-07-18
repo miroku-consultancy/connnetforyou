@@ -182,3 +182,10 @@
   /* or simply: color: #333; */
   margin-top: 4px;
 }
+.dashboard-visit-count {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 8px;
+  text-align: center;
+}
+

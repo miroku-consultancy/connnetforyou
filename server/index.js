@@ -67,6 +67,8 @@ app.use('/api/units', unitRoutes);
 app.use('/api', saveFcmTokenRouter);
 
 app.use('/api/categories', categoriesRouter);
+app.use('/api/analytics', require('./routes/analytics'));
+
 // Serve static assets (images and frontend build)
 app.use('/images', express.static(imagesDir));
 app.use(express.static(path.join(__dirname, 'build')));

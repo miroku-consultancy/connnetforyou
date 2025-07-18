@@ -27,8 +27,24 @@ const DashboardSummary = () => {
   const [shops, setShops] = useState([]);
   const [index, setIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [visitCount, setVisitCount] = useState(null); // ✅ visit count
   const { clearAllCarts } = useCart();
   const { setUser } = useUser();
+
+  // ✅ Log visit and fetch total count
+  useEffect(() => {
+    const logVisitAndFetchCount = async () => {
+      try {
+        await fetch('https://connnet4you-server.onrender.com/api/analytics/visit', { method: 'POST' });
+        const res = await fetch('https://connnet4you-server.onrender.com/api/analytics/visit-count');
+        const data = await res.json();
+        setVisitCount(data.count);
+      } catch (err) {
+        console.error('Visit log/fetch error:', err);
+      }
+    };
+    logVisitAndFetchCount();
+  }, []);
 
   useEffect(() => {
     localStorage.removeItem('authToken');
@@ -120,6 +136,9 @@ const DashboardSummary = () => {
   return (
     <div className="dashboard-container">
       <h1 className="dashboard-title">🛒 Welcome to ConnectFREE4U</h1>
+      {visitCount !== null && (
+        <p className="dashboard-visit-count">👁 Total Visits: {visitCount}</p>
+      )}
       <p className="dashboard-subtitle">
         {shops.length > 0
           ? "Please enable location access to discover shops near you!"
