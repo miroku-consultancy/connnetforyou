@@ -62,7 +62,15 @@ const Header = () => {
         <div className="shop-info">
           {shop ? (
             <>
-              <span className="shop-name">{shop.name}</span>
+              <span
+                className="shop-name"
+                style={{
+                  color: shop.name === "ConnectFREE4U" ? "white" : undefined,
+                }}
+              >
+                {shop.name}
+              </span>
+
               {shop.address && <span className="shop-address">{shop.address}</span>}
               {shop.phone === "9643883821" ? (
                 <span className="shop-phone">
