@@ -57,7 +57,7 @@ const ShopQRCodes = () => {
         }}
       >
         {shops.map((shop) => {
-          const url = `${baseUrl}${shop}/login`;
+          const url = `${baseUrl}${shop}/products`;
           return (
             <div
               key={shop}
