@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useUser } from './UserContext';
 import LogoutButton from './LogoutButton';
 
-const MenuBar = () => {
+const MenuBar = ({ closeMenu }) => {
   const { user } = useUser();
   const location = useLocation();
   const shopSlug = location.pathname.split('/')[1] || '';
@@ -32,6 +32,11 @@ const MenuBar = () => {
     }
   }, []);
 
+  const handleLinkClick = () => {
+    setExpandedIndex(null); // close dropdown
+    if (closeMenu) closeMenu(); // collapse mobile menu
+  };
+
   return (
     <ul className="nav-list">
       {navItems.map((itm, idx) => (
@@ -40,7 +45,11 @@ const MenuBar = () => {
           onMouseEnter={() => setExpandedIndex(idx)}
           onMouseLeave={() => setExpandedIndex(null)}
         >
-          <Link to={`/${shopSlug}${itm.id}`} className="dropdown-toggle">
+          <Link
+            to={`/${shopSlug}${itm.id}`}
+            className="dropdown-toggle"
+            onClick={handleLinkClick}
+          >
             {itm.name}
           </Link>
           {expandedIndex === idx && itm.description?.length > 0 && (
@@ -56,31 +65,47 @@ const MenuBar = () => {
       {user && (
         <>
           <li>
-            <Link to={`/${shopSlug}/order-history`} className="dropdown-toggle">
+            <Link
+              to={`/${shopSlug}/order-history`}
+              className="dropdown-toggle"
+              onClick={handleLinkClick}
+            >
               📜 Order History
             </Link>
           </li>
           {isVendor && (
             <>
               <li>
-                <Link to="/vendor/dashboard" className="dropdown-toggle">
+                <Link
+                  to="/vendor/dashboard"
+                  className="dropdown-toggle"
+                  onClick={handleLinkClick}
+                >
                   📊 Vendor Dashboard
                 </Link>
               </li>
               <li>
-                <Link to={`/${shopSlug}/shop-orders`} className="dropdown-toggle">
+                <Link
+                  to={`/${shopSlug}/shop-orders`}
+                  className="dropdown-toggle"
+                  onClick={handleLinkClick}
+                >
                   🛍️ Shop Orders
                 </Link>
               </li>
               <li>
-                <Link to={`/${shopSlug}/admin/add-product`} className="dropdown-toggle">
+                <Link
+                  to={`/${shopSlug}/admin/add-product`}
+                  className="dropdown-toggle"
+                  onClick={handleLinkClick}
+                >
                   ➕ Add Product
                 </Link>
               </li>
             </>
           )}
           <li>
-            <LogoutButton />
+            <LogoutButton onClick={handleLinkClick} />
           </li>
         </>
       )}

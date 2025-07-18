@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from './CartContext';
 import './LogoutButton.css';
 
-const LogoutButton = () => {
+const LogoutButton = ({ onClick }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { clearCart } = useCart();
@@ -15,6 +15,11 @@ const LogoutButton = () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('userId');
     clearCart();
+
+    // ✅ Collapse menu before navigating
+    if (typeof onClick === 'function') {
+      onClick();
+    }
 
     const shopSlug = location.pathname.split('/')[1];
     navigate(shopSlug ? `/${shopSlug}/login` : '/login');

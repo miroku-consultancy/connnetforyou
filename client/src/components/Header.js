@@ -98,8 +98,9 @@ const Header = () => {
 
       {/* Center: MenuBar */}
       <nav className={`nav ${menuOpen ? 'open' : ''}`}>
-        <MenuBar />
+        <MenuBar closeMenu={() => setMenuOpen(false)} />
       </nav>
+      
 
       {/* Right: Shop hours + branding */}
       <div className="right-box">
