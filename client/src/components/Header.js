@@ -64,11 +64,18 @@ const Header = () => {
             <>
               <span className="shop-name">{shop.name}</span>
               {shop.address && <span className="shop-address">{shop.address}</span>}
-              {shop.phone && (
+              {shop.phone === "9643883821" ? (
                 <span className="shop-phone">
-                  📞 <a href={`tel:${shop.phone}`}>{shop.phone}</a>
+                  📧 <a href="mailto:connectfree4u@gmail.com">connectfree4u@gmail.com</a>
                 </span>
+              ) : (
+                shop.phone && (
+                  <span className="shop-phone">
+                    📞 <a href={`tel:${shop.phone}`}>{shop.phone}</a>
+                  </span>
+                )
               )}
+
             </>
           ) : (
             <span>Loading shop info…</span>
