@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useUser } from './UserContext';
 import LogoutButton from './LogoutButton';
+import './MenuBar.css';
 
 const MenuBar = ({ closeMenu }) => {
   const { user } = useUser();
@@ -14,7 +15,7 @@ const MenuBar = ({ closeMenu }) => {
 
   useEffect(() => {
     fetch('https://connnet4you-server.onrender.com/api/navigation')
-      .then(res => (res.ok ? res.json() : Promise.reject()))
+      .then(res => res.ok ? res.json() : Promise.reject())
       .then(data => setNavItems(data.navItems || []))
       .catch(err => console.error('Navigation fetch error:', err));
   }, []);
@@ -33,101 +34,117 @@ const MenuBar = ({ closeMenu }) => {
   }, []);
 
   const handleLinkClick = () => {
-    setExpandedIndex(null); // close dropdown
-    if (closeMenu) closeMenu(); // collapse mobile menu
+    setExpandedIndex(null);
+    if (closeMenu) closeMenu();
   };
 
   return (
     <ul className="nav-list">
-      {navItems.map((itm, idx) => (
+      {/* ✅ User Profile Dropdown */}
+      {user && (
         <li
-          key={idx}
-          onMouseEnter={() => setExpandedIndex(idx)}
+          className="nav-item"
+          onMouseEnter={() => setExpandedIndex('user')}
           onMouseLeave={() => setExpandedIndex(null)}
         >
-          <Link
-            to={`/${shopSlug}${itm.id}`}
-            className="dropdown-toggle"
-            onClick={handleLinkClick}
-          >
-            {itm.name}
-          </Link>
-          {expandedIndex === idx && itm.description?.length > 0 && (
-            <div className="dropdown-content">
-              {itm.description.map((d, i2) => (
-                <div key={i2} className="dropdown-item">{d}</div>
-              ))}
+          <div className="nav-link" style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+            <img
+              src={user.profile_image || '/default-avatar.png'}
+              alt="Avatar"
+              style={{
+                width: '30px',
+                height: '30px',
+                borderRadius: '50%',
+                marginRight: '8px',
+                objectFit: 'cover',
+              }}
+            />
+            {user.name?.split(' ')[0] || 'User'} ▾
+          </div>
+          {expandedIndex === 'user' && (
+            <div className="dropdown">
+              <Link to="/profile" className="dropdown-item" onClick={handleLinkClick}>📝 Edit Profile</Link>
+              <Link to={`/${shopSlug}/order-history`} className="dropdown-item" onClick={handleLinkClick}>📜 Order History</Link>
+              <LogoutButton onClick={handleLinkClick} />
             </div>
           )}
         </li>
+      )}
+
+      {/* ✅ Main Navigation Items from API */}
+      {navItems.map((itm, idx) => (
+        <li key={idx} className="nav-item">
+          <div
+            className="nav-link-wrapper"
+            onMouseEnter={() => setExpandedIndex(idx)}
+            onMouseLeave={() => setExpandedIndex(null)}
+          >
+            <Link to={`/${shopSlug}${itm.id}`} className="nav-link" onClick={handleLinkClick}>
+              {itm.name}
+            </Link>
+            {expandedIndex === idx && itm.description?.length > 0 && (
+              <div className="dropdown">
+                {itm.description.map((d, i2) => (
+                  <div key={i2} className="dropdown-item">{d}</div>
+                ))}
+              </div>
+            )}
+          </div>
+        </li>
       ))}
-      <li>
-        <Link to="/about" className="dropdown-toggle" onClick={handleLinkClick}>
-          ℹ️ About
-        </Link>
-      </li>
-      <li>
-        <Link to="/help" className="dropdown-toggle" onClick={handleLinkClick}>
-          ❓ Help
-        </Link>
-      </li>
-      <li>
-        <Link to="/privacy-policy" className="dropdown-toggle" onClick={handleLinkClick}>
-          🔒 Privacy Policy
-        </Link>
-      </li>
-      <li>
-        <Link to="/terms-of-service" className="dropdown-toggle" onClick={handleLinkClick}>
-          📄 Terms
-        </Link>
+
+      {/* ℹ️ Info Dropdown */}
+      <li className="nav-item">
+        <div
+          className="nav-link-wrapper"
+          onMouseEnter={() => setExpandedIndex('info')}
+          onMouseLeave={() => setExpandedIndex(null)}
+        >
+          <span className="nav-link">ℹ️ Info ▾</span>
+          {expandedIndex === 'info' && (
+            <div className="dropdown">
+              <Link to="/about" className="dropdown-item" onClick={handleLinkClick}>About Us</Link>
+              <Link to="/help" className="dropdown-item" onClick={handleLinkClick}>Help</Link>
+            </div>
+          )}
+        </div>
       </li>
 
-      {user && (
-        <>
-          <li>
-            <Link
-              to={`/${shopSlug}/order-history`}
-              className="dropdown-toggle"
-              onClick={handleLinkClick}
-            >
-              📜 Order History
-            </Link>
-          </li>
-          {isVendor && (
-            <>
-              <li>
-                <Link
-                  to="/vendor/dashboard"
-                  className="dropdown-toggle"
-                  onClick={handleLinkClick}
-                >
-                  📊 Vendor Dashboard
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to={`/${shopSlug}/shop-orders`}
-                  className="dropdown-toggle"
-                  onClick={handleLinkClick}
-                >
-                  🛍️ Shop Orders
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to={`/${shopSlug}/admin/add-product`}
-                  className="dropdown-toggle"
-                  onClick={handleLinkClick}
-                >
-                  ➕ Add Product
-                </Link>
-              </li>
-            </>
+      {/* 🛡️ Legal Dropdown */}
+      <li className="nav-item">
+        <div
+          className="nav-link-wrapper"
+          onMouseEnter={() => setExpandedIndex('legal')}
+          onMouseLeave={() => setExpandedIndex(null)}
+        >
+          <span className="nav-link">🛡️ Legal ▾</span>
+          {expandedIndex === 'legal' && (
+            <div className="dropdown">
+              <Link to="/privacy-policy" className="dropdown-item" onClick={handleLinkClick}>Privacy Policy</Link>
+              <Link to="/terms-of-service" className="dropdown-item" onClick={handleLinkClick}>Terms of Service</Link>
+            </div>
           )}
-          <li>
-            <LogoutButton onClick={handleLinkClick} />
-          </li>
-        </>
+        </div>
+      </li>
+
+      {/* 🛠️ Vendor Tools */}
+      {user && isVendor && (
+        <li className="nav-item">
+          <div
+            className="nav-link-wrapper"
+            onMouseEnter={() => setExpandedIndex('vendor')}
+            onMouseLeave={() => setExpandedIndex(null)}
+          >
+            <span className="nav-link">🛠️ Vendor Tools ▾</span>
+            {expandedIndex === 'vendor' && (
+              <div className="dropdown">
+                <Link to="/vendor/dashboard" className="dropdown-item" onClick={handleLinkClick}>📊 Dashboard</Link>
+                <Link to={`/${shopSlug}/shop-orders`} className="dropdown-item" onClick={handleLinkClick}>🛍️ Shop Orders</Link>
+                <Link to={`/${shopSlug}/admin/add-product`} className="dropdown-item" onClick={handleLinkClick}>➕ Add Product</Link>
+              </div>
+            )}
+          </div>
+        </li>
       )}
     </ul>
   );

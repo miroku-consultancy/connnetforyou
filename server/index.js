@@ -71,6 +71,7 @@ app.use('/api/analytics', require('./routes/analytics'));
 
 // Serve static assets (images and frontend build)
 app.use('/images', express.static(imagesDir));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.static(path.join(__dirname, 'build')));
 
 // Send index.html for all other routes (React Router support)
@@ -78,7 +79,6 @@ app.get(/.*/, (req, res) => {
   console.log('✅ Express serving:', req.originalUrl);
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
-
 // Error handler middleware
 app.use((err, req, res, next) => {
   console.error(err.stack || err);

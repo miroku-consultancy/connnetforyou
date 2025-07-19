@@ -36,6 +36,8 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
 import TermsOfServicePage from './components/TermsOfServicePage';
+import UserProfileForm from './components/UserProfileForm';
+
 
 import {
   requestForToken,
@@ -92,6 +94,7 @@ const AppRoutes = () => (
         <Route path="/help" element={<HelpPage />} />
         <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
         <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+        <Route path="/profile" element={<ProtectedRoute><UserProfileForm /></ProtectedRoute>} />
         {/* <Route path="/:shopSlug/order" element={<OrderPage />} /> */}
       </Routes>
     </main>
