@@ -94,7 +94,8 @@ const AppRoutes = () => (
         <Route path="/help" element={<HelpPage />} />
         <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
         <Route path="/terms-of-service" element={<TermsOfServicePage />} />
-        <Route path="/:shopSlug/profile" element={<ProtectedRoute><UserProfileForm /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><UserProfileForm /></ProtectedRoute>} />
+        
         {/* <Route path="/:shopSlug/order" element={<OrderPage />} /> */}
       </Routes>
     </main>
