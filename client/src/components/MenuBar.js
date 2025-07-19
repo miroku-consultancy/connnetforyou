@@ -49,7 +49,11 @@ const MenuBar = ({ closeMenu }) => {
         >
           <div className="nav-link" style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
             <img
-              src={user.profile_image || '/default-avatar.png'}
+              src={
+                user.profileImage
+                  ? `https://connnet4you-server.onrender.com${user.profileImage}`
+                  : '/default-avatar.png'
+              }
               alt="Avatar"
               style={{
                 width: '30px',

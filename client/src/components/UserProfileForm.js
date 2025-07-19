@@ -1,9 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useUser } from './UserContext';
+import { useNavigate, useParams } from 'react-router-dom'; // import useParams
 import './UserProfileForm.css';
 
 const UserProfileForm = () => {
   const { user, refreshUser } = useUser();
+  const navigate = useNavigate();
+  const { shopSlug } = useParams(); // get shopSlug from URL params
+  const navigationHandled = useRef(false);
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -12,20 +17,33 @@ const UserProfileForm = () => {
     preview: '',
   });
 
-useEffect(() => {
-  if (user) {
-    setFormData({
-      name: user.name || '',
-      email: user.email || '',
-      mobile: user.mobile || '',
-      image: null,
-      preview: user.profileImage
-        ? `https://connnet4you-server.onrender.com${user.profileImage}`
-        : '',
-    });
-  }
-}, [user]);
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        email: user.email || '',
+        mobile: user.mobile || '',
+        image: null,
+        preview: user.profileImage
+          ? `https://connnet4you-server.onrender.com${user.profileImage}`
+          : '',
+      });
+    }
+  }, [user]);
 
+  useEffect(() => {
+    window.history.replaceState({ fromProfileForm: true }, '');
+
+    const onPopState = (e) => {
+      if (e.state?.fromProfileForm && !navigationHandled.current) {
+        navigationHandled.current = true;
+        navigate(`/${shopSlug}/products`, { replace: true }); // Redirect to products page with shopSlug
+      }
+    };
+
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, [navigate, shopSlug]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -65,7 +83,8 @@ useEffect(() => {
 
       if (res.ok) {
         alert('✅ Profile updated successfully');
-        refreshUser(); // Refresh context if needed
+        await refreshUser();
+        navigate(`/${shopSlug}/products`); // Redirect after success with shopSlug
       } else {
         const error = await res.json();
         alert('❌ ' + (error.message || 'Failed to update profile'));
