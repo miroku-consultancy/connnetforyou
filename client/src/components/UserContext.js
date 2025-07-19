@@ -10,29 +10,52 @@ import { jwtDecode } from 'jwt-decode';
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
-  // 🟡 Initial value undefined = loading state
   const [user, setUser] = useState(undefined);
   const [loadingUser, setLoadingUser] = useState(true);
 
-  const refreshUser = useCallback(() => {
+  const refreshUser = useCallback(async () => {
     const token = localStorage.getItem('authToken');
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        if (decoded.exp * 1000 > Date.now()) {
-          setUser(decoded);
-        } else {
-          localStorage.removeItem('authToken');
-          setUser(null);
-        }
-      } catch (err) {
-        console.error('❌ Invalid token', err);
+
+    if (!token) {
+      setUser(null);
+      setLoadingUser(false);
+      return;
+    }
+
+    try {
+      const decoded = jwtDecode(token);
+
+      if (decoded.exp * 1000 < Date.now()) {
         localStorage.removeItem('authToken');
         setUser(null);
+        setLoadingUser(false);
+        return;
       }
-    } else {
+
+      const res = await fetch('https://connnet4you-server.onrender.com/api/users/me', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to fetch user profile');
+      }
+
+      const userData = await res.json();
+
+      setUser({
+        id: userData.id,
+        name: userData.name,
+        email: userData.email,
+        mobile: userData.mobile,
+        profileImage: userData.profile_image, // ✅ normalize field
+      });
+    } catch (err) {
+      console.error('❌ Error loading user:', err);
       setUser(null);
     }
+
     setLoadingUser(false);
   }, []);
 

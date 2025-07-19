@@ -19,10 +19,13 @@ const UserProfileForm = () => {
         email: user.email || '',
         mobile: user.mobile || '',
         image: null,
-        preview: user.profileImage || '',
+        preview: user.profile_image
+          ? `https://connnet4you-server.onrender.com${user.profile_image}`
+          : '',
       });
     }
   }, [user]);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -52,7 +55,7 @@ const UserProfileForm = () => {
     }
 
     try {
-      const res = await fetch('https://connnet4you-server.onrender.com/api/user/update-profile', {
+      const res = await fetch('https://connnet4you-server.onrender.com/api/users/update-profile', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('authToken')}`,
