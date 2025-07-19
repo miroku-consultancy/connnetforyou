@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useUser } from './UserContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import BarcodeScanner from './BarcodeScanner';
 import './AddProduct.css';
 
@@ -10,6 +10,7 @@ const AddProduct = () => {
   const { user } = useUser();
   const navigate = useNavigate();
 
+  const { shopSlug } = useParams();
   const [unitList, setUnitList] = useState([]);
   const [categoryTree, setCategoryTree] = useState([]);
   const [categoryIdMap, setCategoryIdMap] = useState({});
@@ -222,7 +223,7 @@ const AddProduct = () => {
         alert('✅ Product added successfully!');
         const effectiveShopSlug = user?.shop_slug;
         console.log('effectiveShopSlug',effectiveShopSlug)
-        navigate(`/${effectiveShopSlug}/product`);
+        navigate(`/${shopSlug}/products`);
       } else {
         const err = await res.json();
         alert(err.message || '❌ Failed to add product');
