@@ -68,7 +68,7 @@ const PrivacyPolicyPage = () => {
 
         <h2>Contact Us</h2>
         <p>
-          For any questions or concerns about our privacy practices, please reach out to us at <a href="mailto:support@yourapp.com">support@yourapp.com</a>.
+          For any questions or concerns about our privacy practices, please reach out to us at <a href="mailto:connectfree4u.com">connectfree4u.com</a>.
         </p>
       </section>
     </div>

@@ -74,7 +74,7 @@ const TermsOfServicePage = () => {
         <h2>10. Contact Us</h2>
         <p>
           If you have any questions about these Terms, reach out at:{' '}
-          <a href="mailto:support@yourapp.com">support@yourapp.com</a>
+          <a href="mailto:connectfree4u.com">connectfree4u.com</a>
         </p>
       </section>
     </div>
