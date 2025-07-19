@@ -12,19 +12,19 @@ const UserProfileForm = () => {
     preview: '',
   });
 
-  useEffect(() => {
-    if (user) {
-      setFormData({
-        name: user.name || '',
-        email: user.email || '',
-        mobile: user.mobile || '',
-        image: null,
-        preview: user.profile_image
-          ? `https://connnet4you-server.onrender.com${user.profile_image}`
-          : '',
-      });
-    }
-  }, [user]);
+useEffect(() => {
+  if (user) {
+    setFormData({
+      name: user.name || '',
+      email: user.email || '',
+      mobile: user.mobile || '',
+      image: null,
+      preview: user.profileImage
+        ? `https://connnet4you-server.onrender.com${user.profileImage}`
+        : '',
+    });
+  }
+}, [user]);
 
 
   const handleChange = (e) => {
