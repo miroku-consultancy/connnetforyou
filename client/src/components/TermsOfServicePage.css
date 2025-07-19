@@ -1,0 +1,39 @@
+.terms-page {
+  font-family: 'Segoe UI', sans-serif;
+  color: #333;
+  line-height: 1.7;
+}
+
+.terms-hero {
+  background: url('https://source.unsplash.com/1600x500/?contract,agreement') center/cover no-repeat;
+  height: 50vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.terms-overlay {
+  background: rgba(0, 0, 0, 0.6);
+  padding: 2rem;
+  color: #fff;
+  text-align: center;
+}
+
+.terms-content {
+  padding: 3rem 2rem;
+  max-width: 900px;
+  margin: auto;
+  background-color: #fdfdfd;
+}
+
+.terms-content h2 {
+  margin-top: 2rem;
+  color: #007bff;
+}
+
+.terms-content ul {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+  list-style: disc;
+}

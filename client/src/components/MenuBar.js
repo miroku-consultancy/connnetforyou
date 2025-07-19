@@ -61,6 +61,26 @@ const MenuBar = ({ closeMenu }) => {
           )}
         </li>
       ))}
+      <li>
+        <Link to="/about" className="dropdown-toggle" onClick={handleLinkClick}>
+          ℹ️ About
+        </Link>
+      </li>
+      <li>
+        <Link to="/help" className="dropdown-toggle" onClick={handleLinkClick}>
+          ❓ Help
+        </Link>
+      </li>
+      <li>
+        <Link to="/privacy-policy" className="dropdown-toggle" onClick={handleLinkClick}>
+          🔒 Privacy Policy
+        </Link>
+      </li>
+      <li>
+        <Link to="/terms-of-service" className="dropdown-toggle" onClick={handleLinkClick}>
+          📄 Terms
+        </Link>
+      </li>
 
       {user && (
         <>

@@ -1,0 +1,38 @@
+.privacy-page {
+  font-family: 'Segoe UI', sans-serif;
+  color: #333;
+  line-height: 1.7;
+}
+
+.privacy-hero {
+  background: url('https://source.unsplash.com/1600x600/?privacy,data') center/cover no-repeat;
+  height: 60vh;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.privacy-overlay {
+  background: rgba(0, 0, 0, 0.5);
+  padding: 2rem;
+  text-align: center;
+  color: #fff;
+}
+
+.privacy-content {
+  padding: 4rem 2rem;
+  max-width: 900px;
+  margin: auto;
+}
+
+.privacy-content h2 {
+  margin-top: 2rem;
+  color: #007bff;
+}
+
+.privacy-content ul {
+  margin: 1rem 0;
+  padding-left: 1.2rem;
+  list-style: disc;
+}

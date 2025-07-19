@@ -29,10 +29,13 @@ import ConsentPage from './components/ConsentPage';
 import Cart from './components/Cart';
 import DashboardSummary from './components/DashboardSummary';
 import OrderPage from './components/OrderPage';
-
+import About from './components/About';
+import HelpPage from './components/HelpPage';
+import PrivacyPolicyPage from './components/PrivacyPolicyPage';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
+import TermsOfServicePage from './components/TermsOfServicePage';
 
 import {
   requestForToken,
@@ -85,6 +88,10 @@ const AppRoutes = () => (
         <Route path="/qr-codes" element={<ShopQRCodes />} />
         <Route path="/consent" element={<ConsentPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/help" element={<HelpPage />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+        <Route path="/terms-of-service" element={<TermsOfServicePage />} />
         {/* <Route path="/:shopSlug/order" element={<OrderPage />} /> */}
       </Routes>
     </main>
