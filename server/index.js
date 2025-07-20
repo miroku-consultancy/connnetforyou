@@ -25,10 +25,10 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Ensure /images directory exists
-const imagesDir = path.join(__dirname, 'images');
-if (!fs.existsSync(imagesDir)) {
-  fs.mkdirSync(imagesDir);
-  console.log('📁 Created /images directory');
+const uploadssDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+  console.log('📁 Created /uploads directory');
 }
 
 // Allowed origins for CORS
