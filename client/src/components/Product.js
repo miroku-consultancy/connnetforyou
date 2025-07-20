@@ -37,11 +37,30 @@ const Product = () => {
 
   const safeShopSlug = getSafeShopSlug(shopSlug);
 
-  const resolveImageUrl = (image) => {
-    if (!image) return '';
-    if (image.startsWith('http') || image.startsWith('/images/')) return image;
-    return `${API_BASE_URL}${image.startsWith('/') ? '' : '/'}${image}`;
-  };
+const resolveImageUrl = (image) => {
+  if (!image) return '';
+
+  // If image is just filename, prepend /uploads/
+  if (!image.startsWith('/') && !image.startsWith('http')) {
+    image = `/uploads/${image}`;
+  }
+
+  if (image.startsWith('http')) return image;
+
+  // If image is already a path starting with /uploads/, serve via backend URL
+  if (image.startsWith('/uploads/')) {
+    return `${API_BASE_URL}${image}`;
+  }
+
+  // For static public images (like manually added assets in /public/images)
+  if (image.startsWith('/images/')) {
+    return image; // served by frontend static assets
+  }
+
+  return image; // fallback
+};
+
+
 
   // Check vendor status if token exists (no redirect)
   useEffect(() => {
