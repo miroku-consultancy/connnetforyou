@@ -31,6 +31,13 @@ if (!fs.existsSync(uploadsDir)) {
   console.log('📁 Created /uploads directory');
 }
 
+const imagesDir = path.join(__dirname, 'images');
+if (!fs.existsSync(imagesDir)) {
+  fs.mkdirSync(imagesDir);
+  console.log('📁 Created /images directory');
+}
+
+
 // Allowed origins for CORS
 const allowedOrigins = [
   'http://localhost:3000',
