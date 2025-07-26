@@ -43,9 +43,10 @@ router.post('/', authMiddleware, async (req, res) => {
     console.log(`[OrderRoute] Order created with ID: ${orderId}`);
 
     // Get user details
-    const userResult = await pool.query('SELECT name, phone FROM users WHERE id = $1', [userId]);
+    const userResult = await pool.query('SELECT name, mobile FROM users WHERE id = $1', [userId]);
     const userName = userResult.rows[0]?.name || 'A user';
-    const userPhone = userResult.rows[0]?.phone;
+    const userPhone = userResult.rows[0]?.mobile || null;
+
 
     // Format address string
     const addressText = typeof address === 'string'
