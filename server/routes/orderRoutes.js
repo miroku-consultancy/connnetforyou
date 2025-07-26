@@ -8,6 +8,7 @@ const {
 const authMiddleware = require('../middleware/authMiddleware');
 const { sendShopNotification } = require('../utils/notificationService');
 const { sendToClients } = require('./notificationSse'); // SSE handler
+const { sendWhatsappMessage } = require('../utils/whatsappService'); // ✅ ADD THIS LINE
 const pool = require('../db');
 
 const router = express.Router();
@@ -41,25 +42,26 @@ router.post('/', authMiddleware, async (req, res) => {
 
     console.log(`[OrderRoute] Order created with ID: ${orderId}`);
 
-    // Get user name from DB
-    const userResult = await pool.query('SELECT name FROM users WHERE id = $1', [userId]);
+    // Get user details
+    const userResult = await pool.query('SELECT name, phone FROM users WHERE id = $1', [userId]);
     const userName = userResult.rows[0]?.name || 'A user';
+    const userPhone = userResult.rows[0]?.phone;
 
-    // Format address string for message
+    // Format address string
     const addressText = typeof address === 'string'
       ? address
       : address?.street || address?.line1 || address?.address || '';
 
-    // Notify all unique shops involved
+    // Notify shops (SSE + DB)
     const shopIds = [...new Set(items.map(item => item.shopId ?? item.shop_id).filter(Boolean))];
 
     for (const shopId of shopIds) {
       const message = `${userName} has placed an order${addressText ? ` at ${addressText}` : ''}.`;
 
-      // Save in DB
+      // Save notification to DB
       await sendShopNotification({ shopId, message });
 
-      // Real-time push via SSE
+      // Send via Server-Sent Events (SSE)
       sendToClients(shopId, {
         id: Date.now(),
         message,
@@ -68,6 +70,20 @@ router.post('/', authMiddleware, async (req, res) => {
         user_name: userName,
         address: addressText,
       });
+    }
+
+    // ✅ Send WhatsApp confirmation to user
+    if (userPhone) {
+      const msg = `Hi ${userName}, your order #${orderId} totaling ₹${total.toFixed(2)} has been received! We'll notify you when it's ready. Thank you for ordering from ConnectFree4U.`;
+
+      try {
+        await sendWhatsappMessage(userPhone, msg);
+        console.log(`[OrderRoute] ✅ WhatsApp message sent to ${userPhone}`);
+      } catch (err) {
+        console.error(`[OrderRoute] ❌ WhatsApp sending failed:`, err.message);
+      }
+    } else {
+      console.warn(`[OrderRoute] ⚠️ No phone number found for user ID ${userId}, WhatsApp not sent.`);
     }
 
     res.status(201).json({ message: 'Order placed successfully', orderId });

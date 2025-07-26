@@ -20,6 +20,8 @@ const saveFcmTokenRouter = require('./routes/saveFcmToken'); // adjust path
 
 const categoriesRouter = require('./routes/categories');
 
+const whatsappRoutes = require('./routes/whatsapp');
+
 const app = express();
 
 const PORT = process.env.PORT || 5000;
@@ -73,6 +75,7 @@ app.use('/api/notifications', sseRouter);          // ✅ Handles /api/notificat
 app.use('/api/units', unitRoutes);
 app.use('/api', saveFcmTokenRouter);
 
+app.use('/api', whatsappRoutes);
 app.use('/api/categories', categoriesRouter);
 app.use('/api/analytics', require('./routes/analytics'));
 
