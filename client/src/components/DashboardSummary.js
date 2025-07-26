@@ -14,7 +14,8 @@ const shopIcons = {
   "SanjayVegStore": "🥬",
   "Ganga-Medical-hall": "💊",
   "Desi-swaad": "🍛",
-  "Home-chef": "🥮"
+  "Home-chef": "🥮",
+  "TheVegKingFastFood":"🥡"
 };
 
 const displayName = (slug) =>
