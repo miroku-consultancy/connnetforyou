@@ -1,4 +1,4 @@
-const admin = require('../utils/firebaseAdmin'); // or wherever the file is
+const admin = require('./firebaseAdmin'); // or wherever the file is
 const express = require('express');
 const {
   createOrder,
