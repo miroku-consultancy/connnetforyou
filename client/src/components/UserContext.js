@@ -75,7 +75,7 @@ export const UserProvider = ({ children }) => {
       try {
         const token = await requestForToken();
         if (token) {
-          const res = await fetch(`${API_BASE}/api/fcm-token`, {
+          const res = await fetch(`${API_BASE}/api/users/fcm-token`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
