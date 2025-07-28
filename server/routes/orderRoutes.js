@@ -129,4 +129,59 @@ router.get('/shop/:shopId', authMiddleware, async (req, res) => {
   }
 });
 
+// Add this route
+router.patch('/:id/status', authMiddleware, async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  try {
+    const result = await pool.query(
+      'UPDATE orders SET order_status = $1 WHERE id = $2 RETURNING *',
+      [status, id]
+    );
+
+    const updatedOrder = result.rows[0];
+    if (!updatedOrder) return res.status(404).json({ error: 'Order not found' });
+
+    // ✅ Get user's FCM token
+    const tokenResult = await pool.query(
+      'SELECT fcm_token FROM user_tokens WHERE user_id = $1',
+      [updatedOrder.user_id]
+    );
+    const fcmToken = tokenResult.rows[0]?.fcm_token;
+
+    if (fcmToken) {
+      const statusMessages = {
+        Accepted: 'Your order has been accepted! 🧾',
+        'In Transit': 'Your order is on the way! 🚚',
+        Delivered: 'Your order has been delivered! 🎉',
+      };
+
+      const message = {
+        token: fcmToken,
+        notification: {
+          title: 'Order Update',
+          body: statusMessages[status] || `Your order status changed to: ${status}`,
+        },
+        webpush: {
+          notification: {
+            icon: '/favicon.ico',
+            click_action: '/my-orders',
+          },
+        },
+        android: { priority: 'high' },
+      };
+
+      await admin.messaging().send(message);
+      console.log(`✅ Push sent to user ${updatedOrder.user_id}`);
+    }
+
+    res.json({ message: 'Order status updated', order: updatedOrder });
+  } catch (err) {
+    console.error('Order status update error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
 module.exports = router;

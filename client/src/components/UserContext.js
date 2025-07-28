@@ -6,6 +6,9 @@ import React, {
   useCallback,
 } from 'react';
 import { jwtDecode } from 'jwt-decode';
+import { requestForToken } from './firebase-messaging'; // ✅ Import this
+
+const API_BASE = 'https://connnet4you-server.onrender.com';
 
 const UserContext = createContext();
 
@@ -32,7 +35,7 @@ export const UserProvider = ({ children }) => {
         return;
       }
 
-      const res = await fetch('https://connnet4you-server.onrender.com/api/users/me', {
+      const res = await fetch(`${API_BASE}/api/users/me`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -49,7 +52,7 @@ export const UserProvider = ({ children }) => {
         name: userData.name,
         email: userData.email,
         mobile: userData.mobile,
-        profileImage: userData.profile_image, // ✅ normalize field
+        profileImage: userData.profile_image,
       });
     } catch (err) {
       console.error('❌ Error loading user:', err);
@@ -62,6 +65,39 @@ export const UserProvider = ({ children }) => {
   useEffect(() => {
     refreshUser();
   }, [refreshUser]);
+
+  // ✅ Save FCM token when user logs in
+  useEffect(() => {
+    const saveFCMToken = async () => {
+      const authToken = localStorage.getItem('authToken');
+      if (!authToken || !user?.id) return;
+
+      try {
+        const token = await requestForToken();
+        if (token) {
+          const res = await fetch(`${API_BASE}/api/fcm-token`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${authToken}`,
+            },
+            body: JSON.stringify({ fcm_token: token }),
+          });
+
+          if (res.ok) {
+            console.log(`✅ [UserContext] FCM token saved for user ${user.id}`);
+          } else {
+            const errData = await res.json();
+            console.warn(`⚠️ [UserContext] Failed to save FCM token:`, errData);
+          }
+        }
+      } catch (err) {
+        console.error('❌ [UserContext] Error saving FCM token:', err);
+      }
+    };
+
+    saveFCMToken();
+  }, [user?.id]); // 🔁 Only triggers once user is loaded
 
   return (
     <UserContext.Provider value={{ user, setUser, loadingUser, refreshUser }}>

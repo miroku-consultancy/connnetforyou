@@ -6,7 +6,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// Configure multer for profile image upload
+// Multer setup for profile image uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const dir = 'uploads/profiles';
@@ -19,10 +19,9 @@ const storage = multer.diskStorage({
     cb(null, uniqueName);
   }
 });
-
 const upload = multer({ storage });
 
-// ✅ GET /api/user/me (already present)
+// GET /api/users/me - fetch user profile
 router.get('/me', authMiddleware, async (req, res) => {
   const userId = req.user.id || req.user.userId;
 
@@ -31,10 +30,7 @@ router.get('/me', authMiddleware, async (req, res) => {
       'SELECT id, name, email, mobile, profile_image FROM users WHERE id = $1',
       [userId]
     );
-
-    if (!rows.length) {
-      return res.status(404).json({ error: 'User not found' });
-    }
+    if (!rows.length) return res.status(404).json({ error: 'User not found' });
 
     res.json(rows[0]);
   } catch (error) {
@@ -43,33 +39,46 @@ router.get('/me', authMiddleware, async (req, res) => {
   }
 });
 
-// ✅ POST /api/user/update-profile
+// POST /api/users/fcm-token - save or update FCM token
+router.post('/fcm-token', authMiddleware, async (req, res) => {
+  const { fcm_token } = req.body;
+  const userId = req.user.id;
+
+  if (!fcm_token) return res.status(400).json({ error: 'Missing FCM token' });
+
+  try {
+    await pool.query(
+      `INSERT INTO user_tokens (user_id, fcm_token)
+       VALUES ($1, $2)
+       ON CONFLICT (user_id) DO UPDATE SET fcm_token = EXCLUDED.fcm_token`,
+      [userId, fcm_token]
+    );
+    res.sendStatus(200);
+  } catch (err) {
+    console.error('Failed to save FCM token:', err);
+    res.status(500).json({ error: 'Failed to save FCM token' });
+  }
+});
+
+// POST /api/users/update-profile - update profile with optional image upload
 router.post('/update-profile', authMiddleware, upload.single('profileImage'), async (req, res) => {
-  const userId = req.user.id || req.user.userId;
+  const userId = req.user.id;
   const { name, email, mobile } = req.body;
   const imagePath = req.file ? `/uploads/profiles/${req.file.filename}` : null;
 
   try {
     let query, values;
-
     if (imagePath) {
       query = `
-        UPDATE users
-        SET name = $1, email = $2, mobile = $3, profile_image = $4
-        WHERE id = $5
-        RETURNING id, name, email, mobile, profile_image;
-      `;
+        UPDATE users SET name=$1, email=$2, mobile=$3, profile_image=$4 WHERE id=$5
+        RETURNING id, name, email, mobile, profile_image`;
       values = [name, email, mobile, imagePath, userId];
     } else {
       query = `
-        UPDATE users
-        SET name = $1, email = $2, mobile = $3
-        WHERE id = $4
-        RETURNING id, name, email, mobile, profile_image;
-      `;
+        UPDATE users SET name=$1, email=$2, mobile=$3 WHERE id=$4
+        RETURNING id, name, email, mobile, profile_image`;
       values = [name, email, mobile, userId];
     }
-
     const { rows } = await pool.query(query, values);
     res.json({ message: 'Profile updated successfully', user: rows[0] });
   } catch (err) {
