@@ -78,6 +78,7 @@ app.use('/api', saveFcmTokenRouter);
 app.use('/api', whatsappRoutes);
 app.use('/api/categories', categoriesRouter);
 app.use('/api/analytics', require('./routes/analytics'));
+app.use('/api/razorpay', require('./routes/razorpay'));
 
 // Serve static assets (images and frontend build)
 app.use('/images', express.static(imagesDir));
