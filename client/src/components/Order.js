@@ -38,7 +38,7 @@ const Order = () => {
   });
   const [selectedItem, setSelectedItem] = useState(null);
 
-  const isOnlinePaymentDisabled = true;
+  const isOnlinePaymentDisabled = false;
   const [showMinOrderWarning, setShowMinOrderWarning] = useState(false);
   const [isTakeaway, setIsTakeaway] = useState(false);
   const [minOrderValue, setMinOrderValue] = useState(200);
@@ -155,75 +155,151 @@ const Order = () => {
     }
   };
 
-  const handleOrder = async () => {
-    const token = localStorage.getItem('authToken');
+const handleOrder = async () => {
+  const token = localStorage.getItem('authToken');
 
-    // 👉 If no token, redirect to login page
-    if (!token) {
-      navigate(`/${paramShopSlug || 'ConnectFREE4U'}/login?redirect=${window.location.pathname}`);
-      return;
-    }
+  if (!token) {
+    navigate(`/${paramShopSlug || 'ConnectFREE4U'}/login?redirect=${window.location.pathname}`);
+    return;
+  }
 
-    // 👉 If payment method not selected
-    if (!paymentMethod) {
-      alert('Please select a payment method');
-      return;
-    }
+  if (!paymentMethod) {
+    alert('Please select a payment method');
+    return;
+  }
 
-    // 👉 If NOT takeaway, check address
-    if (!isTakeaway) {
-      console.log('isTakeaway', isTakeaway)
-      if (addresses.length === 0 || !address) {
-        alert('Please add your delivery address before placing the order.');
-        setShowAddressPopup(true);
-        return;
-      }
-    }
+  if (!isTakeaway && (addresses.length === 0 || !address)) {
+    alert('Please add your delivery address before placing the order.');
+    setShowAddressPopup(true);
+    return;
+  }
 
-    const orderData = {
-      items: items.map((i) => ({
-        id: i.id,
-        name: i.name,
-        price: i.price,
-        quantity: i.quantity,
-        image: i.image,
-        shopId: i.shopId ?? i.shop_id,
-        unit_id: i.unit_id ?? null,
-        unit_type: i.unit_type ?? null,
-      })),
-      total,
-      address: isTakeaway ? null : address,
-      paymentMethod,
-      takeaway: isTakeaway,
-      orderDate: new Date().toISOString(),
-    };
+  const orderData = {
+    items: items.map((i) => ({
+      id: i.id,
+      name: i.name,
+      price: i.price,
+      quantity: i.quantity,
+      image: i.image,
+      shopId: i.shopId ?? i.shop_id,
+      unit_id: i.unit_id ?? null,
+      unit_type: i.unit_type ?? null,
+    })),
+    total,
+    address: isTakeaway ? null : address,
+    paymentMethod,
+    takeaway: isTakeaway,
+    orderDate: new Date().toISOString(),
+  };
 
+  if (paymentMethod === 'online') {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/orders`, {
+      // 1. Create Razorpay order from backend
+      const razorRes = await fetch(`${API_BASE_URL}/api/razorpay/create-order`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(orderData),
+        body: JSON.stringify({ amount: total }),
       });
 
-      const responseText = await response.text();
+      const razorOrder = await razorRes.json();
 
-      if (!response.ok) {
-        throw new Error(`Failed to place order: ${response.status} ${response.statusText}`);
-      }
+      if (!razorOrder.id) throw new Error('Failed to create Razorpay order');
 
-      const result = JSON.parse(responseText);
-      const fullOrder = { ...orderData, orderId: result.orderId };
-      localStorage.setItem('orderSummary', JSON.stringify(fullOrder));
+      // 2. Open Razorpay popup
+      const options = {
+        key: 'rzp_test_V4nnUsy6IaZrw2', // Make sure this is in your .env
+        amount: razorOrder.amount,
+        currency: 'INR',
+        name: 'ConnectFree4U',
+        description: 'Order Payment',
+        order_id: razorOrder.id,
+        handler: async function (response) {
+          try {
+            // 3. Verify payment
+            const verifyRes = await fetch(`${API_BASE_URL}/api/razorpay/verify-payment`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify(response),
+            });
 
-      navigate(`/${effectiveShopSlug}/order-summary`);
-    } catch (error) {
-      console.error('[handleOrder] Order placement failed:', error);
-      alert('Failed to place order. Please try again.');
+            const verifyResult = await verifyRes.json();
+            if (!verifyResult.success) {
+              alert('Payment verification failed');
+              return;
+            }
+
+            // 4. Place final order
+            const orderResponse = await fetch(`${API_BASE_URL}/api/orders`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify(orderData),
+            });
+
+            const result = await orderResponse.json();
+            if (!orderResponse.ok) throw new Error(result.error || 'Order creation failed');
+
+            const fullOrder = { ...orderData, orderId: result.orderId };
+            localStorage.setItem('orderSummary', JSON.stringify(fullOrder));
+
+            navigate(`/${effectiveShopSlug}/order-summary`);
+          } catch (err) {
+            console.error('[RazorpayHandler] Error:', err);
+            alert('Order failed after payment. Please contact support.');
+          }
+        },
+        prefill: {
+          name: user?.name || '',
+          contact: user?.mobile || '',
+        },
+        theme: {
+          color: '#3399cc',
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+      return;
+
+    } catch (err) {
+      console.error('[Razorpay] Payment flow error:', err);
+      alert('Something went wrong during payment. Please try again.');
+      return;
     }
-  };
+  }
+
+  // COD flow
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/orders`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(orderData),
+    });
+
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Failed to place order');
+
+    const fullOrder = { ...orderData, orderId: result.orderId };
+    localStorage.setItem('orderSummary', JSON.stringify(fullOrder));
+
+    navigate(`/${effectiveShopSlug}/order-summary`);
+  } catch (error) {
+    console.error('[handleOrder] COD flow error:', error);
+    alert('Failed to place order. Please try again.');
+  }
+};
+
 
 
   const handleQtyChange = (item, delta) => {

@@ -38,16 +38,18 @@ router.post('/create-order', async (req, res) => {
 // Add this in routes/razorpay.js, after your /create-order route
 router.post('/verify-payment', async (req, res) => {
   try {
-    const { razorpayPaymentId, razorpayOrderId, razorpaySignature } = req.body;
+    // ✅ Correct keys
+const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
 
-    const generatedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-      .update(`${razorpayOrderId}|${razorpayPaymentId}`)
-      .digest('hex');
+const generatedSignature = crypto
+  .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+  .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+  .digest('hex');
 
-    if (generatedSignature !== razorpaySignature) {
-      return res.status(400).json({ error: 'Invalid signature. Payment verification failed.' });
-    }
+if (generatedSignature !== razorpay_signature) {
+  return res.status(400).json({ error: 'Invalid signature. Payment verification failed.' });
+}
+
 
     // Optionally save payment info to DB here
 
