@@ -155,150 +155,150 @@ const Order = () => {
     }
   };
 
-const handleOrder = async () => {
-  const token = localStorage.getItem('authToken');
+  const handleOrder = async () => {
+    const token = localStorage.getItem('authToken');
 
-  if (!token) {
-    navigate(`/${paramShopSlug || 'ConnectFREE4U'}/login?redirect=${window.location.pathname}`);
-    return;
-  }
+    if (!token) {
+      navigate(`/${paramShopSlug || 'ConnectFREE4U'}/login?redirect=${window.location.pathname}`);
+      return;
+    }
 
-  if (!paymentMethod) {
-    alert('Please select a payment method');
-    return;
-  }
+    if (!paymentMethod) {
+      alert('Please select a payment method');
+      return;
+    }
 
-  if (!isTakeaway && (addresses.length === 0 || !address)) {
-    alert('Please add your delivery address before placing the order.');
-    setShowAddressPopup(true);
-    return;
-  }
+    if (!isTakeaway && (addresses.length === 0 || !address)) {
+      alert('Please add your delivery address before placing the order.');
+      setShowAddressPopup(true);
+      return;
+    }
 
-  const orderData = {
-    items: items.map((i) => ({
-      id: i.id,
-      name: i.name,
-      price: i.price,
-      quantity: i.quantity,
-      image: i.image,
-      shopId: i.shopId ?? i.shop_id,
-      unit_id: i.unit_id ?? null,
-      unit_type: i.unit_type ?? null,
-    })),
-    total,
-    address: isTakeaway ? null : address,
-    paymentMethod,
-    takeaway: isTakeaway,
-    orderDate: new Date().toISOString(),
-  };
+    const orderData = {
+      items: items.map((i) => ({
+        id: i.id,
+        name: i.name,
+        price: i.price,
+        quantity: i.quantity,
+        image: i.image,
+        shopId: i.shopId ?? i.shop_id,
+        unit_id: i.unit_id ?? null,
+        unit_type: i.unit_type ?? null,
+      })),
+      total,
+      address: isTakeaway ? null : address,
+      paymentMethod,
+      takeaway: isTakeaway,
+      orderDate: new Date().toISOString(),
+    };
 
-  if (paymentMethod === 'online') {
+    if (paymentMethod === 'online') {
+      try {
+        // 1. Create Razorpay order from backend
+        const razorRes = await fetch(`${API_BASE_URL}/api/razorpay/create-order`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ amount: total }),
+        });
+
+        const razorOrder = await razorRes.json();
+
+        if (!razorOrder.id) throw new Error('Failed to create Razorpay order');
+
+        // 2. Open Razorpay popup
+        const options = {
+          key: 'rzp_test_V4nnUsy6IaZrw2', // Make sure this is in your .env
+          amount: razorOrder.amount,
+          currency: 'INR',
+          name: 'ConnectFree4U',
+          description: 'Order Payment',
+          order_id: razorOrder.id,
+          handler: async function (response) {
+            try {
+              // 3. Verify payment
+              const verifyRes = await fetch(`${API_BASE_URL}/api/razorpay/verify-payment`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(response),
+              });
+
+              const verifyResult = await verifyRes.json();
+              if (!verifyResult.success) {
+                alert('Payment verification failed');
+                return;
+              }
+
+              // 4. Place final order
+              const orderResponse = await fetch(`${API_BASE_URL}/api/orders`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(orderData),
+              });
+
+              const result = await orderResponse.json();
+              if (!orderResponse.ok) throw new Error(result.error || 'Order creation failed');
+
+              const fullOrder = { ...orderData, orderId: result.orderId };
+              localStorage.setItem('orderSummary', JSON.stringify(fullOrder));
+
+              navigate(`/${effectiveShopSlug}/order-summary`);
+            } catch (err) {
+              console.error('[RazorpayHandler] Error:', err);
+              alert('Order failed after payment. Please contact support.');
+            }
+          },
+          prefill: {
+            name: user?.name || '',
+            contact: user?.mobile || '',
+          },
+          theme: {
+            color: '#3399cc',
+          },
+        };
+
+        const rzp = new window.Razorpay(options);
+        rzp.open();
+        return;
+
+      } catch (err) {
+        console.error('[Razorpay] Payment flow error:', err);
+        alert('Something went wrong during payment. Please try again.');
+        return;
+      }
+    }
+
+    // COD flow
     try {
-      // 1. Create Razorpay order from backend
-      const razorRes = await fetch(`${API_BASE_URL}/api/razorpay/create-order`, {
+      const response = await fetch(`${API_BASE_URL}/api/orders`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ amount: total }),
+        body: JSON.stringify(orderData),
       });
 
-      const razorOrder = await razorRes.json();
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Failed to place order');
 
-      if (!razorOrder.id) throw new Error('Failed to create Razorpay order');
+      const fullOrder = { ...orderData, orderId: result.orderId };
+      localStorage.setItem('orderSummary', JSON.stringify(fullOrder));
 
-      // 2. Open Razorpay popup
-      const options = {
-        key: 'rzp_test_V4nnUsy6IaZrw2', // Make sure this is in your .env
-        amount: razorOrder.amount,
-        currency: 'INR',
-        name: 'ConnectFree4U',
-        description: 'Order Payment',
-        order_id: razorOrder.id,
-        handler: async function (response) {
-          try {
-            // 3. Verify payment
-            const verifyRes = await fetch(`${API_BASE_URL}/api/razorpay/verify-payment`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify(response),
-            });
-
-            const verifyResult = await verifyRes.json();
-            if (!verifyResult.success) {
-              alert('Payment verification failed');
-              return;
-            }
-
-            // 4. Place final order
-            const orderResponse = await fetch(`${API_BASE_URL}/api/orders`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify(orderData),
-            });
-
-            const result = await orderResponse.json();
-            if (!orderResponse.ok) throw new Error(result.error || 'Order creation failed');
-
-            const fullOrder = { ...orderData, orderId: result.orderId };
-            localStorage.setItem('orderSummary', JSON.stringify(fullOrder));
-
-            navigate(`/${effectiveShopSlug}/order-summary`);
-          } catch (err) {
-            console.error('[RazorpayHandler] Error:', err);
-            alert('Order failed after payment. Please contact support.');
-          }
-        },
-        prefill: {
-          name: user?.name || '',
-          contact: user?.mobile || '',
-        },
-        theme: {
-          color: '#3399cc',
-        },
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.open();
-      return;
-
-    } catch (err) {
-      console.error('[Razorpay] Payment flow error:', err);
-      alert('Something went wrong during payment. Please try again.');
-      return;
+      navigate(`/${effectiveShopSlug}/order-summary`);
+    } catch (error) {
+      console.error('[handleOrder] COD flow error:', error);
+      alert('Failed to place order. Please try again.');
     }
-  }
-
-  // COD flow
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/orders`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(orderData),
-    });
-
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.error || 'Failed to place order');
-
-    const fullOrder = { ...orderData, orderId: result.orderId };
-    localStorage.setItem('orderSummary', JSON.stringify(fullOrder));
-
-    navigate(`/${effectiveShopSlug}/order-summary`);
-  } catch (error) {
-    console.error('[handleOrder] COD flow error:', error);
-    alert('Failed to place order. Please try again.');
-  }
-};
+  };
 
 
 
@@ -360,8 +360,9 @@ const handleOrder = async () => {
 
       {isTakeaway ? (
         <div className="takeaway-info" style={{ marginBottom: '1em', color: 'blue' }}>
-          <strong>Your order total is less than ₹{minOrderValue}.</strong> This will be a <em>Takeaway</em> order with payment to be made <strong>directly at the restaurant</strong>.
+          <strong>Your order total is less than ₹{minOrderValue}</strong> — please pick it up from the shop and pay there.
         </div>
+
       ) : (
         addresses.length > 0 ? (
           <div className="address-list">
@@ -436,7 +437,7 @@ const handleOrder = async () => {
             disabled={isOnlinePaymentDisabled}
             onChange={() => setPaymentMethod('online')}
           />
-          Pay Online (Need Subscription)
+          Pay Online (Online payment isn't available — the store needs to activate a subscription.)
         </label>
       </div>
 
