@@ -436,7 +436,7 @@ const handleOrder = async () => {
             disabled={isOnlinePaymentDisabled}
             onChange={() => setPaymentMethod('online')}
           />
-          Pay Online (disabled)
+          Pay Online (Need Subscription)
         </label>
       </div>
 
