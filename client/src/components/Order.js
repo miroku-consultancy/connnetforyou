@@ -210,7 +210,7 @@ const Order = () => {
 
         // 2. Open Razorpay popup
         const options = {
-          key: 'rzp_test_V4nnUsy6IaZrw2', // Make sure this is in your .env
+          key: 'rzp_live_MkghgTdJwmhcuO', // Make sure this is in your .env
           amount: razorOrder.amount,
           currency: 'INR',
           name: 'ConnectFree4U',
