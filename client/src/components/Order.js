@@ -437,7 +437,7 @@ const Order = () => {
             disabled={isOnlinePaymentDisabled}
             onChange={() => setPaymentMethod('online')}
           />
-          Pay Online (Online payment isn't available — the store needs to activate a subscription.)
+          Pay Online (Online payment isn't available for this store — the store needs to contact via Call/Email.)
         </label>
       </div>
 
