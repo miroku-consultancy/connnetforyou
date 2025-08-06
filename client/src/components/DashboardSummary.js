@@ -47,11 +47,11 @@ const DashboardSummary = () => {
     logVisitAndFetchCount();
   }, []);
 
-  useEffect(() => {
-    localStorage.removeItem('authToken');
-    clearAllCarts();
-    setUser(null);
-  }, []);
+  // useEffect(() => {
+  //   localStorage.removeItem('authToken');
+  //   clearAllCarts();
+  //   setUser(null);
+  // }, []);
 
   useEffect(() => {
     if (navigator.geolocation) {
