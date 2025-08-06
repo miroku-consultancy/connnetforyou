@@ -6,6 +6,7 @@ import React, {
   useCallback,
 } from 'react';
 import { jwtDecode } from 'jwt-decode';
+import { refreshAccessToken } from './authHelpers';
 import { requestForToken } from './firebase-messaging'; // ✅ Import this
 
 const API_BASE = 'https://connnet4you-server.onrender.com';
@@ -17,7 +18,7 @@ export const UserProvider = ({ children }) => {
   const [loadingUser, setLoadingUser] = useState(true);
 
   const refreshUser = useCallback(async () => {
-    const token = localStorage.getItem('authToken');
+    let token = localStorage.getItem('authToken');
 
     if (!token) {
       setUser(null);
@@ -29,11 +30,15 @@ export const UserProvider = ({ children }) => {
       const decoded = jwtDecode(token);
 
       if (decoded.exp * 1000 < Date.now()) {
-        localStorage.removeItem('authToken');
-        setUser(null);
-        setLoadingUser(false);
-        return;
+        const newToken = await refreshAccessToken(); // 🔁 Try refreshing
+        if (!newToken) {
+          setUser(null);
+          setLoadingUser(false);
+          return;
+        }
+        token = newToken; // ✅ use new token
       }
+
 
       const res = await fetch(`${API_BASE}/api/users/me`, {
         headers: {

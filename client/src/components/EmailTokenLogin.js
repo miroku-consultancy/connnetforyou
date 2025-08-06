@@ -70,7 +70,8 @@ const EmailTokenLogin = () => {
       });
       const data = await res.json();
       if (res.ok) {
-        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('authToken', data.token);          // access token
+        localStorage.setItem('refreshToken', data.refreshToken); // refresh token ✅
         localStorage.setItem('userId', data.user.id);
         refreshUser();
         toast.success('🎉 Login successful!');

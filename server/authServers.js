@@ -54,7 +54,10 @@ app.post('/api/auth/verify-otp', (req, res) => {
 
   delete tokenStore[email]; // Remove OTP once verified
 
-  const token = jwt.sign({ id: user.id, email: user.email, name: user.name }, process.env.JWT_SECRET, { expiresIn: '1h' });
+  const token = jwt.sign({ id: user.id, email: user.email, name: user.name }, process.env.JWT_SECRET, {
+  // expiresIn: '1h' // ← this is commented out / not included
+});
+
 
   res.json({ message: 'Login successful', token });
 });
