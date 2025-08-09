@@ -27,9 +27,16 @@ router.get('/me', authMiddleware, async (req, res) => {
 
   try {
     const { rows } = await pool.query(
-      'SELECT id, name, email, mobile, profile_image FROM users WHERE id = $1',
+      `SELECT u.id, u.name, u.email, u.mobile, u.profile_image,
+          usr.role, usr.shop_id
+   FROM users u
+   LEFT JOIN user_shop_roles usr
+     ON usr.user_id = u.id
+   WHERE u.id = $1
+   LIMIT 1`,  // optional, in case multiple shop roles exist
       [userId]
     );
+
     if (!rows.length) return res.status(404).json({ error: 'User not found' });
 
     res.json(rows[0]);
