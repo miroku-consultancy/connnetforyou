@@ -15,7 +15,7 @@ const shopIcons = {
   "Ganga-Medical-hall": "💊",
   "Desi-swaad": "🍛",
   "Home-chef": "🥮",
-  "TheVegKingFastFood":"🥡"
+  "TheVegKingFastFood": "🥡"
 };
 
 const displayName = (slug) =>
@@ -135,43 +135,56 @@ const DashboardSummary = () => {
           <p className="dashboard-visit-count">👁 Total Visits: {visitCount}</p>
 
           {/* APK Download Button */}
-          <div style={{ margin: '20px 0', textAlign: 'center' }}>
-  <a
-    href="https://webapp.diawi.com/install/DNHQrx"
-    target="_blank"
-    rel="noopener noreferrer"
-    style={{
-      display: 'inline-block',
-      padding: '14px 36px',
-      background: 'linear-gradient(45deg, #FF6B6B, #FFD93D, #6BCB77, #4D96FF)',
-      backgroundSize: '300% 300%',
-      color: '#fff',
-      fontWeight: '700',
-      fontSize: '18px',
-      borderRadius: '12px',
-      textDecoration: 'none',
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-      boxShadow: '0 4px 15px rgba(255, 107, 107, 0.6)',
-      cursor: 'pointer',
-      userSelect: 'none',
-      letterSpacing: '0.05em',
-      textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-      transition: 'background-position 3s ease, box-shadow 0.3s ease, transform 0.3s ease',
-    }}
-    onMouseEnter={e => {
-      e.currentTarget.style.backgroundPosition = '100% 0';
-      e.currentTarget.style.boxShadow = '0 8px 30px rgba(255, 107, 107, 0.9)';
-      e.currentTarget.style.transform = 'scale(1.1)';
-    }}
-    onMouseLeave={e => {
-      e.currentTarget.style.backgroundPosition = '0 0';
-      e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 107, 107, 0.6)';
-      e.currentTarget.style.transform = 'scale(1)';
-    }}
-  >
-    📲 Download ConnectFree4U Android App (APK)
-  </a>
-</div>
+          {/* APK Download Button with version info */}
+          <div style={{ margin: '20px 0', textAlign: 'center', position: 'relative', display: 'inline-block' }}>
+            <a
+              href="https://webapp.diawi.com/install/DNHQrx"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-block',
+                padding: '14px 36px',
+                background: 'linear-gradient(45deg, #FF6B6B, #FFD93D, #6BCB77, #4D96FF)',
+                backgroundSize: '300% 300%',
+                color: '#fff',
+                fontWeight: '700',
+                fontSize: '18px',
+                borderRadius: '12px',
+                textDecoration: 'none',
+                fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+                boxShadow: '0 4px 15px rgba(255, 107, 107, 0.6)',
+                cursor: 'pointer',
+                userSelect: 'none',
+                letterSpacing: '0.05em',
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                transition: 'background-position 3s ease, box-shadow 0.3s ease, transform 0.3s ease',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.backgroundPosition = '100% 0';
+                e.currentTarget.style.boxShadow = '0 8px 30px rgba(255, 107, 107, 0.9)';
+                e.currentTarget.style.transform = 'scale(1.1)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.backgroundPosition = '0 0';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 107, 107, 0.6)';
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
+            >
+              📲 Install Android App
+            </a>
+            <div style={{
+              position: 'absolute',
+              bottom: '-20px',
+              right: '0',
+              fontSize: '12px',
+              color: '#555',
+              fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+              userSelect: 'none',
+            }}>
+              v1.0 • Updated: 2025-08-14
+            </div>
+          </div>
+
 
 
         </>
