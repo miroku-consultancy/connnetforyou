@@ -28,11 +28,10 @@ const DashboardSummary = () => {
   const [shops, setShops] = useState([]);
   const [index, setIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const [visitCount, setVisitCount] = useState(null); // ✅ visit count
+  const [visitCount, setVisitCount] = useState(null);
   const { clearAllCarts } = useCart();
   const { setUser } = useUser();
 
-  // ✅ Log visit and fetch total count
   useEffect(() => {
     const logVisitAndFetchCount = async () => {
       try {
@@ -46,12 +45,6 @@ const DashboardSummary = () => {
     };
     logVisitAndFetchCount();
   }, []);
-
-  // useEffect(() => {
-  //   localStorage.removeItem('authToken');
-  //   clearAllCarts();
-  //   setUser(null);
-  // }, []);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -138,7 +131,50 @@ const DashboardSummary = () => {
     <div className="dashboard-container">
       <h1 className="dashboard-title">🛒 Welcome to ConnectFREE4U</h1>
       {visitCount !== null && (
-        <p className="dashboard-visit-count">👁 Total Visits: {visitCount}</p>
+        <>
+          <p className="dashboard-visit-count">👁 Total Visits: {visitCount}</p>
+
+          {/* APK Download Button */}
+          <div style={{ margin: '20px 0', textAlign: 'center' }}>
+  <a
+    href="https://webapp.diawi.com/install/DNHQrx"
+    target="_blank"
+    rel="noopener noreferrer"
+    style={{
+      display: 'inline-block',
+      padding: '14px 36px',
+      background: 'linear-gradient(45deg, #FF6B6B, #FFD93D, #6BCB77, #4D96FF)',
+      backgroundSize: '300% 300%',
+      color: '#fff',
+      fontWeight: '700',
+      fontSize: '18px',
+      borderRadius: '12px',
+      textDecoration: 'none',
+      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+      boxShadow: '0 4px 15px rgba(255, 107, 107, 0.6)',
+      cursor: 'pointer',
+      userSelect: 'none',
+      letterSpacing: '0.05em',
+      textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+      transition: 'background-position 3s ease, box-shadow 0.3s ease, transform 0.3s ease',
+    }}
+    onMouseEnter={e => {
+      e.currentTarget.style.backgroundPosition = '100% 0';
+      e.currentTarget.style.boxShadow = '0 8px 30px rgba(255, 107, 107, 0.9)';
+      e.currentTarget.style.transform = 'scale(1.1)';
+    }}
+    onMouseLeave={e => {
+      e.currentTarget.style.backgroundPosition = '0 0';
+      e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 107, 107, 0.6)';
+      e.currentTarget.style.transform = 'scale(1)';
+    }}
+  >
+    📲 Download ConnectFree4U Android App (APK)
+  </a>
+</div>
+
+
+        </>
       )}
       <p className="dashboard-subtitle">
         {shops.length > 0
