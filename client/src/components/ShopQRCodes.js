@@ -194,7 +194,8 @@ const shops = [
   "Vow-vista",
   "Desi-swaad",
   "Home-chef",
-  "TheVegKingFastFood"
+  "TheVegKingFastFood",
+  "Zerocollection"
 ];
 
 const baseUrl = "https://www.connectfree4u.com/#/";
