@@ -16,7 +16,7 @@ const shopIcons = {
   "Desi-swaad": "🍛",
   "Home-chef": "🥮",
   "TheVegKingFastFood": "🥡",
-  "Zerocollection": "🌅",
+  "ZeroCollection": "🌅",
 };
 
 const displayName = (slug) =>
