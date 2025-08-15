@@ -15,7 +15,8 @@ const shopIcons = {
   "Ganga-Medical-hall": "💊",
   "Desi-swaad": "🍛",
   "Home-chef": "🥮",
-  "TheVegKingFastFood": "🥡"
+  "TheVegKingFastFood": "🥡",
+  "Zerocollection": "🌅",
 };
 
 const displayName = (slug) =>

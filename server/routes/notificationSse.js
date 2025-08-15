@@ -23,21 +23,27 @@ async function sendToClients(shopId, data) {
 
   for (const { fcm_token } of result.rows) {
     const message = {
-      token: fcm_token,
-      notification: {
-        title: '🛒 New Order Received',
-        body: data.message || 'You have a new order!',
-      },
-      webpush: {
-        notification: {
-          icon: '/favicon.ico',
-          tag: 'shop-order',
-          click_action: `/shop-orders`,
-        },
-        headers: { Urgency: 'high' },
-      },
-      android: { priority: 'high' },
-    };
+  token: fcm_token,
+  notification: {
+    title: '🛒 New Order Received',
+    body: data.message || 'You have a new order!',
+  },
+  webpush: {
+    notification: {
+      icon: '/favicon.ico',
+      tag: 'shop-order',
+      click_action: `/shop-orders`,
+    },
+    headers: { Urgency: 'high' },
+  },
+  android: {
+    priority: 'high',
+    notification: {
+      sound: 'order', // 🔊 This makes it ring
+    },
+  },
+};
+
 
     try {
       const resp = await admin.messaging().send(message);
