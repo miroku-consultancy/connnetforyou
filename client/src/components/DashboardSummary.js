@@ -16,7 +16,7 @@ const shopIcons = {
   "Desi-swaad": "🍛",
   "Home-chef": "🥮",
   "TheVegKingFastFood": "🥡",
-  "ZeroCollection": "🌅",
+  "Zerocollection": "🌅",
 };
 
 const displayName = (slug) =>
@@ -139,7 +139,7 @@ const DashboardSummary = () => {
           {/* APK Download Button with version info */}
           <div style={{ margin: '20px 0', textAlign: 'center', position: 'relative', display: 'inline-block' }}>
             <a
-              href="https://webapp.diawi.com/install/DNHQrx"
+              href="https://play.google.com/store/apps/details?id=com.connectfree4u.connectfree4u"
               target="_blank"
               rel="noopener noreferrer"
               style={{
