@@ -393,7 +393,7 @@ const [selectedVariant, setSelectedVariant] = useState(hasVariants ? product.var
   const handleAdd = () => {
     // const price = selectedUnit?.price || product.price;
     // const item = { ...product, id: uniqueKey, unit: selectedUnit?.name, price };
-    const price = selectedVariant?.price || product.price;
+    const price = Number(selectedVariant?.price) || Number(product.price) || 0;
 const item = {
   ...product,
   id: `${product.id}-${selectedVariant?.size?.id || ''}-${selectedVariant?.color?.id || ''}-${selectedVariant?.unit?.id || ''}`,
@@ -412,7 +412,7 @@ const item = {
     // const price = selectedUnit?.price || product.price;
     // const item = { ...product, id: uniqueKey, unit: selectedUnit?.name, price };
     
-    const price = selectedVariant?.price || product.price;
+    const price = Number(selectedVariant?.price) || Number(product.price) || 0;
 const item = {
   ...product,
   id: `${product.id}-${selectedVariant?.size?.id || ''}-${selectedVariant?.color?.id || ''}-${selectedVariant?.unit?.id || ''}`,
@@ -575,8 +575,7 @@ const item = {
 
       <div className="price-display">
         {/* ₹{((selectedUnit?.price || product.price) * (qty || 1)).toFixed(2)} */}
-        ₹{((selectedVariant?.price || product.price) * (qty || 1)).toFixed(2)}
-
+        ₹{(Number(selectedVariant?.price || product.price) * (qty || 1)).toFixed(2)}
       </div>
     </div>
   );
