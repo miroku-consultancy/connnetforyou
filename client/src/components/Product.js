@@ -534,41 +534,33 @@ const item = {
     )}
 
     {/* Unit selector */}
-    {product.variants.some(v => v.unit) && (
-      <select
-        value={selectedVariant?.unit?.id || ''}
-        onChange={(e) => {
-          const unitId = Number(e.target.value);
-          const matched = product.variants.find(
-            (v) => v.unit?.id === unitId &&
-                   (!selectedVariant?.size || v.size?.id === selectedVariant.size?.id) &&
-                   (!selectedVariant?.color || v.color?.id === selectedVariant.color?.id)
-          );
-          if (matched) setSelectedVariant(matched);
-        }}
-        className="variant-select"
-      >
-        {/* {[...new Set(product.variants.map((v) => v.unit?.id))]
-          .filter(Boolean)
-          .map((id) => {
-            const unit = product.variants.find((v) => v.unit?.id === id)?.unit;
-            return <option key={id} value={id}>{unit?.name} ₹{unit?.price || 0}</option>;
-          })} */}
-          {[...new Set(product.variants.map((v) => v.unit?.id))]
-  .filter(Boolean)
-  .map((id) => {
-    const foundVariant = product.variants.find((v) => v.unit?.id === id);
-    const unit = foundVariant?.unit;
-    const price = Number(foundVariant?.price) || 0;  // convert to number safely
-    return (
-      <option key={id} value={id}>
-        {unit?.name} ₹{price.toFixed(2)}
-      </option>
-    );
-  })}
+    {/* {product.variants.some(v => v.unit) && ( */}
+{product.variants.some(v => v.unit) && !product.variants.some(v => v.size || v.color) && (
+  <select
+    value={selectedVariant?.unit?.id || ''}
+    onChange={(e) => {
+      const unitId = Number(e.target.value);
+      const matched = product.variants.find(v => v.unit?.id === unitId);
+      if (matched) setSelectedVariant(matched);
+    }}
+    className="variant-select"
+  >
+    {[...new Set(product.variants.map((v) => v.unit?.id))]
+      .filter(Boolean)
+      .map((id) => {
+        const foundVariant = product.variants.find((v) => v.unit?.id === id);
+        const unit = foundVariant?.unit;
+        const price = Number(foundVariant?.price) || 0;
 
-      </select>
-    )}
+        return unit ? (
+          <option key={id} value={id}>
+            {unit.name} ₹{price.toFixed(2)}
+          </option>
+        ) : null;
+      })}
+  </select>
+)}
+
   </>
 )}
 
