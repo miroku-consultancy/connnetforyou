@@ -4,9 +4,23 @@ import { useCart } from './CartContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useUser } from './UserContext';
 import AddressPopup from './AddressPopup';
-import { jwtDecode } from 'jwt-decode'; // fixed import (jwtDecode default export)
+import { jwtDecode } from 'jwt-decode';
 
 const API_BASE_URL = 'https://connnet4you-server.onrender.com';
+
+const CartImageCarousel = ({ imageList, resolveImageUrl, name }) => {
+  const firstImage = imageList?.[0] || '';
+
+  return (
+    <div className="cart-image-carousel">
+      <img
+        src={resolveImageUrl(firstImage)}
+        alt={name}
+        className="cart-item-image"
+      />
+    </div>
+  );
+};
 
 const Product = () => {
   const [isVendor, setIsVendor] = useState(false);
@@ -37,32 +51,47 @@ const Product = () => {
 
   const safeShopSlug = getSafeShopSlug(shopSlug);
 
-const resolveImageUrl = (image) => {
-  if (!image) return '';
+  const resolveImageUrl = (image) => {
+    if (!image) return '';
+    if (!image.startsWith('/') && !image.startsWith('http')) {
+      image = `/uploads/${image}`;
+    }
+    if (image.startsWith('http')) return image;
+    if (image.startsWith('/uploads/')) {
+      return `${API_BASE_URL}${image}`;
+    }
+    if (image.startsWith('/images/')) {
+      return image;
+    }
+    return image;
+  };
 
-  // If image is just filename, prepend /uploads/
-  if (!image.startsWith('/') && !image.startsWith('http')) {
-    image = `/uploads/${image}`;
+  const parseImageList = (image) => {
+    if (!image) return [];
+    try {
+      const parsed = JSON.parse(image);
+      if (Array.isArray(parsed)) return parsed;
+      return [parsed];
+    } catch (err) {
+      try {
+        const cleanImage = image.trim().replace(/^["']|["']$/g, '');
+        const parsedAgain = JSON.parse(cleanImage);
+        if (Array.isArray(parsedAgain)) return parsedAgain;
+        return [parsedAgain];
+      } catch {
+        return [image];
+      }
+    }
+  };
+
+  // decode HTML entities
+  function decodeHtmlEntities(text) {
+    const textArea = document.createElement('textarea');
+    textArea.innerHTML = text;
+    return textArea.value;
   }
 
-  if (image.startsWith('http')) return image;
-
-  // If image is already a path starting with /uploads/, serve via backend URL
-  if (image.startsWith('/uploads/')) {
-    return `${API_BASE_URL}${image}`;
-  }
-
-  // For static public images (like manually added assets in /public/images)
-  if (image.startsWith('/images/')) {
-    return image; // served by frontend static assets
-  }
-
-  return image; // fallback
-};
-
-
-
-  // Check vendor status if token exists (no redirect)
+  // Check vendor status
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
@@ -78,7 +107,6 @@ const resolveImageUrl = (image) => {
     }
   }, []);
 
-  // Redirect if invalid shopSlug
   useEffect(() => {
     if (!safeShopSlug) {
       alert('Invalid shop URL.');
@@ -86,11 +114,10 @@ const resolveImageUrl = (image) => {
     }
   }, [safeShopSlug, navigate]);
 
-  // Fetch shop info without token
+  // Fetch shop info
   useEffect(() => {
     const fetchShopInfo = async () => {
       if (!safeShopSlug) return;
-
       try {
         const response = await fetch(`${API_BASE_URL}/api/shops/${safeShopSlug}`);
         if (!response.ok) {
@@ -105,66 +132,51 @@ const resolveImageUrl = (image) => {
         navigate('/');
       }
     };
-
     fetchShopInfo();
   }, [safeShopSlug, navigate]);
 
-  // Fetch products without token
+  // Fetch products
   useEffect(() => {
     const fetchProducts = async () => {
       if (!shopId) return;
-
       try {
         const response = await fetch(`${API_BASE_URL}/api/products?shopId=${shopId}`);
-
         if (!response.ok) {
           throw new Error('Failed to fetch products');
         }
-
         const data = await response.json();
         setProducts(data);
       } catch (error) {
         console.error('Error fetching products:', error);
       }
     };
-
     fetchProducts();
   }, [shopId]);
 
-  // Fetch addresses only if user & token present
+  // Fetch addresses
   useEffect(() => {
     const fetchAddresses = async () => {
       const token = localStorage.getItem('authToken');
       if (!token || !user?.id) return;
-
       try {
         const response = await fetch(`${API_BASE_URL}/api/address`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-
         if (response.ok) {
           const data = await response.json();
           setAddresses(data);
-
           if (data.length > 0) {
             setSelectedAddressId(data[0].id);
-            setTempAddress(data[0]);
+            setTempAddress(data);
           } else {
             setSelectedAddressId(null);
-            setTempAddress({
-              name: '',
-              street: '',
-              city: '',
-              zip: '',
-              phone: '',
-            });
+            setTempAddress({ name: '', street: '', city: '', zip: '', phone: '' });
           }
         }
       } catch (error) {
         console.error('Error fetching addresses:', error);
       }
     };
-
     if (user?.id) {
       fetchAddresses();
     }
@@ -177,7 +189,6 @@ const resolveImageUrl = (image) => {
         alert('Please log in to save address.');
         return;
       }
-
       const response = await fetch(`${API_BASE_URL}/api/address`, {
         method: 'POST',
         headers: {
@@ -186,21 +197,18 @@ const resolveImageUrl = (image) => {
         },
         body: JSON.stringify(tempAddress),
       });
-
       if (!response.ok) throw new Error('Failed to save address');
       const savedAddress = await response.json();
 
       const updatedRes = await fetch(`${API_BASE_URL}/api/address`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
       if (updatedRes.ok) {
         const updatedAddresses = await updatedRes.json();
         setAddresses(updatedAddresses);
         setSelectedAddressId(savedAddress.id);
         setTempAddress(savedAddress);
       }
-
       setShowAddressPopup(false);
     } catch (error) {
       console.error('Error saving address:', error);
@@ -224,19 +232,16 @@ const resolveImageUrl = (image) => {
     setQuantities(initialQuantities);
   }, [cart, cartLoaded]);
 
-  // Group products by subcategory (or fallback to 'Uncategorized')
-const groupedProductsMap = products.reduce((acc, product) => {
-  const category = product.category_name || 'Uncategorized';
-  if (!acc[category]) acc[category] = [];
-  acc[category].push(product);
-  return acc;
-}, {});
+  const groupedProductsMap = products.reduce((acc, product) => {
+    const category = product.category_name || 'Uncategorized';
+    if (!acc[category]) acc[category] = [];
+    acc[category].push(product);
+    return acc;
+  }, {});
 
-
-const groupedProducts = Object.entries(groupedProductsMap)
-  .map(([category, items]) => ({ category, items }))
-  .sort((a, b) => a.category.localeCompare(b.category));
-
+  const groupedProducts = Object.entries(groupedProductsMap)
+    .map(([category, items]) => ({ category, items }))
+    .sort((a, b) => a.category.localeCompare(b.category));
 
   if (products.length === 0) {
     return <div className="loading">Loading fresh picks...</div>;
@@ -244,24 +249,16 @@ const groupedProducts = Object.entries(groupedProductsMap)
 
   return (
     <section className="product-section">
+      {/* user welcome + address */}
       {!loadingUser && user && (
         <div className="user-profile-banner">
-          <span role="img" aria-label="user" className="user-icon">
-            👤
-          </span>
+          <span role="img" aria-label="user" className="user-icon">👤</span>
           <div className="user-info-container">
-            <p>
-              Welcome back, <strong>{user.name || user.email?.split('@')[0]}</strong>
-            </p>
-
+            <p>Welcome back, <strong>{user.name || user.email?.split('@')[0]}</strong></p>
             {addresses.length > 0 ? (
               <p className="user-address-banner">
                 <strong>Delivering to:</strong>{' '}
-                <select
-                  value={selectedAddressId || ''}
-                  onChange={handleAddressSelect}
-                  className="address-select"
-                >
+                <select value={selectedAddressId || ''} onChange={handleAddressSelect} className="address-select">
                   {addresses.map((addr) => (
                     <option key={addr.id} value={addr.id}>
                       {addr.name}, {addr.street}, {addr.city} - {addr.zip} (📞 {addr.phone})
@@ -269,27 +266,17 @@ const groupedProducts = Object.entries(groupedProductsMap)
                   ))}
                 </select>
                 <br />
-                <button onClick={() => setShowAddressPopup(true)} className="edit-btn">
-                  ✏️ Edit Address
-                </button>
+                <button onClick={() => setShowAddressPopup(true)} className="edit-btn">✏️ Edit Address</button>
               </p>
             ) : (
               <button
                 onClick={() => {
-                  setTempAddress({
-                    name: '',
-                    street: '',
-                    city: '',
-                    zip: '',
-                    phone: '',
-                  });
+                  setTempAddress({ name: '', street: '', city: '', zip: '', phone: '' });
                   setSelectedAddressId(null);
                   setShowAddressPopup(true);
                 }}
                 className="edit-btn"
-              >
-                ➕ Add Address
-              </button>
+              >➕ Add Address</button>
             )}
           </div>
         </div>
@@ -298,80 +285,65 @@ const groupedProducts = Object.entries(groupedProductsMap)
       <h1 className="page-title">Explore Fresh Picks</h1>
 
       {groupedProducts.map(({ category, items }, index) =>
-  items.length > 0 ? (
-    <div
-      key={category}
-      className={`category-section ${index % 2 === 0 ? 'light-bg' : 'dark-bg'}`}
-    >
-      <h2 className="category-title diamond-bg">{category}</h2>
-      <div className="product-grid">
-        {items.map((product) => (
-          <ProductCard
-            key={product.id}
-            product={product}
-            quantities={quantities}
-            setQuantities={setQuantities}
-            cart={cart}
-            addToCart={addToCart}
-            resolveImageUrl={resolveImageUrl}
-            isVendor={isVendor}
-            safeShopSlug={safeShopSlug}
-          />
-        ))}
-      </div>
-    </div>
-  ) : null
-)}
+        items.length > 0 ? (
+          <div key={category} className={`category-section ${index % 2 === 0 ? 'light-bg' : 'dark-bg'}`}>
+            <h2 className="category-title diamond-bg">{category}</h2>
+            <div className="product-grid">
+              {items.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  quantities={quantities}
+                  setQuantities={setQuantities}
+                  cart={cart}
+                  addToCart={addToCart}
+                  resolveImageUrl={resolveImageUrl}
+                  isVendor={isVendor}
+                  safeShopSlug={safeShopSlug}
+                  parseImageList={parseImageList}
+                />
+              ))}
+            </div>
+          </div>
+        ) : null
+      )}
 
-
+      {/* floating cart */}
       {Object.keys(cart).length > 0 && (
         <div className="floating-cart" onClick={() => setShowCartPopup(true)}>
-          🛒{' '}
-          {Object.values(cart).reduce((sum, item) => sum + item.quantity, 0)} item(s) | ₹
-          {Object.values(cart)
-            .reduce((sum, item) => sum + item.quantity * item.price, 0)
-            .toFixed(2)}{' '}
-          → View Cart
+          🛒 {Object.values(cart).reduce((sum, item) => sum + item.quantity, 0)} item(s) | ₹
+          {Object.values(cart).reduce((sum, item) => sum + item.quantity * item.price, 0).toFixed(2)} → View Cart
         </div>
       )}
 
+      {/* cart popup */}
       {showCartPopup && (
         <div className="cart-popup" onClick={() => setShowCartPopup(false)}>
           <div className="cart-popup-content" onClick={(e) => e.stopPropagation()}>
-            <button className="cart-close-btn" onClick={() => setShowCartPopup(false)}>
-              &times;
-            </button>
+            <button className="cart-close-btn" onClick={() => setShowCartPopup(false)}>&times;</button>
             <h2>Your Cart</h2>
             <ul>
-             {Object.values(cart).map((item) => (
-  <li key={item.id} className="cart-item-list">
-    <img
-      src={resolveImageUrl(item.image)}
-      alt={item.name}
-      className="cart-item-image"
-    />
-    <div className="cart-item-details">
-      <span className="cart-item-name">{item.name}</span>
-      {item.unit && <span className="unit-label"> ({item.unit.toUpperCase()})</span>}
-      <span className="cart-item-quantity">
-        × {item.quantity}
-      </span>
-    </div>
-    <span className="cart-item-price">₹{(item.quantity * item.price).toFixed(2)}</span>
-  </li>
-))}
+              {Object.values(cart).map((item) => (
+                <li key={item.id} className="cart-item-list">
+                  <CartImageCarousel imageList={parseImageList(item.image)} resolveImageUrl={resolveImageUrl} name={item.name} />
+                  <div className="cart-item-details">
+                    <span className="cart-item-name">{item.name}</span>
+                    {/* {item.unit && <span className="unit-label"> ({item.unit.toUpperCase()})</span>} */}
+                    {(item.size || item.color || item.unit) && (
+  <span className="unit-label">
+    {' ('}
+    {[item.size, item.color, item.unit].filter(Boolean).join(', ')}
+    {')'}
+  </span>
+)}
 
+                    <span className="cart-item-quantity"> × {item.quantity}</span>
+                  </div>
+                  <span className="cart-item-price">₹{(item.quantity * item.price).toFixed(2)}</span>
+                </li>
+              ))}
             </ul>
-            <button
-              onClick={() => {
-                if (!user) {
-                  navigate(`/${safeShopSlug}/order`);
-                } else {
-                  navigate(`/${safeShopSlug}/order`);
-                }
-              }}
-              className="login-btn"
-            >
+            <button onClick={() => navigate(`/${safeShopSlug}/order`)} className="login-btn">
               Proceed to Order
             </button>
           </div>
@@ -399,36 +371,56 @@ const ProductCard = ({
   resolveImageUrl,
   isVendor,
   safeShopSlug,
+  parseImageList,
 }) => {
-  const hasUnits = Array.isArray(product.units) && product.units.length > 0;
-  const [selectedUnit, setSelectedUnit] = useState(hasUnits ? product.units[0] : null);
+  // const hasUnits = Array.isArray(product.units) && product.units.length > 0;
+  // const [selectedUnit, setSelectedUnit] = useState(hasUnits ? product.units[0] : null);
+  const hasVariants = Array.isArray(product.variants) && product.variants.length > 0;
+const [selectedVariant, setSelectedVariant] = useState(hasVariants ? product.variants[0] : null);
 
-  // Use unique key per product + unit for quantity tracking
-  const uniqueKey = hasUnits ? `${product.id}-${selectedUnit?.unit_id}` : `${product.id}`;
+
+
+  // const uniqueKey = hasUnits ? `${product.id}-${selectedUnit?.unit_id}` : `${product.id}`;
+  const uniqueKey = hasVariants
+  ? `${product.id}-${selectedVariant?.size?.id || ''}-${selectedVariant?.color?.id || ''}-${selectedVariant?.unit?.id || ''}`
+  : `${product.id}`;
+
   const qty = quantities[uniqueKey] || 0;
-  const navigate = useNavigate();
+
+  const imageList = parseImageList(product.image);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const handleAdd = () => {
-    const price = selectedUnit?.price || product.price;
-    const item = {
-      ...product,
-      id: uniqueKey,
-      unit: selectedUnit?.name,
-      price,
-    };
+    // const price = selectedUnit?.price || product.price;
+    // const item = { ...product, id: uniqueKey, unit: selectedUnit?.name, price };
+    const price = selectedVariant?.price || product.price;
+const item = {
+  ...product,
+  id: `${product.id}-${selectedVariant?.size?.id || ''}-${selectedVariant?.color?.id || ''}-${selectedVariant?.unit?.id || ''}`,
+  unit: selectedVariant?.unit?.name,
+  size: selectedVariant?.size?.name,
+  color: selectedVariant?.color?.name,
+  price
+};
+
     addToCart(item, 1);
     setQuantities((prev) => ({ ...prev, [uniqueKey]: 1 }));
   };
 
   const handleQtyChange = (delta) => {
     const newQty = Math.max(0, qty + delta);
-    const price = selectedUnit?.price || product.price;
-    const item = {
-      ...product,
-      id: uniqueKey,
-      unit: selectedUnit?.name,
-      price,
-    };
+    // const price = selectedUnit?.price || product.price;
+    // const item = { ...product, id: uniqueKey, unit: selectedUnit?.name, price };
+    
+    const price = selectedVariant?.price || product.price;
+const item = {
+  ...product,
+  id: `${product.id}-${selectedVariant?.size?.id || ''}-${selectedVariant?.color?.id || ''}-${selectedVariant?.unit?.id || ''}`,
+  unit: selectedVariant?.unit?.name,
+  size: selectedVariant?.size?.name,
+  color: selectedVariant?.color?.name,
+  price
+};
 
     if (delta !== 0) {
       addToCart(item, delta);
@@ -438,41 +430,48 @@ const ProductCard = ({
 
   return (
     <div className="product-card">
+      {/* Product Image */}
       <div className="image-container">
         <img
-          src={resolveImageUrl(product.image)}
-          alt={product.name}
+          src={resolveImageUrl(imageList[currentImageIndex])}
+          alt={`${product.name}-${currentImageIndex + 1}`}
           className="product-image"
         />
-
+        {/* Quantity controls overlay */}
         {qty > 0 ? (
           <div className="qty-controls-overlay">
-            <button className="qty-btn" onClick={() => handleQtyChange(-1)} disabled={qty <= 0}>
-              −
-            </button>
+            <button className="qty-btn" onClick={() => handleQtyChange(-1)} disabled={qty <= 0}>−</button>
             <span className="qty-number">{qty}</span>
-            <button className="qty-btn" onClick={() => handleQtyChange(1)}>
-              +
-            </button>
+            <button className="qty-btn" onClick={() => handleQtyChange(1)}>+</button>
           </div>
         ) : (
-          <button className="add-btn-overlay" onClick={handleAdd}>
-            Add
-          </button>
+          <button className="add-btn-overlay" onClick={handleAdd}>Add</button>
         )}
       </div>
 
+      {/* Moved Dots HERE (above product name) */}
+      {imageList.length > 1 && (
+        <div className="carousel-dots product-dots">
+          {imageList.map((_, idx) => (
+            <span
+              key={idx}
+              className={`dot ${idx === currentImageIndex ? 'active' : ''}`}
+              onClick={() => setCurrentImageIndex(idx)}
+            ></span>
+          ))}
+        </div>
+      )}
+
+      {/* Product Info */}
       <h3 className="product-name">{product.name}</h3>
       <p className="product-description">{product.description}</p>
 
-
-      {hasUnits && (
+      {/* Units Dropdown */}
+      {/* {hasUnits && (
         <select
           value={selectedUnit?.unit_id}
           onChange={(e) => {
-            const selected = product.units.find(
-              (unit) => unit.unit_id === Number(e.target.value)
-            );
+            const selected = product.units.find((unit) => unit.unit_id === Number(e.target.value));
             setSelectedUnit(selected);
           }}
           className="unit-select"
@@ -483,10 +482,101 @@ const ProductCard = ({
             </option>
           ))}
         </select>
-      )}
+      )} */}
+      {hasVariants && (
+  <>
+    {/* Size selector */}
+    {product.variants.some(v => v.size) && (
+      <select
+        value={selectedVariant?.size?.id || ''}
+        onChange={(e) => {
+          const sizeId = Number(e.target.value);
+          const matched = product.variants.find(
+            (v) => v.size?.id === sizeId &&
+                   (!selectedVariant?.color || v.color?.id === selectedVariant.color?.id) &&
+                   (!selectedVariant?.unit || v.unit?.id === selectedVariant.unit?.id)
+          );
+          if (matched) setSelectedVariant(matched);
+        }}
+        className="variant-select"
+      >
+        {[...new Set(product.variants.map((v) => v.size?.id))]
+          .filter(Boolean)
+          .map((id) => {
+            const name = product.variants.find((v) => v.size?.id === id)?.size?.name;
+            return <option key={id} value={id}>{name}</option>;
+          })}
+      </select>
+    )}
+
+    {/* Color selector */}
+    {product.variants.some(v => v.color) && (
+      <select
+        value={selectedVariant?.color?.id || ''}
+        onChange={(e) => {
+          const colorId = Number(e.target.value);
+          const matched = product.variants.find(
+            (v) => v.color?.id === colorId &&
+                   (!selectedVariant?.size || v.size?.id === selectedVariant.size?.id) &&
+                   (!selectedVariant?.unit || v.unit?.id === selectedVariant.unit?.id)
+          );
+          if (matched) setSelectedVariant(matched);
+        }}
+        className="variant-select"
+      >
+        {[...new Set(product.variants.map((v) => v.color?.id))]
+          .filter(Boolean)
+          .map((id) => {
+            const name = product.variants.find((v) => v.color?.id === id)?.color?.name;
+            return <option key={id} value={id}>{name}</option>;
+          })}
+      </select>
+    )}
+
+    {/* Unit selector */}
+    {product.variants.some(v => v.unit) && (
+      <select
+        value={selectedVariant?.unit?.id || ''}
+        onChange={(e) => {
+          const unitId = Number(e.target.value);
+          const matched = product.variants.find(
+            (v) => v.unit?.id === unitId &&
+                   (!selectedVariant?.size || v.size?.id === selectedVariant.size?.id) &&
+                   (!selectedVariant?.color || v.color?.id === selectedVariant.color?.id)
+          );
+          if (matched) setSelectedVariant(matched);
+        }}
+        className="variant-select"
+      >
+        {/* {[...new Set(product.variants.map((v) => v.unit?.id))]
+          .filter(Boolean)
+          .map((id) => {
+            const unit = product.variants.find((v) => v.unit?.id === id)?.unit;
+            return <option key={id} value={id}>{unit?.name} ₹{unit?.price || 0}</option>;
+          })} */}
+          {[...new Set(product.variants.map((v) => v.unit?.id))]
+  .filter(Boolean)
+  .map((id) => {
+    const foundVariant = product.variants.find((v) => v.unit?.id === id);
+    const unit = foundVariant?.unit;
+    const price = Number(foundVariant?.price) || 0;  // convert to number safely
+    return (
+      <option key={id} value={id}>
+        {unit?.name} ₹{price.toFixed(2)}
+      </option>
+    );
+  })}
+
+      </select>
+    )}
+  </>
+)}
+
 
       <div className="price-display">
-        ₹{((selectedUnit?.price || product.price) * (qty || 1)).toFixed(2)}
+        {/* ₹{((selectedUnit?.price || product.price) * (qty || 1)).toFixed(2)} */}
+        ₹{((selectedVariant?.price || product.price) * (qty || 1)).toFixed(2)}
+
       </div>
     </div>
   );
