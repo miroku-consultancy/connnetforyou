@@ -4,15 +4,64 @@ require('dotenv').config();
 const pool = require('../db');
 
 // 🔍 Get all products with unit details
+// const getAllProducts = async (shopId) => {
+//   try {
+//     const productRes = await pool.query(
+//       `SELECT 
+//   p.*, 
+//   c.name AS category_name
+// FROM products p
+// JOIN categories c ON p.category_id = c.id
+// WHERE p.shop_id = $1`,
+//       [shopId]
+//     );
+
+//     const products = productRes.rows;
+//     if (products.length === 0) return [];
+
+//     const productIds = products.map((p) => p.id);
+
+//     const unitsRes = await pool.query(
+//       `SELECT pu.id, pu.product_id, pu.unit_id, pu.price, pu.stock, 
+//               u.name AS unit_name, u.category AS unit_category
+//          FROM product_units pu
+//          JOIN units u ON pu.unit_id = u.id
+//          WHERE pu.product_id = ANY($1::int[])`,
+//       [productIds]
+//     );
+
+//     const unitMap = {};
+//     unitsRes.rows.forEach((unit) => {
+//       if (!unitMap[unit.product_id]) unitMap[unit.product_id] = [];
+//       unitMap[unit.product_id].push({
+//         id: unit.id,
+//         unit_id: unit.unit_id,
+//         name: unit.unit_name,
+//         category: unit.unit_category,
+//         price: unit.price,
+//         stock: unit.stock,
+//       });
+//     });
+
+//     return products.map((product) => ({
+//       ...product,
+//       units: unitMap[product.id] || [],
+//     }));
+//   } catch (err) {
+//     console.error('❌ Error in getAllProducts:', err);
+//     throw err;
+//   }
+// };
+
 const getAllProducts = async (shopId) => {
   try {
     const productRes = await pool.query(
       `SELECT 
-  p.*, 
-  c.name AS category_name
-FROM products p
-JOIN categories c ON p.category_id = c.id
-WHERE p.shop_id = $1`,
+        p.*, 
+        c.name AS category_name
+      FROM products p
+      JOIN categories c ON p.category_id = c.id
+      WHERE p.shop_id = $1`,
       [shopId]
     );
 
@@ -21,31 +70,43 @@ WHERE p.shop_id = $1`,
 
     const productIds = products.map((p) => p.id);
 
-    const unitsRes = await pool.query(
-      `SELECT pu.id, pu.product_id, pu.unit_id, pu.price, pu.stock, 
-              u.name AS unit_name, u.category AS unit_category
-         FROM product_units pu
-         JOIN units u ON pu.unit_id = u.id
-         WHERE pu.product_id = ANY($1::int[])`,
+    const variantsRes = await pool.query(
+      `SELECT 
+         pu.*,
+         u.name AS unit_name,
+         u.category AS unit_category,
+         size.name AS size_name,
+         color.name AS color_name
+       FROM product_units pu
+       LEFT JOIN units u ON pu.unit_id = u.id
+       LEFT JOIN units size ON pu.size_id = size.id
+       LEFT JOIN units color ON pu.color_id = color.id
+       WHERE pu.product_id = ANY($1::int[])`,
       [productIds]
     );
 
-    const unitMap = {};
-    unitsRes.rows.forEach((unit) => {
-      if (!unitMap[unit.product_id]) unitMap[unit.product_id] = [];
-      unitMap[unit.product_id].push({
-        id: unit.id,
-        unit_id: unit.unit_id,
-        name: unit.unit_name,
-        category: unit.unit_category,
-        price: unit.price,
-        stock: unit.stock,
+    const variantMap = {};
+    variantsRes.rows.forEach((row) => {
+      if (!variantMap[row.product_id]) variantMap[row.product_id] = [];
+
+      variantMap[row.product_id].push({
+        id: row.id,
+        price: row.price,
+        stock: row.stock,
+        mrp: row.mrp,
+        discount: row.discount,
+        sku: row.sku,
+        barcode: row.barcode,
+        images: row.images,
+        size: row.size_id ? { id: row.size_id, name: row.size_name } : null,
+        color: row.color_id ? { id: row.color_id, name: row.color_name } : null,
+        unit: row.unit_id ? { id: row.unit_id, name: row.unit_name, category: row.unit_category } : null
       });
     });
 
     return products.map((product) => ({
       ...product,
-      units: unitMap[product.id] || [],
+      variants: variantMap[product.id] || []
     }));
   } catch (err) {
     console.error('❌ Error in getAllProducts:', err);
