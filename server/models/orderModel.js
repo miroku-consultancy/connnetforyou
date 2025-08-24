@@ -95,7 +95,7 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
 items.forEach((item, idx) => {
   console.log(`[createOrder][Item ${idx}] Raw item:`, item);
 
-  const [productIdStr, unitIdStr] = item.id.toString().split('-');
+  const [productIdStr, unitIdStr] = item.id.toString().split(/-+/);
   const productId = parseInt(productIdStr, 10);
 
  const sizeName = item.size && typeof item.size === 'object'
