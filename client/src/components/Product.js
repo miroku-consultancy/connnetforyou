@@ -94,7 +94,7 @@ const Product = () => {
 
   useEffect(() => {
     if (!safeShopSlug) {
-      alert('Invalid shop URL.');
+      //alert('Invalid shop URL.');
       navigate('/');
     }
   }, [safeShopSlug, navigate]);
