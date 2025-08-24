@@ -1,54 +1,47 @@
 const pool = require('../db');
 
-// Helper: batch get unit IDs by names and category
-async function getUnitIdsByNames(client, names, category) {
-  if (!names.length) return {};
-  const res = await client.query(
-    `SELECT id, name FROM units WHERE name = ANY($1) AND category = $2`,
-    [names, category]
-  );
-  return res.rows.reduce((acc, row) => {
-    acc[row.name] = row.id;
-    return acc;
-  }, {});
-}
-
+// CREATE ORDER
 async function createOrder({ items, total, address, paymentMethod, orderDate, userId }) {
   const client = await pool.connect();
 
   try {
-    console.log('[createOrder] Starting order creation');
+    console.log('[createOrder] Starting order creation...');
+    console.log('[createOrder] Received items:', items);
+
     await client.query('BEGIN');
 
-    // Extract shop id from first item
+    // Determine shopId
     const shopId = items[0].shopId ?? items[0].shop_id;
-    if (!shopId) throw new Error('No shopId found in order items');
+    if (!shopId) throw new Error('Missing shop ID in order items');
     console.log(`[createOrder] shopId: ${shopId}`);
 
-    // Get min order value for shop
+    // Get minOrderValue
     const shopResult = await client.query(`SELECT minordervalue FROM shops WHERE id = $1`, [shopId]);
-    if (shopResult.rows.length === 0) throw new Error(`Shop not found: ${shopId}`);
+    if (shopResult.rows.length === 0) throw new Error(`Shop with ID ${shopId} not found`);
     const minOrderValue = parseFloat(shopResult.rows[0].minordervalue);
+    console.log(`[createOrder] Shop's minOrderValue: ${minOrderValue}`);
+
     const isTakeaway = total < minOrderValue;
-    console.log(`[createOrder] minOrderValue: ${minOrderValue}, isTakeaway: ${isTakeaway}`);
+    console.log(`[createOrder] isTakeaway: ${isTakeaway}`);
 
-    // Lock orders for this shop to avoid race
+    // Lock for concurrency
     await client.query(`SELECT id FROM orders WHERE shop_id = $1 FOR UPDATE`, [shopId]);
+    console.log('[createOrder] Locked orders for concurrency');
 
-    // Get next order number for shop
+    // Get next order number
     const { rows } = await client.query(
       `SELECT COALESCE(MAX(order_number), 0) + 1 AS next_order_number FROM orders WHERE shop_id = $1`,
       [shopId]
     );
     const orderNumber = rows[0].next_order_number;
-    console.log(`[createOrder] orderNumber for new order: ${orderNumber}`);
+    console.log(`[createOrder] Next order number: ${orderNumber}`);
 
-    // Insert new order row
-    const orderInsertRes = await client.query(
+    // Insert order
+    const orderInsertResult = await client.query(
       `INSERT INTO orders (
         user_id, total, name, street, city, zip, phone,
         payment_method, order_date, order_status, shop_id, order_number
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'Pending',$10,$11)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'Pending', $10, $11)
       RETURNING id`,
       [
         userId,
@@ -64,69 +57,54 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
         orderNumber,
       ]
     );
-    const orderId = orderInsertRes.rows[0].id;
-    console.log(`[createOrder] Inserted order id: ${orderId}`);
 
-    // Batch fetch variant ids for sizes and colors
-    const sizeNames = [...new Set(items.map(item => (typeof item.size === 'object' ? item.size.name : item.size)).filter(Boolean))];
-    const colorNames = [...new Set(items.map(item => (typeof item.color === 'object' ? item.color.name : item.color)).filter(Boolean))];
+    const orderId = orderInsertResult.rows[0].id;
+    console.log(`[createOrder] Inserted order ID: ${orderId}`);
 
-    const sizeIdMap = await getUnitIdsByNames(client, sizeNames, 'clothing');
-    const colorIdMap = await getUnitIdsByNames(client, colorNames, 'color');
-
-    // Prepare multi-row insert of all order_items
+    // Prepare multi-row insert for order_items
     const values = [];
     const placeholders = [];
 
     items.forEach((item, idx) => {
       const productId = parseInt(item.id.toString().split('-')[0], 10);
 
-      // If size or color exists, unit_id = null, else parse from item
+      // Fix: unitId is null if size or color exists
       const hasSizeOrColor = item.size || item.color;
       const unitIdStr = item.id.toString().split('-')[1];
-      const unitId = hasSizeOrColor ? null : (item.unit_id ?? (unitIdStr ? parseInt(unitIdStr, 10) : null));
+      const unitId = hasSizeOrColor 
+        ? null 
+        : (item.unit_id ?? (unitIdStr ? parseInt(unitIdStr, 10) : null));
 
-      const sizeName = typeof item.size === 'object' ? item.size.name : item.size;
-      const colorName = typeof item.color === 'object' ? item.color.name : item.color;
+      const sizeId = item.size ? (typeof item.size === 'object' ? item.size.id : item.size) : null;
+      const colorId = item.color ? (typeof item.color === 'object' ? item.color.id : item.color) : null;
 
-      // Map names to numeric ids from batch fetch
-      const sizeId = sizeName ? sizeIdMap[sizeName] : null;
-      const colorId = colorName ? colorIdMap[colorName] : null;
+      console.log(`[createOrder][Item ${idx}] productId=${productId}, unitId=${unitId}, sizeId=${sizeId}, colorId=${colorId}`);
 
-      placeholders.push(`($${idx*10+1}, $${idx*10+2}, $${idx*10+3}, $${idx*10+4}, $${idx*10+5}, $${idx*10+6}, $${idx*10+7}, $${idx*10+8}, $${idx*10+9}, $${idx*10+10})`);
-      values.push(
-        orderId,
-        productId,
-        item.name,
-        item.price,
-        item.quantity,
-        item.image,
-        shopId,
-        unitId,
-        sizeId,
-        colorId
+      placeholders.push(
+        `($${idx*10 + 1}, $${idx*10 + 2}, $${idx*10 + 3}, $${idx*10 + 4}, $${idx*10 + 5}, $${idx*10 + 6}, $${idx*10 + 7}, $${idx*10 + 8}, $${idx*10 + 9}, $${idx*10 + 10})`
       );
 
-      console.log(`[createOrder][item ${idx}] productId=${productId}, unitId=${unitId}, sizeId=${sizeId}, colorId=${colorId}`);
+      values.push(
+        orderId, productId, item.name, item.price, item.quantity,
+        item.image, shopId, unitId, sizeId, colorId
+      );
     });
 
-    // Bulk insert order_items
-    const itemsInsertQuery = `
+    const insertQuery = `
       INSERT INTO order_items (
         order_id, product_id, name, price, quantity,
         image, shop_id, unit_id, size_id, color_id
-      ) VALUES ${placeholders.join(',')}
-    `;
-    await client.query(itemsInsertQuery, values);
+      ) VALUES ${placeholders.join(',')}`;
+
+    await client.query(insertQuery, values);
 
     await client.query('COMMIT');
-    console.log(`[createOrder] Committed order with id ${orderId} successfully.`);
+    console.log(`[createOrder] Order ${orderId} committed successfully with ${items.length} items.`);
 
     return { orderId, orderNumber };
-
   } catch (err) {
     await client.query('ROLLBACK');
-    console.error('[createOrder] Transaction failed:', err);
+    console.error('[createOrder] Error:', err.message, err.stack);
     throw err;
   } finally {
     client.release();
@@ -287,6 +265,7 @@ async function getOrdersByShop(shopId) {
     throw err;
   }
 }
+
 
 module.exports = {
   createOrder,
