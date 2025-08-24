@@ -100,16 +100,18 @@ items.forEach((item, idx) => {
 
   const sizeName = item.size && typeof item.size === 'object' ? item.size.name : item.size;
   const colorName = item.color && typeof item.color === 'object' ? item.color.name : item.color;
+const validSizeId = sizeName && sizeIdMap[sizeName];
+const validColorId = colorName && colorIdMap[colorName];
 
-  const sizeId = sizeName ? sizeIdMap[sizeName] ?? null : null;
-  const colorId = colorName ? colorIdMap[colorName] ?? null : null;
+const sizeId = validSizeId ?? null;
+const colorId = validColorId ?? null;
 
-  // ✅ Only assign unitId if size and color are BOTH null
-  const shouldUseUnitId = !sizeId && !colorId;
+const shouldUseUnitId = !sizeId && !colorId;
 
-  const unitId = shouldUseUnitId
-    ? (item.unit_id ?? (unitIdStr?.trim() ? parseInt(unitIdStr, 10) : null))
-    : null;
+const unitId = shouldUseUnitId
+  ? (item.unit_id ?? (unitIdStr?.trim() ? parseInt(unitIdStr, 10) : null))
+  : null;
+
 
   // Optional: Warn if size/color not found in DB
   if (sizeName && !sizeId) console.warn(`[createOrder] Warning: Size '${sizeName}' not found in DB`);
