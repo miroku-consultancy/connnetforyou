@@ -92,43 +92,49 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
     const values = [];
     const placeholders = [];
 
-    items.forEach((item, idx) => {
-      console.log(`[createOrder][Item ${idx}] Raw item:`, item);
+items.forEach((item, idx) => {
+  console.log(`[createOrder][Item ${idx}] Raw item:`, item);
 
-      const [productIdStr, unitIdStr] = item.id.toString().split('-');
-      const productId = parseInt(productIdStr, 10);
+  const [productIdStr, unitIdStr] = item.id.toString().split('-');
+  const productId = parseInt(productIdStr, 10);
 
-      const unitId = item.unit_id ?? (unitIdStr?.trim() ? parseInt(unitIdStr, 10) : null);
+  const sizeName = item.size && typeof item.size === 'object' ? item.size.name : item.size;
+  const colorName = item.color && typeof item.color === 'object' ? item.color.name : item.color;
 
-      const sizeName = item.size && typeof item.size === 'object' ? item.size.name : item.size;
-      const colorName = item.color && typeof item.color === 'object' ? item.color.name : item.color;
+  const sizeId = sizeName ? sizeIdMap[sizeName] ?? null : null;
+  const colorId = colorName ? colorIdMap[colorName] ?? null : null;
 
-      const sizeId = sizeName ? sizeIdMap[sizeName] ?? null : null;
-      const colorId = colorName ? colorIdMap[colorName] ?? null : null;
+  // ✅ Only assign unitId if size and color are BOTH null
+  const shouldUseUnitId = !sizeId && !colorId;
 
-      // Optional: Warn if size/color not found in DB
-      if (sizeName && !sizeId) console.warn(`[createOrder] Warning: Size '${sizeName}' not found in DB`);
-      if (colorName && !colorId) console.warn(`[createOrder] Warning: Color '${colorName}' not found in DB`);
+  const unitId = shouldUseUnitId
+    ? (item.unit_id ?? (unitIdStr?.trim() ? parseInt(unitIdStr, 10) : null))
+    : null;
 
-      console.log(`[createOrder][Item ${idx}] productId=${productId}, unitId=${unitId}, sizeId=${sizeId}, colorId=${colorId}`);
+  // Optional: Warn if size/color not found in DB
+  if (sizeName && !sizeId) console.warn(`[createOrder] Warning: Size '${sizeName}' not found in DB`);
+  if (colorName && !colorId) console.warn(`[createOrder] Warning: Color '${colorName}' not found in DB`);
 
-      // Prepare insert values
-      placeholders.push(
-        `($${idx * 10 + 1}, $${idx * 10 + 2}, $${idx * 10 + 3}, $${idx * 10 + 4}, $${idx * 10 + 5}, $${idx * 10 + 6}, $${idx * 10 + 7}, $${idx * 10 + 8}, $${idx * 10 + 9}, $${idx * 10 + 10})`
-      );
-      values.push(
-        orderId,
-        productId,
-        item.name,
-        item.price,
-        item.quantity,
-        item.image,
-        shopId,
-        unitId,
-        sizeId,
-        colorId
-      );
-    });
+  console.log(`[createOrder][Item ${idx}] productId=${productId}, unitId=${unitId}, sizeId=${sizeId}, colorId=${colorId}`);
+
+  placeholders.push(
+    `($${idx * 10 + 1}, $${idx * 10 + 2}, $${idx * 10 + 3}, $${idx * 10 + 4}, $${idx * 10 + 5}, $${idx * 10 + 6}, $${idx * 10 + 7}, $${idx * 10 + 8}, $${idx * 10 + 9}, $${idx * 10 + 10})`
+  );
+
+  values.push(
+    orderId,
+    productId,
+    item.name,
+    item.price,
+    item.quantity,
+    item.image,
+    shopId,
+    unitId,
+    sizeId,
+    colorId
+  );
+});
+
 
     const insertQuery = `
       INSERT INTO order_items (
