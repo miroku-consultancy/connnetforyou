@@ -220,17 +220,15 @@ async function getOrdersByUser(userId) {
       }
 
       ordersMap.get(order_id).items.push({
-        product_id,
-        name,
-        price,
-        quantity,
-        image,
-        unit_id,
-        unit_name,
-        unit_category,
-        size: size_id ? { id: size_id, name: size_name } : null,
-        color: color_id ? { id: color_id, name: color_name } : null,
-      });
+  product_id,
+  name,
+  price,
+  quantity,
+  image,
+  unit: unit_id ? { id: unit_id, name: unit_name, category: unit_category } : null,
+  size: size_id ? { id: size_id, name: size_name } : null,
+  color: color_id ? { id: color_id, name: color_name } : null,
+});
     });
 
     return Array.from(ordersMap.values());
@@ -260,6 +258,7 @@ async function getOrdersByShop(shopId) {
          oi.name AS product_name,
          oi.price,
          oi.quantity,
+         oi.unit_id,                    -- added unit_id here
          u.name AS unit_name,
          u.category AS unit_category,
          oi.size_id,
@@ -283,7 +282,7 @@ async function getOrdersByShop(shopId) {
         order_status, customer_name, customer_phone,
         address_street, address_city, address_zip,
         product_id, product_name, price, quantity,
-        unit_name, unit_category,
+        unit_id, unit_name, unit_category,    // destructure unit_id here
         size_id, size_name,
         color_id, color_name } = row;
 
@@ -311,7 +310,7 @@ async function getOrdersByShop(shopId) {
         name: product_name,
         price,
         quantity,
-        unit: unit_name ? { name: unit_name, category: unit_category } : null,
+        unit: unit_id ? { id: unit_id, name: unit_name, category: unit_category } : null,  // include id here
         size: size_id ? { id: size_id, name: size_name } : null,
         color: color_id ? { id: color_id, name: color_name } : null,
       });
