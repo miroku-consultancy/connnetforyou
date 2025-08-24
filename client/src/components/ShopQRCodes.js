@@ -204,7 +204,8 @@ const baseUrl = "https://www.connectfree4u.com/#/";
 const displayName = (shop) =>
   shop
     .replace(/-/g, ' ')
-    .replace(/([a-z])([A-Z])/g, '$1 $2');
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/&/g, ' & ');
 
 const ShopQRCodes = () => {
   return (
