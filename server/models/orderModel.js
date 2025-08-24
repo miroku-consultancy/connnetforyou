@@ -15,19 +15,18 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
     if (!shopId) throw new Error('Missing shop ID in order items');
     console.log(`[createOrder] shopId: ${shopId}`);
 
-    // Get min order value
+    // Get minOrderValue
     const shopResult = await client.query(`SELECT minordervalue FROM shops WHERE id = $1`, [shopId]);
     if (shopResult.rows.length === 0) throw new Error(`Shop with ID ${shopId} not found`);
     const minOrderValue = parseFloat(shopResult.rows[0].minordervalue);
     console.log(`[createOrder] Shop's minOrderValue: ${minOrderValue}`);
 
-    // Is takeaway?
     const isTakeaway = total < minOrderValue;
     console.log(`[createOrder] isTakeaway: ${isTakeaway}`);
 
-    // Lock orders to avoid race condition
+    // Lock for concurrency
     await client.query(`SELECT id FROM orders WHERE shop_id = $1 FOR UPDATE`, [shopId]);
-    console.log('[createOrder] Locked orders for concurrency control');
+    console.log('[createOrder] Locked orders for concurrency');
 
     // Get next order number
     const { rows } = await client.query(
@@ -37,13 +36,13 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
     const orderNumber = rows[0].next_order_number;
     console.log(`[createOrder] Next order number: ${orderNumber}`);
 
-    // Insert new order
+    // Insert order
     const orderInsertResult = await client.query(
       `INSERT INTO orders (
-         user_id, total, name, street, city, zip, phone,
-         payment_method, order_date, order_status, shop_id, order_number
-       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'Pending', $10, $11)
-       RETURNING id`,
+        user_id, total, name, street, city, zip, phone,
+        payment_method, order_date, order_status, shop_id, order_number
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'Pending', $10, $11)
+      RETURNING id`,
       [
         userId,
         total,
@@ -58,42 +57,42 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
         orderNumber,
       ]
     );
-
     const orderId = orderInsertResult.rows[0].id;
     console.log(`[createOrder] Inserted order ID: ${orderId}`);
 
-    // Insert each order item
-    for (const [index, item] of items.entries()) {
+    // Prepare multi-row insert for order_items
+    const values = [];
+    const placeholders = [];
+    items.forEach((item, idx) => {
       const productId = parseInt(item.id.toString().split('-')[0], 10);
       const unitIdStr = item.id.toString().split('-')[1];
       const unitId = item.unit_id ?? (unitIdStr ? parseInt(unitIdStr, 10) : null);
       const sizeId = item.size ? (typeof item.size === 'object' ? item.size.id : item.size) : null;
       const colorId = item.color ? (typeof item.color === 'object' ? item.color.id : item.color) : null;
 
-      console.log(`[createOrder][Item ${index}] productId=${productId}, unitId=${unitId}, sizeId=${sizeId}, colorId=${colorId}`);
+      console.log(`[createOrder][Item ${idx}] productId=${productId}, unitId=${unitId}, sizeId=${sizeId}, colorId=${colorId}`);
 
-      await client.query(
-        `INSERT INTO order_items (
-           order_id, product_id, name, price, quantity,
-           image, shop_id, unit_id, size_id, color_id
-         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-        [
-          orderId,
-          productId,
-          item.name,
-          item.price,
-          item.quantity,
-          item.image,
-          shopId,
-          unitId,
-          sizeId,
-          colorId,
-        ]
+      // For each item, create a parameter set for the query:
+      // (order_id, product_id, name, price, quantity, image, shop_id, unit_id, size_id, color_id)
+      placeholders.push(
+        `($${idx*10 + 1}, $${idx*10 + 2}, $${idx*10 + 3}, $${idx*10 + 4}, $${idx*10 + 5}, $${idx*10 + 6}, $${idx*10 + 7}, $${idx*10 + 8}, $${idx*10 + 9}, $${idx*10 + 10})`
       );
-    }
+      values.push(
+        orderId, productId, item.name, item.price, item.quantity,
+        item.image, shopId, unitId, sizeId, colorId
+      );
+    });
+
+    const insertQuery = `
+      INSERT INTO order_items (
+        order_id, product_id, name, price, quantity,
+        image, shop_id, unit_id, size_id, color_id
+      ) VALUES ${placeholders.join(',')}`;
+
+    await client.query(insertQuery, values);
 
     await client.query('COMMIT');
-    console.log(`[createOrder] Order ${orderId} committed successfully.`);
+    console.log(`[createOrder] Order ${orderId} committed successfully with ${items.length} items.`);
 
     return { orderId, orderNumber };
   } catch (err) {
@@ -104,6 +103,7 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
     client.release();
   }
 }
+
 
 // GET ORDERS BY USER
 async function getOrdersByUser(userId) {
