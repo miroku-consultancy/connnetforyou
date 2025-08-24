@@ -1,5 +1,18 @@
 const pool = require('../db');
 
+// Helper: batch get unit IDs by names and category
+async function getUnitIdsByNames(client, names, category) {
+  if (!names.length) return {};
+  const res = await client.query(
+    `SELECT id, name FROM units WHERE name = ANY($1) AND category = $2`,
+    [names, category]
+  );
+  return res.rows.reduce((acc, row) => {
+    acc[row.name] = row.id;
+    return acc;
+  }, {});
+}
+
 // CREATE ORDER
 async function createOrder({ items, total, address, paymentMethod, orderDate, userId }) {
   const client = await pool.connect();
@@ -57,54 +70,62 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
         orderNumber,
       ]
     );
-
     const orderId = orderInsertResult.rows[0].id;
     console.log(`[createOrder] Inserted order ID: ${orderId}`);
+
+    // Batch fetch variant ids for sizes and colors
+    const sizeNames = [...new Set(items.map(item => (typeof item.size === 'object' ? item.size.name : item.size)).filter(Boolean))];
+    const colorNames = [...new Set(items.map(item => (typeof item.color === 'object' ? item.color.name : item.color)).filter(Boolean))];
+
+    const sizeIdMap = await getUnitIdsByNames(client, sizeNames, 'clothing');
+    const colorIdMap = await getUnitIdsByNames(client, colorNames, 'color');
 
     // Prepare multi-row insert for order_items
     const values = [];
     const placeholders = [];
 
-items.forEach((item, idx) => {
-  const productId = parseInt(item.id.toString().split('-')[0], 10);
+    items.forEach((item, idx) => {
+      const productId = parseInt(item.id.toString().split('-')[0], 10);
 
-  const hasSizeOrColor = item.size || item.color;
-  const unitIdStr = item.id.toString().split('-')[1];
-  const unitId = hasSizeOrColor
-    ? null
-    : (item.unit_id ?? (unitIdStr ? parseInt(unitIdStr, 10) : null));
+      // If size or color exists, unit_id = null, else parse from item
+      const hasSizeOrColor = item.size || item.color;
+      const unitIdStr = item.id.toString().split('-')[1];
+      const unitId = hasSizeOrColor
+        ? null
+        : (item.unit_id ?? (unitIdStr ? parseInt(unitIdStr, 10) : null));
 
-  const sizeName = typeof item.size === 'object' ? item.size.name : item.size;
-  const colorName = typeof item.color === 'object' ? item.color.name : item.color;
+      const sizeName = typeof item.size === 'object' ? item.size.name : item.size;
+      const colorName = typeof item.color === 'object' ? item.color.name : item.color;
 
-  const sizeId = sizeName ? sizeIdMap[sizeName] : null;
-  const colorId = colorName ? colorIdMap[colorName] : null;
+      // Map names to numeric ids from batch fetch
+      const sizeId = sizeName ? sizeIdMap[sizeName] : null;
+      const colorId = colorName ? colorIdMap[colorName] : null;
 
-  console.log(`[createOrder][Item ${idx}] productId=${productId}, unitId=${unitId}, sizeId=${sizeId}, colorId=${colorId}`);
+      console.log(`[createOrder][Item ${idx}] productId=${productId}, unitId=${unitId}, sizeId=${sizeId}, colorId=${colorId}`);
 
-  placeholders.push(
-    `($${idx*10 + 1}, $${idx*10 + 2}, $${idx*10 + 3}, $${idx*10 + 4}, $${idx*10 + 5}, $${idx*10 + 6}, $${idx*10 + 7}, $${idx*10 + 8}, $${idx*10 + 9}, $${idx*10 + 10})`
-  );
-  values.push(
-    orderId,
-    productId,
-    item.name,
-    item.price,
-    item.quantity,
-    item.image,
-    shopId,
-    unitId,
-    sizeId,
-    colorId
-  );
-});
-
+      placeholders.push(
+        `($${idx*10 + 1}, $${idx*10 + 2}, $${idx*10 + 3}, $${idx*10 + 4}, $${idx*10 + 5}, $${idx*10 + 6}, $${idx*10 + 7}, $${idx*10 + 8}, $${idx*10 + 9}, $${idx*10 + 10})`
+      );
+      values.push(
+        orderId,
+        productId,
+        item.name,
+        item.price,
+        item.quantity,
+        item.image,
+        shopId,
+        unitId,
+        sizeId,
+        colorId
+      );
+    });
 
     const insertQuery = `
       INSERT INTO order_items (
         order_id, product_id, name, price, quantity,
         image, shop_id, unit_id, size_id, color_id
-      ) VALUES ${placeholders.join(',')}`;
+      ) VALUES ${placeholders.join(',')}
+    `;
 
     await client.query(insertQuery, values);
 
@@ -275,7 +296,6 @@ async function getOrdersByShop(shopId) {
     throw err;
   }
 }
-
 
 module.exports = {
   createOrder,
