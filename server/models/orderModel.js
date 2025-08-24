@@ -94,8 +94,9 @@ items.forEach((item, idx) => {
   const unitId = hasSizeOrColor ? null : (item.unit_id ?? (unitIdStr ? parseInt(unitIdStr, 10) : null));
 
   // Safely extract sizeName and colorName with null checks
-  const sizeName = (item.size && typeof item.size === 'object') ? item.size.name : item.size;
-  const colorName = (item.color && typeof item.color === 'object') ? item.color.name : item.color;
+const sizeName = item.size?.name ?? item.size;
+const colorName = item.color?.name ?? item.color;
+
 
   // Defensive logs to catch null/undefined mapping issues
   if (sizeName == null) console.warn(`[createOrder][Item ${idx}] sizeName is null or undefined`);
