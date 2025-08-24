@@ -85,6 +85,7 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
     const placeholders = [];
 
     items.forEach((item, idx) => {
+      
       const productId = parseInt(item.id.toString().split('-')[0], 10);
 
       // If size or color exists, unit_id = null, else parse from item
@@ -93,9 +94,8 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
       const unitId = hasSizeOrColor
         ? null
         : (item.unit_id ?? (unitIdStr ? parseInt(unitIdStr, 10) : null));
-
-      const sizeName = typeof item.size === 'object' ? item.size.name : item.size;
-      const colorName = typeof item.color === 'object' ? item.color.name : item.color;
+const sizeName = (item.size && typeof item.size === 'object') ? item.size.name : item.size;
+  const colorName = (item.color && typeof item.color === 'object') ? item.color.name : item.color;
 
       // Map names to numeric ids from batch fetch
       const sizeId = sizeName ? sizeIdMap[sizeName] : null;
