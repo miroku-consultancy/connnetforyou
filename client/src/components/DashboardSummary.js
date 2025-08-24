@@ -21,7 +21,7 @@ const shopIcons = {
 };
 
 const displayName = (slug) =>
-  slug.replace(/-/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2');
+  slug.replace(/-/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').replace(/&/g, ' & ');
 
 const DashboardSummary = () => {
   const navigate = useNavigate();
