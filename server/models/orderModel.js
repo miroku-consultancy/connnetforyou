@@ -1,5 +1,6 @@
 const pool = require('../db');
 
+// Helper to batch get unit ids by names and category
 async function getUnitIdsByNames(client, names, category) {
   if (!names.length) return {};
   const res = await client.query(
@@ -14,24 +15,62 @@ async function getUnitIdsByNames(client, names, category) {
 
 async function createOrder({ items, total, address, paymentMethod, orderDate, userId }) {
   const client = await pool.connect();
+
   try {
     await client.query('BEGIN');
 
-    // Your existing setup for shopId, minOrderValue etc.
+    // Determine shopId
+    const shopId = items[0].shopId ?? items[0].shop_id;
+    if (!shopId) throw new Error('Missing shop ID in order items');
 
-    // Extract unique names for batch queries
+    // Get minOrderValue
+    const shopResult = await client.query(`SELECT minordervalue FROM shops WHERE id = $1`, [shopId]);
+    if (shopResult.rows.length === 0) throw new Error(`Shop with ID ${shopId} not found`);
+    const minOrderValue = parseFloat(shopResult.rows[0].minordervalue);
+
+    const isTakeaway = total < minOrderValue;
+
+    // Lock for concurrency
+    await client.query(`SELECT id FROM orders WHERE shop_id = $1 FOR UPDATE`, [shopId]);
+
+    // Get next order number
+    const { rows } = await client.query(
+      `SELECT COALESCE(MAX(order_number), 0) + 1 AS next_order_number FROM orders WHERE shop_id = $1`,
+      [shopId]
+    );
+    const orderNumber = rows[0].next_order_number;
+
+    // Insert order
+    const orderInsertResult = await client.query(
+      `INSERT INTO orders (
+        user_id, total, name, street, city, zip, phone,
+        payment_method, order_date, order_status, shop_id, order_number
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'Pending', $10, $11)
+      RETURNING id`,
+      [
+        userId,
+        total,
+        isTakeaway ? 'Takeaway' : address.name,
+        isTakeaway ? '' : address.street,
+        isTakeaway ? '' : address.city,
+        isTakeaway ? '' : address.zip,
+        isTakeaway ? '' : address.phone,
+        paymentMethod,
+        orderDate,
+        shopId,
+        orderNumber,
+      ]
+    );
+    const orderId = orderInsertResult.rows[0].id;
+
+    // Get unique size and color names for batch fetching IDs
     const sizeNames = [...new Set(items.map(i => (typeof i.size === 'object' ? i.size.name : i.size)).filter(Boolean))];
     const colorNames = [...new Set(items.map(i => (typeof i.color === 'object' ? i.color.name : i.color)).filter(Boolean))];
 
-    // Batch fetch IDs from units table
     const sizeIdMap = await getUnitIdsByNames(client, sizeNames, 'clothing');
     const colorIdMap = await getUnitIdsByNames(client, colorNames, 'color');
 
-    // Insert order then...
-    const orderInsertResult = await client.query(/* your insert order query */);
-    const orderId = orderInsertResult.rows[0].id;
-
-    // Prepare deferred arrays for bulk insert
+    // Prepare multi-row insert for order_items
     const values = [];
     const placeholders = [];
 
@@ -47,16 +86,28 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
       const sizeId = sizeName ? sizeIdMap[sizeName] : null;
       const colorId = colorName ? colorIdMap[colorName] : null;
 
-      placeholders.push(`($${idx*10 + 1}, $${idx*10 + 2}, $${idx*10 + 3}, $${idx*10 + 4}, $${idx*10 + 5}, $${idx*10 + 6}, $${idx*10 + 7}, $${idx*10 + 8}, $${idx*10 + 9}, $${idx*10 + 10})`);
+      placeholders.push(`($${idx*10+1}, $${idx*10+2}, $${idx*10+3}, $${idx*10+4}, $${idx*10+5}, $${idx*10+6}, $${idx*10+7}, $${idx*10+8}, $${idx*10+9}, $${idx*10+10})`);
 
-      values.push(orderId, productId, item.name, item.price, item.quantity,
-                  item.image, item.shopId ?? item.shop_id, unitId, sizeId, colorId);
+      values.push(
+        orderId,
+        productId,
+        item.name,
+        item.price,
+        item.quantity,
+        item.image,
+        shopId,
+        unitId,
+        sizeId,
+        colorId
+      );
     });
 
-    const insertQuery = `INSERT INTO order_items (
+    const insertQuery = `
+      INSERT INTO order_items (
         order_id, product_id, name, price, quantity,
         image, shop_id, unit_id, size_id, color_id
-      ) VALUES ${placeholders.join(',')}`;
+      ) VALUES ${placeholders.join(',')}
+    `;
 
     await client.query(insertQuery, values);
 
@@ -71,7 +122,6 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
     client.release();
   }
 }
-
 
 // GET ORDERS BY USER
 async function getOrdersByUser(userId) {
@@ -227,7 +277,6 @@ async function getOrdersByShop(shopId) {
     throw err;
   }
 }
-
 
 module.exports = {
   createOrder,
