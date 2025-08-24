@@ -65,30 +65,40 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
     const values = [];
     const placeholders = [];
 
-    items.forEach((item, idx) => {
-      const productId = parseInt(item.id.toString().split('-')[0], 10);
+items.forEach((item, idx) => {
+  const productId = parseInt(item.id.toString().split('-')[0], 10);
 
-      // Fix: unitId is null if size or color exists
-      const hasSizeOrColor = item.size || item.color;
-      const unitIdStr = item.id.toString().split('-')[1];
-      const unitId = hasSizeOrColor 
-        ? null 
-        : (item.unit_id ?? (unitIdStr ? parseInt(unitIdStr, 10) : null));
+  const hasSizeOrColor = item.size || item.color;
+  const unitIdStr = item.id.toString().split('-')[1];
+  const unitId = hasSizeOrColor
+    ? null
+    : (item.unit_id ?? (unitIdStr ? parseInt(unitIdStr, 10) : null));
 
-      const sizeId = item.size ? (typeof item.size === 'object' ? item.size.id : item.size) : null;
-      const colorId = item.color ? (typeof item.color === 'object' ? item.color.id : item.color) : null;
+  const sizeName = typeof item.size === 'object' ? item.size.name : item.size;
+  const colorName = typeof item.color === 'object' ? item.color.name : item.color;
 
-      console.log(`[createOrder][Item ${idx}] productId=${productId}, unitId=${unitId}, sizeId=${sizeId}, colorId=${colorId}`);
+  const sizeId = sizeName ? sizeIdMap[sizeName] : null;
+  const colorId = colorName ? colorIdMap[colorName] : null;
 
-      placeholders.push(
-        `($${idx*10 + 1}, $${idx*10 + 2}, $${idx*10 + 3}, $${idx*10 + 4}, $${idx*10 + 5}, $${idx*10 + 6}, $${idx*10 + 7}, $${idx*10 + 8}, $${idx*10 + 9}, $${idx*10 + 10})`
-      );
+  console.log(`[createOrder][Item ${idx}] productId=${productId}, unitId=${unitId}, sizeId=${sizeId}, colorId=${colorId}`);
 
-      values.push(
-        orderId, productId, item.name, item.price, item.quantity,
-        item.image, shopId, unitId, sizeId, colorId
-      );
-    });
+  placeholders.push(
+    `($${idx*10 + 1}, $${idx*10 + 2}, $${idx*10 + 3}, $${idx*10 + 4}, $${idx*10 + 5}, $${idx*10 + 6}, $${idx*10 + 7}, $${idx*10 + 8}, $${idx*10 + 9}, $${idx*10 + 10})`
+  );
+  values.push(
+    orderId,
+    productId,
+    item.name,
+    item.price,
+    item.quantity,
+    item.image,
+    shopId,
+    unitId,
+    sizeId,
+    colorId
+  );
+});
+
 
     const insertQuery = `
       INSERT INTO order_items (
