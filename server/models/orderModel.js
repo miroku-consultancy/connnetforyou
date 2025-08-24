@@ -73,63 +73,62 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
     const orderId = orderInsertResult.rows[0].id;
     console.log(`[createOrder] Inserted order ID: ${orderId}`);
 
-    // Batch fetch variant ids for sizes and colors
-    const sizeNames = [...new Set(items.map(item => (typeof item.size === 'object' ? item.size.name : item.size)).filter(Boolean))];
-    const colorNames = [...new Set(items.map(item => (typeof item.color === 'object' ? item.color.name : item.color)).filter(Boolean))];
+    // Safely extract size and color names
+    const sizeNames = [...new Set(
+      items
+        .map(item => (item.size && typeof item.size === 'object' ? item.size.name : item.size))
+        .filter(Boolean)
+    )];
+
+    const colorNames = [...new Set(
+      items
+        .map(item => (item.color && typeof item.color === 'object' ? item.color.name : item.color))
+        .filter(Boolean)
+    )];
 
     const sizeIdMap = await getUnitIdsByNames(client, sizeNames, 'clothing');
     const colorIdMap = await getUnitIdsByNames(client, colorNames, 'color');
 
-    // Prepare multi-row insert for order_items
     const values = [];
     const placeholders = [];
 
-items.forEach((item, idx) => {
-  // Log the raw item size and color to see if they are null or malformed
-  console.log(`[createOrder][Item ${idx}] raw size:`, item.size, ', raw color:', item.color, ', unit_id:', item.unit_id);
+    items.forEach((item, idx) => {
+      console.log(`[createOrder][Item ${idx}] Raw item:`, item);
 
- const productId = parseInt(item.id.toString().split('-')[0], 10);
-  const idParts = item.id.toString().split('-');
-  const unitIdStr = idParts[1];
-  
-  const hasSizeOrColor = item.size || item.color;
+      const [productIdStr, unitIdStr] = item.id.toString().split('-');
+      const productId = parseInt(productIdStr, 10);
 
-  const unitId = hasSizeOrColor
-    ? null
-    : (item.unit_id ?? (unitIdStr && unitIdStr.trim() ? parseInt(unitIdStr, 10) : null));
-  
-  console.log(`[createOrder][Item ${idx}] unitIdStr='${unitIdStr}', unitId=${unitId}`);
+      const unitId = item.unit_id ?? (unitIdStr?.trim() ? parseInt(unitIdStr, 10) : null);
 
-  const sizeName = item.size?.name ?? item.size;
-  const colorName = item.color?.name ?? item.color;
+      const sizeName = item.size && typeof item.size === 'object' ? item.size.name : item.size;
+      const colorName = item.color && typeof item.color === 'object' ? item.color.name : item.color;
 
-  const sizeId = sizeName ? sizeIdMap[sizeName] : null;
-  const colorId = colorName ? colorIdMap[colorName] : null;
+      const sizeId = sizeName ? sizeIdMap[sizeName] ?? null : null;
+      const colorId = colorName ? colorIdMap[colorName] ?? null : null;
 
-  console.log(`[createOrder][Item ${idx}] productId=${productId}, unitId=${unitId}, sizeId=${sizeId}, colorId=${colorId}`);
+      // Optional: Warn if size/color not found in DB
+      if (sizeName && !sizeId) console.warn(`[createOrder] Warning: Size '${sizeName}' not found in DB`);
+      if (colorName && !colorId) console.warn(`[createOrder] Warning: Color '${colorName}' not found in DB`);
 
-  // ... continue wit
+      console.log(`[createOrder][Item ${idx}] productId=${productId}, unitId=${unitId}, sizeId=${sizeId}, colorId=${colorId}`);
 
-  console.log(`[createOrder][Item ${idx}] productId=${productId}, unitId=${unitId}, sizeId=${sizeId}, colorId=${colorId}`);
-
-  placeholders.push(
-    `($${idx*10 + 1}, $${idx*10 + 2}, $${idx*10 + 3}, $${idx*10 + 4}, $${idx*10 + 5}, $${idx*10 + 6}, $${idx*10 + 7}, $${idx*10 + 8}, $${idx*10 + 9}, $${idx*10 + 10})`
-  );
-  values.push(
-    orderId,
-    productId,
-    item.name,
-    item.price,
-    item.quantity,
-    item.image,
-    shopId,
-    unitId,
-    sizeId,
-    colorId
-  );
-});
-
-
+      // Prepare insert values
+      placeholders.push(
+        `($${idx * 10 + 1}, $${idx * 10 + 2}, $${idx * 10 + 3}, $${idx * 10 + 4}, $${idx * 10 + 5}, $${idx * 10 + 6}, $${idx * 10 + 7}, $${idx * 10 + 8}, $${idx * 10 + 9}, $${idx * 10 + 10})`
+      );
+      values.push(
+        orderId,
+        productId,
+        item.name,
+        item.price,
+        item.quantity,
+        item.image,
+        shopId,
+        unitId,
+        sizeId,
+        colorId
+      );
+    });
 
     const insertQuery = `
       INSERT INTO order_items (
@@ -152,6 +151,7 @@ items.forEach((item, idx) => {
     client.release();
   }
 }
+
 
 // GET ORDERS BY USER
 async function getOrdersByUser(userId) {
