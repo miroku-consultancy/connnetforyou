@@ -17,6 +17,7 @@ const shopIcons = {
   "Home-chef": "🥮",
   "TheVegKingFastFood": "🥡",
   "Zerocollection": "🌅",
+  "DivineCafe&FastFood": "🥡",
 };
 
 const displayName = (slug) =>
