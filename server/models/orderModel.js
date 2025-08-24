@@ -85,17 +85,23 @@ async function createOrder({ items, total, address, paymentMethod, orderDate, us
     const placeholders = [];
 
 items.forEach((item, idx) => {
-  const productId = parseInt(item.id.toString().split('-')[0], 10);
+  // Log the raw item size and color to see if they are null or malformed
+  console.log(`[createOrder][Item ${idx}] raw size:`, item.size, ', raw color:', item.color, ', unit_id:', item.unit_id);
 
+  const productId = parseInt(item.id.toString().split('-')[0], 10);
   const hasSizeOrColor = item.size || item.color;
   const unitIdStr = item.id.toString().split('-')[1];
-  const unitId = hasSizeOrColor
-    ? null
-    : (item.unit_id ?? (unitIdStr ? parseInt(unitIdStr, 10) : null));
+  const unitId = hasSizeOrColor ? null : (item.unit_id ?? (unitIdStr ? parseInt(unitIdStr, 10) : null));
 
+  // Safely extract sizeName and colorName with null checks
   const sizeName = (item.size && typeof item.size === 'object') ? item.size.name : item.size;
   const colorName = (item.color && typeof item.color === 'object') ? item.color.name : item.color;
 
+  // Defensive logs to catch null/undefined mapping issues
+  if (sizeName == null) console.warn(`[createOrder][Item ${idx}] sizeName is null or undefined`);
+  if (colorName == null) console.warn(`[createOrder][Item ${idx}] colorName is null or undefined`);
+
+  // Map names to IDs using previously fetched maps
   const sizeId = sizeName ? sizeIdMap[sizeName] : null;
   const colorId = colorName ? colorIdMap[colorName] : null;
 
@@ -117,6 +123,7 @@ items.forEach((item, idx) => {
     colorId
   );
 });
+
 
 
     const insertQuery = `
