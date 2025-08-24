@@ -159,7 +159,6 @@ const ShopOrderHistory = () => {
               <strong>Customer:</strong> {order.customer_name} ({order.customer_phone})
             </div>
 
-            {/* Hide address if order is takeaway */}
             {!isTakeaway && order.address && (
               <div>
                 <strong>Address:</strong> {order.address.street}, {order.address.city} - {order.address.zip}
@@ -197,11 +196,18 @@ const ShopOrderHistory = () => {
                 const quantity = Number(item.quantity) || 0;
                 const totalPrice = price * quantity;
 
+                const variantLabels = [
+                  item.size ? (typeof item.size === 'object' ? item.size.name : item.size) : null,
+                  item.color ? (typeof item.color === 'object' ? item.color.name : item.color) : null,
+                  item.unit ? (typeof item.unit === 'object' ? item.unit.name : item.unit) : null,
+                  item.unit_type || null,
+                ].filter(Boolean).join(', ');
+
                 return (
                   <li key={`${order.id}-${item.product_id}-${index}`} className="order-item">
                     <div>
                       {quantity} × {item.name}
-                      {item.unit_name ? ` (${item.unit_name})` : ''}
+                      {variantLabels && <span className="variant-label"> ({variantLabels})</span>}
                     </div>
                     <div>
                       ₹{totalPrice.toFixed(2)}{' '}
