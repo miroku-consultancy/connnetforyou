@@ -5,6 +5,38 @@ import { useUser } from './UserContext';
 import BluetoothPrinter from './BluetoothPrinter'; // ✅ Import printer component
 import './OrderSummary.css';
 
+const API_BASE_URL = 'https://connnet4you-server.onrender.com';
+
+const MIN_ORDER_FOR_DELIVERY = 200;
+
+// Parse image field to array of strings (handles string, array, or JSON string)
+const parseImageList = (image) => {
+  if (!image) return [];
+  if (Array.isArray(image)) return image;
+  try {
+    const parsed = JSON.parse(image);
+    if (Array.isArray(parsed)) return parsed;
+    return [parsed];
+  } catch {
+    try {
+      const cleanImage = image.trim().replace(/^["']|["']$/g, '');
+      const parsedAgain = JSON.parse(cleanImage);
+      if (Array.isArray(parsedAgain)) return parsedAgain;
+      return [parsedAgain];
+    } catch {
+      return [image];
+    }
+  }
+};
+
+// Resolve image URL with fallback to placeholder
+const resolveImageUrl = (image) => {
+  if (!image) return 'https://via.placeholder.com/60';
+  if (image.startsWith('http') || image.startsWith('/images/')) return image;
+  if (image.startsWith('/uploads/')) return `${API_BASE_URL}${image}`;
+  return `${API_BASE_URL}/images/${image}`;
+};
+
 const OrderSummary = () => {
   const [order, setOrder] = useState(null);
   const [showPrinter, setShowPrinter] = useState(false);
@@ -26,7 +58,6 @@ const OrderSummary = () => {
     if (saved) {
       try {
         const parsedOrder = JSON.parse(saved);
-        console.log('Loaded order from localStorage:', parsedOrder);
         setOrder(parsedOrder);
       } catch (err) {
         console.error('Error parsing orderSummary from localStorage:', err);
@@ -64,7 +95,6 @@ const OrderSummary = () => {
     return <div style={{ padding: '2rem' }}>Loading summary...</div>;
   }
 
-  const MIN_ORDER_FOR_DELIVERY = 200;
   const isTakeawayOrder = Number(order.total) < MIN_ORDER_FOR_DELIVERY;
 
   const getOrderIdDisplay = () => {
@@ -110,22 +140,36 @@ const OrderSummary = () => {
       </h3>
 
       <ul className="order-items">
-        {order.items.map((item) => {
+        {order.items.map((item, index) => {
           const price = getItemPrice(item);
           const quantity = getItemQuantity(item);
+          const images = parseImageList(item.image);
+          const firstImage = images[0] || '';
+          const imageSrc = resolveImageUrl(firstImage);
+
+          const variantLabels = [
+            item.size ? (item.size.name || item.size) : null,
+            item.color ? (item.color.name || item.color) : null,
+            item.unit ? (item.unit.name || item.unit) : null,
+            item.unit_type ? item.unit_type : null,
+          ]
+            .filter(Boolean)
+            .join(', ');
+
           return (
-            <li key={item.product_id || item.id} className="order-summary-item">
+            <li key={`${item.product_id || item.id}-${item.unit_type || ''}-${index}`} className="order-summary-item">
               <img
-                src={
-                  item.image && item.image.startsWith('http')
-                    ? item.image
-                    : process.env.PUBLIC_URL + item.image || '/default-image.png'
-                }
+                src={imageSrc}
                 alt={item.name}
                 className="summary-image"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = 'https://via.placeholder.com/60';
+                }}
               />
               <div>
                 <strong>{item.name}</strong>
+                {variantLabels && <span className="variant-label"> ({variantLabels})</span>}
                 <br />
                 Qty: {quantity} × ₹{price.toFixed(2)}
                 <br />
@@ -178,9 +222,8 @@ const OrderSummary = () => {
       )}
 
       <div className="summary-actions">
-        {/* <button className="print-btn" onClick={handlePrint}>
-          🖨️ Print Receipt
-        </button> */}
+        {/* Uncomment if you want printing support */}
+        {/* <button className="print-btn" onClick={handlePrint}>🖨️ Print Receipt</button> */}
         <button className="go-to-products-btn" onClick={handleGoToProducts}>
           🛒 Go to Products
         </button>

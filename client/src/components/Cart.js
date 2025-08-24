@@ -139,7 +139,7 @@ const Cart = () => {
           if (safeShopSlug) {
             navigate(`/${safeShopSlug}/order`);
           } else {
-            alert('Invalid shop URL');
+           // alert('Invalid shop URL');
           }
         }}
       >

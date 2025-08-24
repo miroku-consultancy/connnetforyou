@@ -116,15 +116,36 @@ const getAllProducts = async (shopId) => {
 
 
 // 🔍 Get single product
+// Example getProductById for full variant info
 const getProductById = async (id) => {
   try {
-    const res = await pool.query('SELECT * FROM products WHERE id = $1', [id]);
-    return res.rows[0] || null;
+    // Assume you have join for size/color/unit tables if needed
+    const res = await pool.query(`
+      SELECT products.*,
+        size.name AS size_name,
+        color.name AS color_name,
+        unit.name AS unit_name
+      FROM products
+      LEFT JOIN size ON size.id = products.size_id
+      LEFT JOIN color ON color.id = products.color_id
+      LEFT JOIN unit ON unit.id = products.unit_id
+      WHERE products.id = $1
+    `, [id]);
+    if (!res.rows[0]) return null;
+    // Map variant info back in a compatible structure for frontend
+    const row = res.rows[0];
+    return {
+      ...row,
+      size: row.size_name ? { name: row.size_name } : undefined,
+      color: row.color_name ? { name: row.color_name } : undefined,
+      unit: row.unit_name ? { name: row.unit_name } : undefined,
+    };
   } catch (err) {
     console.error('❌ Error in getProductById:', err);
     throw err;
   }
 };
+
 
 // ➕ Add or update product & unit
 const addProduct = async ({
