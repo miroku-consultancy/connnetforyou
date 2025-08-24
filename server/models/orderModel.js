@@ -98,19 +98,27 @@ items.forEach((item, idx) => {
   const [productIdStr, unitIdStr] = item.id.toString().split('-');
   const productId = parseInt(productIdStr, 10);
 
-  const sizeName = item.size && typeof item.size === 'object' ? item.size.name : item.size;
-  const colorName = item.color && typeof item.color === 'object' ? item.color.name : item.color;
-const validSizeId = sizeName && sizeIdMap[sizeName];
-const validColorId = colorName && colorIdMap[colorName];
+ const sizeName = item.size && typeof item.size === 'object'
+  ? item.size.name
+  : (typeof item.size === 'string' ? item.size : null);
 
-const sizeId = validSizeId ?? null;
-const colorId = validColorId ?? null;
+const colorName = item.color && typeof item.color === 'object'
+  ? item.color.name
+  : (typeof item.color === 'string' ? item.color : null);
+
+const sizeId = sizeName && sizeIdMap[sizeName] ? sizeIdMap[sizeName] : null;
+const colorId = colorName && colorIdMap[colorName] ? colorIdMap[colorName] : null;
 
 const shouldUseUnitId = !sizeId && !colorId;
 
+console.log(`[ITEM DEBUG] sizeName="${sizeName}", colorName="${colorName}", sizeId=${sizeId}, colorId=${colorId}, unitIdStr="${unitIdStr}", item.unit_id=${item.unit_id}`);
+
 const unitId = shouldUseUnitId
-  ? (item.unit_id ?? (unitIdStr?.trim() ? parseInt(unitIdStr, 10) : null))
+  ? (item.unit_id ?? (unitIdStr && unitIdStr.trim() ? parseInt(unitIdStr, 10) : null))
   : null;
+
+console.log(`[ASSIGNED] unitId=${unitId}`);
+
 
 
   // Optional: Warn if size/color not found in DB
