@@ -100,13 +100,17 @@ app.use((err, req, res, next) => {
 });
 
 // Connect to PostgreSQL database and start the server
-pool.connect()
-  .then(() => {
-    console.log('✅ Connected to PostgreSQL database');
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-    });
-  })
-  .catch(err => {
-    console.error('❌ DB connection error:', err);
-  });
+// pool.connect()
+//   .then(() => {
+//     console.log('✅ Connected to PostgreSQL database');
+//     app.listen(PORT, () => {
+//       console.log(`🚀 Server running on port ${PORT}`);
+//     });
+//   })
+//   .catch(err => {
+//     console.error('❌ DB connection error:', err);
+//   });
+// Gracefully start server
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
