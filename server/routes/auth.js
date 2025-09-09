@@ -96,7 +96,7 @@ router.post('/login-with-token', async (req, res) => {
         role: role
       },
       process.env.JWT_SECRET,
-      { expiresIn: '2m' }
+      { expiresIn: '15m' }
     );
 
     // Generate Refresh Token (long-lived)
@@ -160,7 +160,7 @@ router.post('/refresh-token', async (req, res) => {
         // You might want to fetch role here too if needed
       },
       process.env.JWT_SECRET,
-      { expiresIn: '2m' }
+      { expiresIn: '15m' }
     );
     const newRefreshToken = jwt.sign(
       { id: user.id, email: user.email },
