@@ -162,10 +162,26 @@ router.post('/refresh-token', async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '15m' }
     );
+    const newRefreshToken = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.REFRESH_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    // Store the new refresh token in the database, replacing the old one
+    await pool.query(
+      'UPDATE public.users SET refresh_token = $1 WHERE id = $2',
+      [newRefreshToken, user.id]
+    );
 
     res.json({
-      token: newAccessToken,
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
     });
+
+    // res.json({
+    //   token: newAccessToken,
+    // });
 
   } catch (err) {
     console.error('Refresh token error:', err);
