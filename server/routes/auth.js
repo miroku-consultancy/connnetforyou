@@ -6,107 +6,51 @@ const jwt = require('jsonwebtoken');
 const pool = require('../db');
 
 // Email setup
-// const transporter = nodemailer.createTransport({
-//   service: 'gmail',
-//   auth: {
-//     user: process.env.EMAIL_USER,
-//     pass: process.env.EMAIL_PASS,
-//   }
-// });
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
-  auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
-  connectionTimeout: 20000,
-  logger: true,
-  debug: true,
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  }
 });
-
-
 
 // 1️⃣ Send OTP to email
-// router.post('/send-token', async (req, res) => {
-//   const { email, shop_slug } = req.body;
-//   if (!email || !shop_slug) {
-//     return res.status(400).json({ error: 'Email and shop slug are required' });
-//   }
+router.post('/send-token', async (req, res) => {
+  const { email, shop_slug } = req.body;
+  if (!email || !shop_slug) {
+    return res.status(400).json({ error: 'Email and shop slug are required' });
+  }
 
-//   const otp = crypto.randomInt(100000, 999999).toString();
-//   const expires = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
+  const otp = crypto.randomInt(100000, 999999).toString();
+  const expires = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
 
-//   try {
-//     const shopResult = await pool.query('SELECT id FROM shops WHERE slug = $1', [shop_slug]);
-//     if (shopResult.rowCount === 0) {
-//       return res.status(400).json({ error: 'Invalid shop slug' });
-//     }
-//     const shopId = shopResult.rows[0].id;
-
-//     await pool.query(`
-//       INSERT INTO public.users (email, otp, otp_expires_at, shop_id)
-//       VALUES ($1, $2, $3, $4)
-//       ON CONFLICT (email) DO UPDATE
-//       SET otp = $2, otp_expires_at = $3, shop_id = $4
-//     `, [email, otp, expires, shopId]);
-
-//     await transporter.sendMail({
-//       from: process.env.EMAIL_USER,
-//       to: email,
-//       subject: 'Your Login OTP',
-//       text: `Your login OTP is: ${otp}. It expires in 5 minutes.`,
-//     });
-
-//     res.json({ message: 'OTP sent to email' });
-//   } catch (err) {
-//     console.error('Error sending OTP:', err);
-//     res.status(500).json({ error: 'Server error while sending OTP' });
-//   }
-// });
-
-const net = require('net');
-
-app.post('/api/auth/send-otp', async (req, res) => {
-  const { email } = req.body;
-  if (!email) return res.status(400).json({ error: 'Email required' });
-
-  // First test SMTP connection
-  const socket = net.createConnection(587, 'smtp.gmail.com');
-  socket.setTimeout(5000); // 5 seconds timeout
-
-  socket.on('connect', async () => {
-    socket.end();
-
-    // Proceed with OTP generation and sending
-    const otp = crypto.randomInt(100000, 999999).toString(); // 6-digit OTP
-    const expires = Date.now() + 5 * 60 * 1000; // 5 minutes validity
-
-    tokenStore[email] = { otp, expires };
-
-    try {
-      await transporter.sendMail({
-        from: process.env.EMAIL_USER,
-        to: email,
-        subject: 'Your OTP Code',
-        text: `Your OTP code is: ${otp}\nIt expires in 5 minutes.`,
-      });
-
-      res.json({ message: 'OTP sent to email' });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Failed to send OTP' });
+  try {
+    const shopResult = await pool.query('SELECT id FROM shops WHERE slug = $1', [shop_slug]);
+    if (shopResult.rowCount === 0) {
+      return res.status(400).json({ error: 'Invalid shop slug' });
     }
-  });
+    const shopId = shopResult.rows[0].id;
 
-  socket.on('timeout', () => {
-    socket.destroy();
-    res.status(504).json({ error: 'SMTP connection timed out' });
-  });
+    await pool.query(`
+      INSERT INTO public.users (email, otp, otp_expires_at, shop_id)
+      VALUES ($1, $2, $3, $4)
+      ON CONFLICT (email) DO UPDATE
+      SET otp = $2, otp_expires_at = $3, shop_id = $4
+    `, [email, otp, expires, shopId]);
 
-  socket.on('error', (err) => {
-    res.status(500).json({ error: `SMTP connection error: ${err.message}` });
-  });
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Your Login OTP',
+      text: `Your login OTP is: ${otp}. It expires in 5 minutes.`,
+    });
+
+    res.json({ message: 'OTP sent to email' });
+  } catch (err) {
+    console.error('Error sending OTP:', err);
+    res.status(500).json({ error: 'Server error while sending OTP' });
+  }
 });
-
 
 // 2️⃣ Verify OTP and generate JWT + Refresh Token
 router.post('/login-with-token', async (req, res) => {
