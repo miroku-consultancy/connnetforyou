@@ -49,7 +49,7 @@ router.post('/send-token', async (req, res) => {
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 await resend.emails.send({
-  from: 'Your App <onboarding@resend.dev>', // or your custom domain
+  from: 'connectfree4u <no-reply@connectfree4u.com>',
   to: email,
   subject: 'Your Login OTP',
   text: `Your login OTP is: ${otp}. It expires in 5 minutes.`,
