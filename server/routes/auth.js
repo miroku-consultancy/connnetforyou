@@ -6,13 +6,13 @@ const jwt = require('jsonwebtoken');
 const pool = require('../db');
 
 // Email setup
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  }
-});
+// const transporter = nodemailer.createTransport({
+//   service: 'gmail',
+//   auth: {
+//     user: process.env.EMAIL_USER,
+//     pass: process.env.EMAIL_PASS,
+//   }
+// });
 
 // 1️⃣ Send OTP to email
 router.post('/send-token', async (req, res) => {
@@ -38,12 +38,23 @@ router.post('/send-token', async (req, res) => {
       SET otp = $2, otp_expires_at = $3, shop_id = $4
     `, [email, otp, expires, shopId]);
 
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: 'Your Login OTP',
-      text: `Your login OTP is: ${otp}. It expires in 5 minutes.`,
-    });
+    // await transporter.sendMail({
+    //   from: process.env.EMAIL_USER,
+    //   to: email,
+    //   subject: 'Your Login OTP',
+    //   text: `Your login OTP is: ${otp}. It expires in 5 minutes.`,
+    // });
+
+    const { Resend } = require('resend');
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+await resend.emails.send({
+  from: 'Your App <onboarding@resend.dev>', // or your custom domain
+  to: email,
+  subject: 'Your Login OTP',
+  text: `Your login OTP is: ${otp}. It expires in 5 minutes.`,
+});
+
 
     res.json({ message: 'OTP sent to email' });
   } catch (err) {
