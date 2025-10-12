@@ -6,13 +6,24 @@ const jwt = require('jsonwebtoken');
 const pool = require('../db');
 
 // Email setup
+// const transporter = nodemailer.createTransport({
+//   service: 'gmail',
+//   auth: {
+//     user: process.env.EMAIL_USER,
+//     pass: process.env.EMAIL_PASS,
+//   }
+// });
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 587,           // 👈 Use STARTTLS port
+  secure: false,       // 👈 Must be false for port 587
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
-  }
+  },
+  connectionTimeout: 10000, // optional, 10s timeout
 });
+
 
 // 1️⃣ Send OTP to email
 router.post('/send-token', async (req, res) => {
