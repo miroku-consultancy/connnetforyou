@@ -81,7 +81,7 @@ app.use('/api/categories', categoriesRouter);
 app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/razorpay', require('./routes/razorpay'));
 
-//rent related apis
+//rent collection related apis
 app.use('/api/tenants', tenantRoutes);
 
 // Serve static assets (images and frontend build)
