@@ -22,8 +22,6 @@ const categoriesRouter = require('./routes/categories');
 
 const whatsappRoutes = require('./routes/whatsapp');
 const tenantRoutes = require('./routes/tenantRoutes');
-app.use('/tenants', tenantRoutes);
-
 
 const app = express();
 
@@ -82,6 +80,9 @@ app.use('/api', whatsappRoutes);
 app.use('/api/categories', categoriesRouter);
 app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/razorpay', require('./routes/razorpay'));
+
+//rent related apis
+app.use('/api/tenants', tenantRoutes);
 
 // Serve static assets (images and frontend build)
 app.use('/images', express.static(imagesDir));
