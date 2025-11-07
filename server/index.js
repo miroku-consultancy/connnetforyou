@@ -21,6 +21,9 @@ const saveFcmTokenRouter = require('./routes/saveFcmToken'); // adjust path
 const categoriesRouter = require('./routes/categories');
 
 const whatsappRoutes = require('./routes/whatsapp');
+const tenantRoutes = require('./routes/tenantRoutes');
+app.use('/tenants', tenantRoutes);
+
 
 const app = express();
 
