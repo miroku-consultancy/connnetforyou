@@ -23,17 +23,48 @@ router.get('/', async (req, res) => {
  */
 router.post('/', async (req, res) => {
   try {
-    const { name, phone, rent, advance, owner_id } = req.body;
+    const {
+      roomNo,
+      name,
+      email,
+      phone,
+      aadhar,
+      pan,
+      tenantAddress,
+      ownerName,
+      ownerAddress,
+      rentMonthYear,
+      paymentMode,
+      paymentDate,
+      advancePaymentDate,
+      rentFinalPerMonth,
+      rent,
+      advance,
+      owner_id
+    } = req.body;
 
     if (!name || !phone) {
       return res.status(400).json({ error: 'Name and phone are required' });
     }
 
     const result = await pool.query(
-      `INSERT INTO tenants (name, phone, rent, advance, owner_id)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING *`,
-      [name, phone, rent || 0, advance || 0, owner_id || 1]
+      `INSERT INTO tenants (
+          room_no, name, email, phone, aadhar, pan, tenant_address,
+          owner_name, owner_address, rent_month_year, payment_mode,
+          payment_date, advance_payment_date, rent_final_per_month,
+          rent, advance, owner_id
+       ) VALUES (
+          $1, $2, $3, $4, $5, $6, $7,
+          $8, $9, $10, $11,
+          $12, $13, $14,
+          $15, $16, $17
+       ) RETURNING *`,
+      [
+        roomNo, name, email, phone, aadhar, pan, tenantAddress,
+        ownerName, ownerAddress, rentMonthYear, paymentMode,
+        paymentDate, advancePaymentDate, rentFinalPerMonth,
+        rent || 0, advance || 0, owner_id || 1
+      ]
     );
 
     res.status(201).json(result.rows[0]);
@@ -43,6 +74,7 @@ router.post('/', async (req, res) => {
   }
 });
 
+
 /**
  * ✏️ PUT /tenants/:id
  * Update tenant info (optional — for later)
@@ -50,14 +82,68 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, phone, rent, advance } = req.body;
+    const {
+      roomNo,
+      name,
+      email,
+      phone,
+      aadhar,
+      pan,
+      tenantAddress,
+      ownerName,
+      ownerAddress,
+      rentMonthYear,
+      paymentMode,
+      paymentDate,
+      advancePaymentDate,
+      rentFinalPerMonth,
+      rent,
+      advance,
+      owner_id
+    } = req.body;
 
     const result = await pool.query(
-      `UPDATE tenants
-       SET name = $1, phone = $2, rent = $3, advance = $4, updated_at = NOW()
-       WHERE id = $5
+      `UPDATE tenants SET
+          room_no = $1,
+          name = $2,
+          email = $3,
+          phone = $4,
+          aadhar = $5,
+          pan = $6,
+          tenant_address = $7,
+          owner_name = $8,
+          owner_address = $9,
+          rent_month_year = $10,
+          payment_mode = $11,
+          payment_date = $12,
+          advance_payment_date = $13,
+          rent_final_per_month = $14,
+          rent = $15,
+          advance = $16,
+          owner_id = $17,
+          updated_at = NOW()
+       WHERE id = $18
        RETURNING *`,
-      [name, phone, rent, advance, id]
+      [
+        roomNo,
+        name,
+        email,
+        phone,
+        aadhar,
+        pan,
+        tenantAddress,
+        ownerName,
+        ownerAddress,
+        rentMonthYear,
+        paymentMode,
+        paymentDate,
+        advancePaymentDate,
+        rentFinalPerMonth,
+        rent,
+        advance,
+        owner_id,
+        id,
+      ]
     );
 
     if (result.rowCount === 0) {
@@ -70,6 +156,7 @@ router.put('/:id', async (req, res) => {
     res.status(500).json({ error: 'Server error', message: err.message });
   }
 });
+
 
 /**
  * ❌ DELETE /tenants/:id
