@@ -6,6 +6,7 @@ import { useCart } from './CartContext';
 import { useUser } from './UserContext';
 
 const shopIcons = {
+  "ConnectFREE4U": "",
   "Kanji-Sweets": "🧁",
   "ALNazeerMuradabadiChickenBiryani": "🍗",
   "Janta7DaysChineseFastFood": "🥡",
