@@ -185,6 +185,7 @@ import React from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 
 const shops = [
+  "ConnectFREE4U",
   "Kanji-Sweets",
   "SanjayVegStore",
   "Ganga-Medical-hall",
