@@ -61,6 +61,10 @@ const Header = () => {
   const shopLogoSrc = shop?.slug
     ? `/images/shops/${shop.slug}.JPG`
     : '/images/shops/logo.png';
+    
+    if (location.pathname === "/banner") {
+    return null;   // Hides header on /banner route
+  }
 
   return (
     <header className="header">
