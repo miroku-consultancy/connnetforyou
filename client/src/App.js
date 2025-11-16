@@ -37,7 +37,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
 import TermsOfServicePage from './components/TermsOfServicePage';
 import UserProfileForm from './components/UserProfileForm';
-import Banner from './components/Banner';
+//import Banner from './components/Banner';
 
 
 
@@ -98,7 +98,7 @@ const AppRoutes = () => (
         <Route path="/terms-of-service" element={<TermsOfServicePage />} />
         <Route path="/profile" element={<ProtectedRoute><UserProfileForm /></ProtectedRoute>} />
         <Route path="/:shopSlug/profile" element={<UserProfileForm />} />
-        <Route path="/banner" element={<Banner />} />
+        {/* <Route path="/banner" element={<Banner />} /> */}
 
 
         {/* <Route path="/:shopSlug/order" element={<OrderPage />} /> */}
