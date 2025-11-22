@@ -28,43 +28,83 @@
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
 
+    <!-- ✅ Banner that shows in mobile browsers -->
+    <div id="cf4u-app-banner"
+         style="display:none; position:fixed; bottom:0; left:0; width:100%;
+                background:white; padding:14px; box-shadow:0 -4px 12px rgba(0,0,0,0.15);
+                z-index:99999; font-family:sans-serif; text-align:center;">
+      
+      <div style="font-size:15px; font-weight:600; margin-bottom:10px;">
+        Open ConnectFree4U App?
+      </div>
+
+      <button id="cf4u-open-app"
+              style="padding:10px 16px; margin-right:8px; background:#3578e5;
+                     color:white; border:none; border-radius:8px; font-size:14px;">
+        Open App
+      </button>
+
+      <button id="cf4u-continue-browser"
+              style="padding:10px 18px; background:#eee; border:none; border-radius:8px;
+                     font-size:14px;">
+        Continue in Browser
+      </button>
+    </div>
+
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
-    <!-- 🔥 App Detect Script (Correct placement inside <body>) -->
-<script>
-(function() {
-  const isAndroid = /Android/i.test(navigator.userAgent);
-  if (!isAndroid) return;
+    <!-- 🔥 Improved Deep Link + Banner Logic -->
+    <script>
+    (function() {
+      const isAndroid = /Android/i.test(navigator.userAgent);
+      const fullUrl = window.location.href;
 
-  const fullUrl = window.location.href;
+      const appId = "com.connectfree4u.connectfree4u";
+      const playStoreUrl = `https://play.google.com/store/apps/details?id=${appId}`;
 
-  // User chose browser mode
-  if (localStorage.getItem("cf4u-browser-mode") === "yes") return;
+      // Only shop/product pages
+      if (!fullUrl.includes("#/")) return;
 
-  const appId = "com.connectfree4u.connectfree4u";
-  const playStoreUrl = `https://play.google.com/store/apps/details?id=${appId}`;
+      // Build the deep link for Android
+      const path = fullUrl.split("#/")[1];
+      const intentUrl =
+        `intent://${path}` +
+        `#Intent;scheme=connectfree4u;package=${appId};` +
+        `S.browser_fallback_url=${encodeURIComponent(playStoreUrl)};end`;
 
-  if (!fullUrl.includes("#/")) return;
+      // Show banner only on mobile Android
+      if (isAndroid) {
+        document.getElementById("cf4u-app-banner").style.display = "block";
+      }
 
-  const path = fullUrl.split("#/")[1];
+      // "Open App" button handler
+      document.getElementById("cf4u-open-app").onclick = function() {
+        window.location.href = intentUrl;
+      };
 
-  const intentUrl =
-    `intent://${path}` +
-    `#Intent;scheme=connectfree4u;package=${appId};` +
-    `S.browser_fallback_url=${encodeURIComponent(playStoreUrl)};end`;
-  
-  // Try opening app
-  window.location.replace(intentUrl);
+      // "Continue in Browser" button handler
+      document.getElementById("cf4u-continue-browser").onclick = function() {
+        localStorage.setItem("cf4u-browser-mode", "yes");
+        document.getElementById("cf4u-app-banner").style.display = "none";
+      };
 
-  // If user returns → he wants browser
-  setTimeout(() => {
-    if (document.visibilityState === "visible") {
-      localStorage.setItem("cf4u-browser-mode", "yes");
-    }
-  }, 1200);
-})();
-</script>
+      // If user had already chosen browser mode → don't redirect
+      if (!isAndroid || localStorage.getItem("cf4u-browser-mode") === "yes") {
+        return;
+      }
 
+      // Auto try opening the app
+      window.location.href = intentUrl;
+
+      // If user returns (app not installed), enable browser mode
+      setTimeout(() => {
+        if (document.visibilityState === "visible") {
+          localStorage.setItem("cf4u-browser-mode", "yes");
+        }
+      }, 1200);
+
+    })();
+    </script>
 
   </body>
 </html>
