@@ -54,57 +54,50 @@
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
     <!-- 🔥 Improved Deep Link + Banner Logic -->
-    <script>
-    (function() {
-      const isAndroid = /Android/i.test(navigator.userAgent);
-      const fullUrl = window.location.href;
+<script>
+(function() {
+  const isAndroid = /Android/i.test(navigator.userAgent);
+  const fullUrl = window.location.href;
 
-      const appId = "com.connectfree4u.connectfree4u";
-      const playStoreUrl = `https://play.google.com/store/apps/details?id=${appId}`;
+  const appId = "com.connectfree4u.connectfree4u";
+  const playStoreUrl = `https://play.google.com/store/apps/details?id=${appId}`;
 
-      // Only shop/product pages
-      if (!fullUrl.includes("#/")) return;
+  if (!fullUrl.includes("#/")) return;
 
-      // Build the deep link for Android
-      const path = fullUrl.split("#/")[1];
-      const intentUrl =
-        `intent://${path}` +
-        `#Intent;scheme=connectfree4u;package=${appId};` +
-        `S.browser_fallback_url=${encodeURIComponent(playStoreUrl)};end`;
+  const path = fullUrl.split("#/")[1];
+  const intentUrl =
+    `intent://${path}` +
+    `#Intent;scheme=connectfree4u;package=${appId};` +
+    `S.browser_fallback_url=${encodeURIComponent(playStoreUrl)};end`;
 
-      // Show banner only on mobile Android
-      if (isAndroid) {
-        document.getElementById("cf4u-app-banner").style.display = "block";
-      }
+  // Show banner on Android
+  if (isAndroid) {
+    document.getElementById("cf4u-app-banner").style.display = "block";
+  }
 
-      // "Open App" button handler
-      document.getElementById("cf4u-open-app").onclick = function() {
-        window.location.href = intentUrl;
-      };
+  // OPEN APP BUTTON
+  document.getElementById("cf4u-open-app").onclick = function() {
+    window.location.href = intentUrl;
+  };
 
-      // "Continue in Browser" button handler
-      document.getElementById("cf4u-continue-browser").onclick = function() {
-        localStorage.setItem("cf4u-browser-mode", "yes");
-        document.getElementById("cf4u-app-banner").style.display = "none";
-      };
+  // CONTINUE IN BROWSER BUTTON
+  document.getElementById("cf4u-continue-browser").onclick = function() {
+    localStorage.setItem("cf4u-browser-mode", "yes");
+    document.getElementById("cf4u-app-banner").style.display = "none";
+  };
 
-      // If user had already chosen browser mode → don't redirect
-      if (!isAndroid || localStorage.getItem("cf4u-browser-mode") === "yes") {
-        return;
-      }
+  // AUTO REDIRECT ONLY IF USER DID NOT CHOOSE BROWSER MODE
+  if (isAndroid && !localStorage.getItem("cf4u-browser-mode")) {
 
-      // Auto try opening the app
+    // 🔥 Delay auto-open to allow banner to appear
+    setTimeout(() => {
       window.location.href = intentUrl;
+    }, 700);
+  }
 
-      // If user returns (app not installed), enable browser mode
-      setTimeout(() => {
-        if (document.visibilityState === "visible") {
-          localStorage.setItem("cf4u-browser-mode", "yes");
-        }
-      }, 1200);
+})();
+</script>
 
-    })();
-    </script>
 
   </body>
 </html>
