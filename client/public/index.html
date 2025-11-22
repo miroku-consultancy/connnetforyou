@@ -32,31 +32,33 @@
 
     <!-- 🔥 App Detect Script (Correct placement inside <body>) -->
     <script>
-      (function() {
-        const appId = "com.connectfree4u.connectfree4u";
-        const playStoreUrl = `https://play.google.com/store/apps/details?id=${appId}`;
-        const fullUrl = window.location.href;
+(function() {
+  const appId = "com.connectfree4u.connectfree4u";
+  const playStoreUrl = `https://play.google.com/store/apps/details?id=${appId}`;
+  const fullUrl = window.location.href;
 
-        // Only trigger on QR shop routes:
-        if (fullUrl.includes("#/")) {
+  // Only trigger when URL contains "#/"
+  if (fullUrl.includes("#/")) {
 
-          // Extract everything after "#/"
-          const hashPart = fullUrl.split("#/")[1]; // e.g. Kanji-Sweets/products
+    const hashPart = fullUrl.split("#/")[1]; // e.g. Kanji-Sweets/products
 
-          // Build Android intent URL
-          const intentUrl =
-            `intent://${hashPart}` +
-            `#Intent;scheme=connectfree4u;package=${appId};end`;
+    // CORRECTED Intent URL:
+    const intentUrl =
+      `intent://${hashPart}` +
+      `#Intent;scheme=connectfree4u;` +
+      `package=${appId};` +
+      `action=android.intent.action.VIEW;end`;
 
-          // Try opening the Android app
-          window.location.href = intentUrl;
+    // Try opening the Android app
+    window.location.replace(intentUrl);
 
-          // Fallback → Play Store
-          setTimeout(() => {
-            window.location.href = playStoreUrl;
-          }, 1500);
-        }
-      })();
-    </script>
+    // fallback
+    setTimeout(() => {
+      window.location.replace(playStoreUrl);
+    }, 1200);
+  }
+})();
+</script>
+
   </body>
 </html>
