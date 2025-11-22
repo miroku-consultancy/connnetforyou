@@ -31,34 +31,40 @@
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
     <!-- 🔥 App Detect Script (Correct placement inside <body>) -->
-    <script>
+<script>
 (function() {
-  const appId = "com.connectfree4u.connectfree4u";
-  const playStoreUrl = `https://play.google.com/store/apps/details?id=${appId}`;
+  const isAndroid = /Android/i.test(navigator.userAgent);
+  if (!isAndroid) return;
+
   const fullUrl = window.location.href;
 
-  // Only trigger when URL contains "#/"
-  if (fullUrl.includes("#/")) {
+  // User chose browser mode
+  if (localStorage.getItem("cf4u-browser-mode") === "yes") return;
 
-    const hashPart = fullUrl.split("#/")[1]; // e.g. Kanji-Sweets/products
+  const appId = "com.connectfree4u.connectfree4u";
+  const playStoreUrl = `https://play.google.com/store/apps/details?id=${appId}`;
 
-    // CORRECTED Intent URL:
-    const intentUrl =
-      `intent://${hashPart}` +
-      `#Intent;scheme=connectfree4u;` +
-      `package=${appId};` +
-      `action=android.intent.action.VIEW;end`;
+  if (!fullUrl.includes("#/")) return;
 
-    // Try opening the Android app
-    window.location.replace(intentUrl);
+  const path = fullUrl.split("#/")[1];
 
-    // fallback
-    setTimeout(() => {
-      window.location.replace(playStoreUrl);
-    }, 1200);
-  }
+  const intentUrl =
+    `intent://${path}` +
+    `#Intent;scheme=connectfree4u;package=${appId};` +
+    `S.browser_fallback_url=${encodeURIComponent(playStoreUrl)};end`;
+  
+  // Try opening app
+  window.location.replace(intentUrl);
+
+  // If user returns → he wants browser
+  setTimeout(() => {
+    if (document.visibilityState === "visible") {
+      localStorage.setItem("cf4u-browser-mode", "yes");
+    }
+  }, 1200);
 })();
 </script>
+
 
   </body>
 </html>
