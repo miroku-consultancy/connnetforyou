@@ -62,6 +62,7 @@
   const appId = "com.connectfree4u.connectfree4u";
   const playStoreUrl = `https://play.google.com/store/apps/details?id=${appId}`;
 
+  // Run only for pages with hash route (#/)
   if (!fullUrl.includes("#/")) return;
 
   const path = fullUrl.split("#/")[1];
@@ -70,29 +71,27 @@
     `#Intent;scheme=connectfree4u;package=${appId};` +
     `S.browser_fallback_url=${encodeURIComponent(playStoreUrl)};end`;
 
-  // Show banner on Android
+  // Show popup/banner only on Android mobile
   if (isAndroid) {
     document.getElementById("cf4u-app-banner").style.display = "block";
   }
 
-  // OPEN APP BUTTON
+  // CLICK: Open App
   document.getElementById("cf4u-open-app").onclick = function() {
     window.location.href = intentUrl;
   };
 
-  // CONTINUE IN BROWSER BUTTON
+  // CLICK: Continue in Browser
   document.getElementById("cf4u-continue-browser").onclick = function() {
     localStorage.setItem("cf4u-browser-mode", "yes");
     document.getElementById("cf4u-app-banner").style.display = "none";
   };
 
-  // AUTO REDIRECT ONLY IF USER DID NOT CHOOSE BROWSER MODE
+  // AUTO-OPEN APP (only first time)
   if (isAndroid && !localStorage.getItem("cf4u-browser-mode")) {
-
-    // 🔥 Delay auto-open to allow banner to appear
     setTimeout(() => {
       window.location.href = intentUrl;
-    }, 700);
+    }, 700); // Delay so popup can appear
   }
 
 })();
