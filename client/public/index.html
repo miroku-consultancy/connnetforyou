@@ -9,34 +9,54 @@
     <meta name="description" content="Web site created using create-react-app" />
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    
+
     <!-- Open Graph and Twitter Card -->
     <meta property="og:title" content="Connect4U" />
     <meta property="og:description" content="Transforming Challenges into Solutions." />
     <meta property="og:image" content="%PUBLIC_URL%/favicon.ico" />
     <meta property="og:url" content="https://www.mirokuconsultancyservices.com" />
-    
+
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Connect4U" />
     <meta name="twitter:description" content="Transforming Challenges into Solutions." />
     <meta name="twitter:image" content="%PUBLIC_URL%/favicon.ico" />
-    
+
     <title>Connect4U: Order as per your need</title>
   </head>
-  
+
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
 
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
-      <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <!-- 🔥 App Detect Script (Correct placement inside <body>) -->
+    <script>
+      (function() {
+        const appId = "com.connectfree4u.connectfree4u";
+        const playStoreUrl = `https://play.google.com/store/apps/details?id=${appId}`;
+        const fullUrl = window.location.href;
+
+        // Only trigger on QR shop routes:
+        if (fullUrl.includes("#/")) {
+
+          // Extract everything after "#/"
+          const hashPart = fullUrl.split("#/")[1]; // e.g. Kanji-Sweets/products
+
+          // Build Android intent URL
+          const intentUrl =
+            `intent://${hashPart}` +
+            `#Intent;scheme=connectfree4u;package=${appId};end`;
+
+          // Try opening the Android app
+          window.location.href = intentUrl;
+
+          // Fallback → Play Store
+          setTimeout(() => {
+            window.location.href = playStoreUrl;
+          }, 1500);
+        }
+      })();
+    </script>
   </body>
 </html>
