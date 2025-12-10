@@ -131,7 +131,7 @@ const DashboardSummary = () => {
 
   return (
     <div className="dashboard-container">
-      <h1 className="dashboard-title">🛒 Welcome to ConnectFREE4U</h1>
+      <h1 className="dashboard-title">🛒 Welcome to ConnectFREE4U digital</h1>
       {visitCount !== null && (
         <>
           <p className="dashboard-visit-count">👁 Total Visits: {visitCount}</p>
