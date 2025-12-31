@@ -139,12 +139,13 @@ const MenuBar = ({ closeMenu }) => {
             onMouseEnter={() => setExpandedIndex('vendor')}
             onMouseLeave={() => setExpandedIndex(null)}
           >
-            <span className="nav-link">🛠️ Vendor Tools ▾</span>
+            <span className="nav-link">🛠️ Store Admin Tools ▾</span>
             {expandedIndex === 'vendor' && (
               <div className="dropdown">
                 <Link to="/vendor/dashboard" className="dropdown-item" onClick={handleLinkClick}>📊 Dashboard</Link>
                 <Link to={`/${shopSlug}/shop-orders`} className="dropdown-item" onClick={handleLinkClick}>🛍️ Shop Orders</Link>
                 <Link to={`/${shopSlug}/admin/add-product`} className="dropdown-item" onClick={handleLinkClick}>➕ Add Product</Link>
+                <Link to={`/${shopSlug}/admin/add-stock`} className="dropdown-item" onClick={handleLinkClick}>➕ Add Stock</Link>
               </div>
             )}
           </div>
