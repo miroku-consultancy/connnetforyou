@@ -87,18 +87,30 @@ useEffect(() => {
 //         };
 //     }, [recipientId, recipientName]);
 useEffect(() => {
-  const token = localStorage.getItem("jwtToken");
-  const tenantId = localStorage.getItem("tenantId");
+//   const token = localStorage.getItem("jwtToken");
+//   const tenantId = localStorage.getItem("tenantId");
 
-  const connection = new HubConnectionBuilder()
-    .withUrl(
-      `${API_BASE_URL}/chathub?tenantId=${tenantId}`,
-      {
-        accessTokenFactory: () => token ?? ""
-      }
-    )
-    .withAutomaticReconnect()
-    .build();
+//   const connection = new HubConnectionBuilder()
+//     .withUrl(
+//       `${API_BASE_URL}/chathub?tenantId=${tenantId}`,
+//       {
+//         accessTokenFactory: () => token ?? ""
+//       }
+//     )
+//     .withAutomaticReconnect()
+//     .build();
+const token = localStorage.getItem("jwtToken");
+
+// 🔴 PHASE-1 HARDCODE TENANT
+const tenantId = "ffe286fa-7297-4e3e-b550-08d7b7a96dd2";
+
+const connection = new HubConnectionBuilder()
+  .withUrl(
+    `${API_BASE_URL}/chathub?access_token=${token}&tenantId=${tenantId}`
+  )
+  .withAutomaticReconnect()
+  .build();
+
 
 //   connection.on("ReceiveMessage", (senderId, messageContent) => {
 //     const timestamp = new Date().toLocaleTimeString();
