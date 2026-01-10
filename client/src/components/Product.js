@@ -80,6 +80,7 @@ const Product = () => {
   // Check vendor status
   useEffect(() => {
     const token = localStorage.getItem('authToken');
+    console.log(token , "tokencheck")
     if (token) {
       try {
         const decoded = jwtDecode(token);
@@ -234,6 +235,25 @@ const Product = () => {
           <span role="img" aria-label="user" className="user-icon">👤</span>
           <div className="user-info-container">
             <p>Welcome back, <strong>{user.name || user.email?.split('@')[0]}</strong></p>
+            <button
+  className="chat-btn"
+  onClick={() => {
+    const token = localStorage.getItem("jwtToken");
+    if (!token) {
+      navigate(
+            "/chat/7b5100e6-10d7-47a0-8fa9-0ec64d92c696/Seller"
+          );
+      //navigate(`/${shopSlug}/login`);
+      //return;
+    }
+navigate(
+            "/chat/7b5100e6-10d7-47a0-8fa9-0ec64d92c696/Seller"
+          );
+    //navigate(`/chat/${shopOwnerUserId}/Seller`);
+  }}
+>
+  💬 Chat with Seller
+</button>
             {addresses.length > 0 ? (
               <p className="user-address-banner">
                 <strong>Delivering to:</strong>{' '}
@@ -246,6 +266,7 @@ const Product = () => {
                 </select>
                 <br />
                 <button onClick={() => setShowAddressPopup(true)} className="edit-btn">✏️ Edit Address</button>
+                
               </p>
             ) : (
               <button onClick={() => { setTempAddress({ name: '', street: '', city: '', zip: '', phone: '' }); setSelectedAddressId(null); setShowAddressPopup(true); }} className="edit-btn">➕ Add Address</button>

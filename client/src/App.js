@@ -38,6 +38,7 @@ import './App.css';
 import TermsOfServicePage from './components/TermsOfServicePage';
 import UserProfileForm from './components/UserProfileForm';
 import AddStock from './components/AddStock';
+import ChatHub from "./components/chatHub";
 //import Banner from './components/Banner';
 
 
@@ -100,6 +101,14 @@ const AppRoutes = () => (
         <Route path="/profile" element={<ProtectedRoute><UserProfileForm /></ProtectedRoute>} />
         <Route path="/:shopSlug/profile" element={<UserProfileForm />} />
         <Route path="/:shopSlug/admin/add-stock" element={<AddStock />} />
+        <Route
+    path="/chat/:recipientId/:recipientName"
+    element={
+      <ProtectedRoute>
+        <ChatHub />
+      </ProtectedRoute>
+    }
+  />      
         {/* <Route path="/banner" element={<Banner />} /> */}
 
 
