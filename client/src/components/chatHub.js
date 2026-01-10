@@ -101,15 +101,16 @@ useEffect(() => {
 //     .build();
 const token = localStorage.getItem("jwtToken");
 
-// 🔴 PHASE-1 HARDCODE TENANT
+// PHASE-1 hardcoded tenant (OK)
 const tenantId = "ffe286fa-7297-4e3e-b550-08d7b7a96dd2";
 
 const connection = new HubConnectionBuilder()
-  .withUrl(
-    `${API_BASE_URL}/chathub?access_token=${token}&tenantId=${tenantId}`
-  )
+  .withUrl(`${API_BASE_URL}/chathub?tenantId=${tenantId}`, {
+    accessTokenFactory: () => token
+  })
   .withAutomaticReconnect()
   .build();
+
 
 
 //   connection.on("ReceiveMessage", (senderId, messageContent) => {
