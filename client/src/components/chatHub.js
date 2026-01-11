@@ -27,6 +27,9 @@ const ChatComponent = () => {
   const [sending, setSending] = useState(false);
   const [showSendButton, setShowSendButton] = useState(false);
 
+  // 🔥 IMPORTANT STATE
+  const [recipientResolved, setRecipientResolved] = useState(false);
+
   const { recipientId, recipientName } = useParams();
 
   // =========================
@@ -35,6 +38,8 @@ const ChatComponent = () => {
   useEffect(() => {
     const resolveRecipient = async () => {
       try {
+        setRecipientResolved(false);
+
         const token = localStorage.getItem("authToken");
         if (!token) {
           toast.error("Authentication required");
@@ -51,6 +56,7 @@ const ChatComponent = () => {
         );
 
         recipientChatUserIdRef.current = res.data;
+        setRecipientResolved(true);
       } catch (err) {
         toast.error("Failed to resolve chat recipient");
         console.error(err);
@@ -107,13 +113,13 @@ const ChatComponent = () => {
     return () => {
       connection.stop();
     };
-  }, []); // 🔥 DO NOT ADD DEPENDENCIES HERE
+  }, []); // 🔥 MUST STAY EMPTY
 
   // =========================
   // 3️⃣ LOAD CHAT HISTORY (AFTER RESOLVE)
   // =========================
   useEffect(() => {
-    if (!recipientChatUserIdRef.current) return;
+    if (!recipientResolved) return;
 
     const fetchMessages = async () => {
       setLoading(true);
@@ -148,7 +154,7 @@ const ChatComponent = () => {
     };
 
     fetchMessages();
-  }, [recipientId]); // ✅ CRITICAL FIX
+  }, [recipientResolved]);
 
   // =========================
   // 4️⃣ SEND MESSAGE

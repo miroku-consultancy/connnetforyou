@@ -237,12 +237,45 @@ const Product = () => {
             <p>Welcome back, <strong>{user.name || user.email?.split('@')[0]}</strong></p>
 <button
   className="chat-btn"
-  onClick={() => {
-    navigate("/chat/d90c7fbc-3b24-4128-a9dd-a7874a2c9a65/Customer");
+  onClick={async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        alert("Login required");
+        return;
+      }
+
+      const res = await fetch(
+        "https://chat-api.connectfree4u.com/api/chat/start",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!res.ok) {
+        const msg = await res.text();
+        alert(msg);
+        return;
+      }
+
+      const data = await res.json();
+
+      navigate(
+        `/chat/${data.recipientExternalUserId}/${data.recipientName}`
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Failed to start chat");
+    }
   }}
 >
-  💬 Chat with  Seller
+  💬 Chat with Seller
 </button>
+
 
             {addresses.length > 0 ? (
               <p className="user-address-banner">
