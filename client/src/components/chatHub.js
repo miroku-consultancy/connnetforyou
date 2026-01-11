@@ -44,16 +44,32 @@ const ChatComponent = () => {
       .withAutomaticReconnect()
       .build();
 
-    connection.on("ReceiveMessage", (senderChatUserId, content) => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          from: senderChatUserId === chatUserId ? "other" : "me",
-          text: content,
-          time: new Date().toLocaleTimeString(),
-        },
-      ]);
-    });
+    // connection.on("ReceiveMessage", (senderChatUserId, content) => {
+    //   setMessages((prev) => [
+    //     ...prev,
+    //     {
+    //       from: senderChatUserId === chatUserId ? "other" : "me",
+    //       text: content,
+    //       time: new Date().toLocaleTimeString(),
+    //     },
+    //   ]);
+    // });
+connection.on("ReceiveMessage", (senderChatUserId, content) => {
+  // ❗ Ignore messages from other customers
+  if (senderChatUserId !== chatUserId) {
+    // Later: increment inbox unread count
+    return;
+  }
+
+  setMessages(prev => [
+    ...prev,
+    {
+      from: "other",
+      text: content,
+      time: new Date().toLocaleTimeString(),
+    },
+  ]);
+});
 
     connection
       .start()
