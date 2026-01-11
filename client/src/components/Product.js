@@ -239,7 +239,7 @@ const Product = () => {
   className="chat-btn"
   onClick={() => {
     navigate(
-      "/chat/2e62b9ef-b056-4157-a7bb-f38534e8503e/Seller"
+      "/chat/00b20bfd-2f4f-4e06-af5b-d5a67f42e9b6/Seller"
     );
   }}
 >
