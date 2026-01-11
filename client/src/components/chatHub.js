@@ -54,25 +54,42 @@ const ChatComponent = () => {
     //     },
     //   ]);
     // });
-connection.on("ReceiveMessage", (senderChatUserId, content) => {
-  // Message belongs to this conversation if:
-  // - sender is the other person in this chat
-  // - OR sender is me (echoed back)
-  const isForThisChat =
-    senderChatUserId === chatUserId ||
-    senderChatUserId !== chatUserId; // echo case handled by sender flag
+connection.on(
+  "ReceiveMessage",
+  (senderChatUserId, recipientChatUserId, content) => {
 
-  if (!isForThisChat) return;
+    // Case 1: message from customer → vendor (active chat)
+    if (senderChatUserId === chatUserId) {
+      setMessages(prev => [
+        ...prev,
+        {
+          from: "other",
+          text: content,
+          time: new Date().toLocaleTimeString(),
+        },
+      ]);
+      return;
+    }
 
-  setMessages(prev => [
-    ...prev,
-    {
-      from: senderChatUserId === chatUserId ? "other" : "me",
-      text: content,
-      time: new Date().toLocaleTimeString(),
-    },
-  ]);
-});
+    // Case 2: message from vendor → customer (echo)
+    if (recipientChatUserId === chatUserId) {
+      setMessages(prev => [
+        ...prev,
+        {
+          from: "me",
+          text: content,
+          time: new Date().toLocaleTimeString(),
+        },
+      ]);
+      return;
+    }
+
+    // Case 3: message from OTHER customer → vendor
+    // ❌ ignore in this chat
+    // ✅ should go to inbox later
+  }
+);
+
 
 
     connection
