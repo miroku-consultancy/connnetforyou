@@ -243,7 +243,7 @@ const Product = () => {
     );
   }}
 >
-  💬 Chat with Seller
+  💬 Chat with  Seller
 </button>
 
             {addresses.length > 0 ? (
