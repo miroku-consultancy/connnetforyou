@@ -264,9 +264,8 @@ const Product = () => {
 
       const data = await res.json();
 
-      navigate(
-        `/chat/${data.recipientExternalUserId}/${data.recipientName}`
-      );
+      // ✅ USE chatUserId ONLY
+      navigate(`/chat/${data.recipientChatUserId}`);
     } catch (err) {
       console.error(err);
       alert("Failed to start chat");
@@ -275,6 +274,7 @@ const Product = () => {
 >
   💬 Chat with Seller
 </button>
+
 
 
             {addresses.length > 0 ? (
