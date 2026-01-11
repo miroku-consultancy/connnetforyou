@@ -5,6 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useUser } from './UserContext';
 import AddressPopup from './AddressPopup';
 import { jwtDecode } from 'jwt-decode';
+import ChatActions from "./ChatActions";
 
 const API_BASE_URL = 'https://connnet4you-server.onrender.com';
 
@@ -235,56 +236,8 @@ const Product = () => {
           <span role="img" aria-label="user" className="user-icon">👤</span>
           <div className="user-info-container">
             <p>Welcome back, <strong>{user.name || user.email?.split('@')[0]}</strong></p>
-<button
-  className="chat-btn"
-  onClick={async () => {
-    try {
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        alert("Login required");
-        return;
-      }
-
-      const res = await fetch(
-        "https://chat-api.connectfree4u.com/api/chat/start",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (!res.ok) {
-        const msg = await res.text();
-        alert(msg);
-        return;
-      }
-
-      const data = await res.json();
-
-      // ✅ USE chatUserId ONLY
-      navigate(`/chat/${data.recipientChatUserId}`);
-    } catch (err) {
-      console.error(err);
-      alert("Failed to start chat");
-    }
-  }}
->
-  💬 Chat with Seller
-</button>
-<button
-  className="chat-btn"
-  onClick={() => navigate("/vendor/inbox")}
->
-  📥 Open Inbox
-</button>
-
-
-
-
-            {addresses.length > 0 ? (
+<ChatActions  />
+  {addresses.length > 0 ? (
               <p className="user-address-banner">
                 <strong>Delivering to:</strong>{' '}
                 <select value={selectedAddressId || ''} onChange={handleAddressSelect} className="address-select">

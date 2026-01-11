@@ -55,21 +55,25 @@ const ChatComponent = () => {
     //   ]);
     // });
 connection.on("ReceiveMessage", (senderChatUserId, content) => {
-  // ❗ Ignore messages from other customers
-  if (senderChatUserId !== chatUserId) {
-    // Later: increment inbox unread count
-    return;
-  }
+  // Message belongs to this conversation if:
+  // - sender is the other person in this chat
+  // - OR sender is me (echoed back)
+  const isForThisChat =
+    senderChatUserId === chatUserId ||
+    senderChatUserId !== chatUserId; // echo case handled by sender flag
+
+  if (!isForThisChat) return;
 
   setMessages(prev => [
     ...prev,
     {
-      from: "other",
+      from: senderChatUserId === chatUserId ? "other" : "me",
       text: content,
       time: new Date().toLocaleTimeString(),
     },
   ]);
 });
+
 
     connection
       .start()
