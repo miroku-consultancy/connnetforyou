@@ -238,9 +238,7 @@ const Product = () => {
 <button
   className="chat-btn"
   onClick={() => {
-    navigate(
-      "/chat/00b20bfd-2f4f-4e06-af5b-d5a67f42e9b6/Seller"
-    );
+    navigate("/chat/d90c7fbc-3b24-4128-a9dd-a7874a2c9a65/Customer");
   }}
 >
   💬 Chat with  Seller

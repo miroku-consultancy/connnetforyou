@@ -30,16 +30,22 @@ const ChatComponent = () => {
   const { recipientId, recipientName } = useParams();
 
   // =========================
-  // RESOLVE RECIPIENT CHAT USER ID
+  // 1️⃣ RESOLVE RECIPIENT CHAT USER ID
   // =========================
   useEffect(() => {
     const resolveRecipient = async () => {
       try {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+          toast.error("Authentication required");
+          return;
+        }
+
         const res = await axios.get(
           `${API_BASE_URL}/api/chat/resolve-recipient/${recipientId}`,
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+              Authorization: `Bearer ${token}`,
             },
           }
         );
@@ -47,6 +53,7 @@ const ChatComponent = () => {
         recipientChatUserIdRef.current = res.data;
       } catch (err) {
         toast.error("Failed to resolve chat recipient");
+        console.error(err);
       }
     };
 
@@ -54,7 +61,7 @@ const ChatComponent = () => {
   }, [recipientId]);
 
   // =========================
-  // SIGNALR CONNECTION
+  // 2️⃣ SIGNALR CONNECTION (ONCE)
   // =========================
   useEffect(() => {
     const token = localStorage.getItem("authToken");
@@ -90,29 +97,34 @@ const ChatComponent = () => {
       .start()
       .then(() => {
         connectionRef.current = connection;
-        console.log("SignalR connected");
+        console.log("✅ SignalR connected");
       })
-      .catch((err) => console.error("SignalR error", err));
+      .catch((err) => {
+        console.error("SignalR error", err);
+        toast.error("Chat connection failed");
+      });
 
     return () => {
       connection.stop();
     };
-  }, [recipientName]);
+  }, []); // 🔥 DO NOT ADD DEPENDENCIES HERE
 
   // =========================
-  // LOAD CHAT HISTORY
+  // 3️⃣ LOAD CHAT HISTORY (AFTER RESOLVE)
   // =========================
   useEffect(() => {
-    const fetchMessages = async () => {
-      if (!recipientChatUserIdRef.current) return;
+    if (!recipientChatUserIdRef.current) return;
 
+    const fetchMessages = async () => {
       setLoading(true);
       try {
+        const token = localStorage.getItem("authToken");
+
         const res = await axios.get(
           `${API_BASE_URL}/api/chat/messages/${recipientChatUserIdRef.current}`,
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+              Authorization: `Bearer ${token}`,
             },
           }
         );
@@ -127,18 +139,19 @@ const ChatComponent = () => {
             timestamp: new Date(m.timestamp).toLocaleTimeString(),
           }))
         );
-      } catch {
+      } catch (err) {
         toast.error("Failed to load messages");
+        console.error(err);
       } finally {
         setLoading(false);
       }
     };
 
     fetchMessages();
-  }, [recipientName]);
+  }, [recipientId]); // ✅ CRITICAL FIX
 
   // =========================
-  // SEND MESSAGE
+  // 4️⃣ SEND MESSAGE
   // =========================
   const sendMessage = async () => {
     const connection = connectionRef.current;
@@ -161,13 +174,14 @@ const ChatComponent = () => {
       setShowSendButton(false);
     } catch (err) {
       toast.error("Send failed");
+      console.error(err);
     } finally {
       setSending(false);
     }
   };
 
   // =========================
-  // UI
+  // 5️⃣ UI
   // =========================
   return (
     <Container maxWidth="sm">
