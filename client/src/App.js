@@ -109,6 +109,15 @@ const AppRoutes = () => (
     </ProtectedRoute>
   }
 />
+<Route
+  path="/vendor/inbox"
+  element={
+    <ProtectedRoute>
+      <VendorInbox />
+    </ProtectedRoute>
+  }
+/>
+
 
         {/* <Route
     path="/chat/:recipientId/:recipientName"

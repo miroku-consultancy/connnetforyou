@@ -274,6 +274,13 @@ const Product = () => {
 >
   💬 Chat with Seller
 </button>
+<button
+  className="chat-btn"
+  onClick={() => navigate("/vendor/inbox")}
+>
+  📥 Open Inbox
+</button>
+
 
 
 
