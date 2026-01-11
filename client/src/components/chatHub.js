@@ -100,7 +100,7 @@ useEffect(() => {
 //     .withAutomaticReconnect()
 //     .build();
 useEffect(() => {
-  const token = localStorage.getItem("jwtToken");
+  const token = localStorage.getItem("authToken")
   const tenantId = localStorage.getItem("tenantId");
 
   if (!token) {
@@ -179,7 +179,7 @@ connection.onclose(() => {
             try {
                 const response = await axios.get(`${API_BASE_URL}/api/chat/messages/${recipientId}`, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`
+                        'Authorization': `Bearer ${localStorage.getItem("authToken")}`
                     }
                 });
                 setMessages(response.data.map(msg => ({
