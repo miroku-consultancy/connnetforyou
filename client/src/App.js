@@ -102,13 +102,22 @@ const AppRoutes = () => (
         <Route path="/:shopSlug/profile" element={<UserProfileForm />} />
         <Route path="/:shopSlug/admin/add-stock" element={<AddStock />} />
         <Route
+  path="/chat/:chatUserId"
+  element={
+    <ProtectedRoute>
+      <ChatHub />
+    </ProtectedRoute>
+  }
+/>
+
+        {/* <Route
     path="/chat/:recipientId/:recipientName"
     element={
       <ProtectedRoute>
         <ChatHub />
       </ProtectedRoute>
     }
-  />      
+  />       */}
         {/* <Route path="/banner" element={<Banner />} /> */}
 
 
