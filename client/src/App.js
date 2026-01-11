@@ -39,6 +39,7 @@ import TermsOfServicePage from './components/TermsOfServicePage';
 import UserProfileForm from './components/UserProfileForm';
 import AddStock from './components/AddStock';
 import ChatHub from "./components/chatHub";
+import VendorInbox from "./components/VendorInbox";
 //import Banner from './components/Banner';
 
 
