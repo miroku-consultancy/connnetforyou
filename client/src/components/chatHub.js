@@ -3,6 +3,7 @@ import { HubConnectionBuilder } from "@microsoft/signalr";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { jwtDecode } from "jwt-decode";
 import {
   Box,
   Button,
@@ -17,25 +18,52 @@ import SendIcon from "@mui/icons-material/Send";
 const API_BASE_URL = "https://chat-api.connectfree4u.com";
 
 const ChatComponent = () => {
-  const { chatUserId } = useParams();
+  const { chatUserId } = useParams(); // recipientChatUserId
 
   const connectionRef = useRef(null);
   const bottomRef = useRef(null);
 
+  const [myChatUserId, setMyChatUserId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
 
+// =========================
+// 0️⃣ RESOLVE MY CHAT USER ID (CORRECT)
+// =========================
+useEffect(() => {
+  const token = localStorage.getItem("authToken");
+  if (!token) {
+    toast.error("Authentication required");
+    return;
+  }
+
+  const loadMe = async () => {
+    try {
+      const res = await axios.get(
+        `${API_BASE_URL}/api/chat/me`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setMyChatUserId(res.data.chatUserId);
+    } catch {
+      toast.error("Failed to resolve chat identity");
+    }
+  };
+
+  loadMe();
+}, []);
+
+
   // =========================
   // 1️⃣ SIGNALR CONNECTION
   // =========================
   useEffect(() => {
+    if (!myChatUserId) return;
+
     const token = localStorage.getItem("authToken");
-    if (!token) {
-      toast.error("Authentication required");
-      return;
-    }
+    if (!token) return;
 
     const connection = new HubConnectionBuilder()
       .withUrl(`${API_BASE_URL}/chathub`, {
@@ -44,53 +72,25 @@ const ChatComponent = () => {
       .withAutomaticReconnect()
       .build();
 
-    // connection.on("ReceiveMessage", (senderChatUserId, content) => {
-    //   setMessages((prev) => [
-    //     ...prev,
-    //     {
-    //       from: senderChatUserId === chatUserId ? "other" : "me",
-    //       text: content,
-    //       time: new Date().toLocaleTimeString(),
-    //     },
-    //   ]);
-    // });
-connection.on(
-  "ReceiveMessage",
-  (senderChatUserId, recipientChatUserId, content) => {
-
-    // Case 1: message from customer → vendor (active chat)
-    if (senderChatUserId === chatUserId) {
-      setMessages(prev => [
-        ...prev,
-        {
-          from: "other",
-          text: content,
-          time: new Date().toLocaleTimeString(),
-        },
-      ]);
-      return;
-    }
-
-    // Case 2: message from vendor → customer (echo)
-    if (recipientChatUserId === chatUserId) {
-      setMessages(prev => [
-        ...prev,
-        {
-          from: "me",
-          text: content,
-          time: new Date().toLocaleTimeString(),
-        },
-      ]);
-      return;
-    }
-
-    // Case 3: message from OTHER customer → vendor
-    // ❌ ignore in this chat
-    // ✅ should go to inbox later
-  }
-);
-
-
+    connection.on(
+      "ReceiveMessage",
+      (senderChatUserId, recipientChatUserId, content) => {
+        // only bind messages for THIS chat
+        if (
+          senderChatUserId === chatUserId ||
+          recipientChatUserId === chatUserId
+        ) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              from: senderChatUserId === myChatUserId ? "me" : "other",
+              text: content,
+              time: new Date().toLocaleTimeString(),
+            },
+          ]);
+        }
+      }
+    );
 
     connection
       .start()
@@ -100,13 +100,17 @@ connection.on(
       })
       .catch(() => toast.error("Chat connection failed"));
 
-    return () => connection.stop();
-  }, [chatUserId]);
+    return () => {
+      connection.stop();
+    };
+  }, [chatUserId, myChatUserId]);
 
   // =========================
   // 2️⃣ LOAD CHAT HISTORY
   // =========================
   useEffect(() => {
+    if (!myChatUserId) return;
+
     const loadMessages = async () => {
       setLoading(true);
       try {
@@ -121,7 +125,7 @@ connection.on(
 
         setMessages(
           res.data.map((m) => ({
-            from: m.sender === chatUserId ? "other" : "me",
+            from: m.sender === myChatUserId ? "me" : "other",
             text: m.message,
             time: new Date(m.timestamp).toLocaleTimeString(),
           }))
@@ -134,7 +138,7 @@ connection.on(
     };
 
     loadMessages();
-  }, [chatUserId]);
+  }, [chatUserId, myChatUserId]);
 
   // =========================
   // 3️⃣ SEND MESSAGE
