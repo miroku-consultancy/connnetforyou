@@ -126,7 +126,7 @@ const VendorInbox = () => {
 
       try {
         const res = await axios.get(
-          `${API_BASE_URL}/api/chat/inbox?shopId=${shop.id}`,
+          `${API_BASE_URL}/api/chat/inbox`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
