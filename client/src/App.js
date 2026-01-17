@@ -40,6 +40,8 @@ import UserProfileForm from './components/UserProfileForm';
 import AddStock from './components/AddStock';
 import ChatHub from "./components/chatHub";
 import VendorInbox from "./components/VendorInbox";
+import { ShopProvider } from './components/ShopContext';
+
 //import Banner from './components/Banner';
 
 
@@ -173,13 +175,16 @@ const App = () => {
   }, []);
 
   return (
-    <Router>
-      <UserProvider>
+  <Router>
+    <UserProvider>
+      <ShopProvider>     {/* ✅ ADD THIS */}
         <AppRoutes />
         <ToastContainer position="top-right" autoClose={3000} />
-      </UserProvider>
-    </Router>
-  );
+      </ShopProvider>
+    </UserProvider>
+  </Router>
+);
+
 };
 
 export default App;

@@ -6,6 +6,7 @@ import { useUser } from './UserContext';
 import AddressPopup from './AddressPopup';
 import { jwtDecode } from 'jwt-decode';
 import ChatActions from "./ChatActions";
+import { useShop } from './ShopContext';
 
 const API_BASE_URL = 'https://connnet4you-server.onrender.com';
 
@@ -34,7 +35,7 @@ const Product = () => {
     phone: '',
   });
   const [shopId, setShopId] = useState(null);
-
+  const { setShop } = useShop();
   const { cart, cartLoaded, addToCart } = useCart();
   const { user, loadingUser } = useUser();
   const navigate = useNavigate();
@@ -101,6 +102,10 @@ const Product = () => {
     }
   }, [safeShopSlug, navigate]);
 
+useEffect(() => {
+  console.log("[Product] current shopSlug:", safeShopSlug);
+}, [safeShopSlug]);
+
   // Fetch shop info
   useEffect(() => {
     const fetchShopInfo = async () => {
@@ -114,12 +119,23 @@ const Product = () => {
         }
         const shop = await response.json();
         setShopId(shop.id);
+        setShop({
+        id: shop.id,
+        slug: shop.slug,
+        name: shop.name,
+      });
+      console.log("[ShopContext] setShop from Product page:", {
+  id: shop.id,
+  slug: shop.slug,
+  name: shop.name,
+});
+
       } catch {
         navigate('/');
       }
     };
     fetchShopInfo();
-  }, [safeShopSlug, navigate]);
+  }, [safeShopSlug, navigate, setShop]);
 
   // Fetch products
   useEffect(() => {
