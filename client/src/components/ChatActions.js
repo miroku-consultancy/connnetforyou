@@ -7,7 +7,7 @@ const CHAT_API = "https://chat-api.connectfree4u.com";
 
 const ChatActions = () => {
   const navigate = useNavigate();
-  const { shop } = useShop();   // ✅ source of truth
+  const { shop } = useShop();
   const token = localStorage.getItem("authToken");
 
   if (!token || !shop?.id) return null;
@@ -19,7 +19,7 @@ const ChatActions = () => {
     return null;
   }
 
-  // ✅ VENDOR → Inbox ONLY
+  // Vendor → Inbox
   if (role === "vendor") {
     return (
       <button className="chat-btn" onClick={() => navigate("/vendor/inbox")}>
@@ -28,7 +28,7 @@ const ChatActions = () => {
     );
   }
 
-  // ✅ CUSTOMER → Chat with Seller
+  // Customer → Chat with seller
   if (role === "customer") {
     return (
       <button
@@ -41,7 +41,7 @@ const ChatActions = () => {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json",
               },
-              body: JSON.stringify({ shopId: shop.id }), // 🔥 GUARANTEED
+              body: JSON.stringify({ shopId: shop.id }),
             });
 
             if (!res.ok) {
@@ -50,10 +50,8 @@ const ChatActions = () => {
             }
 
             const data = await res.json();
-            //navigate(`/chat/${data.chatId}`);
             navigate(`/chat/${data.recipientChatUserId}`);
-          } catch (err) {
-            console.error(err);
+          } catch {
             alert("Failed to start chat");
           }
         }}

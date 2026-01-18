@@ -13,11 +13,14 @@ import {
   Container,
 } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
+import { useShop } from "./ShopContext";
 
 const API_BASE_URL = "https://chat-api.connectfree4u.com";
 
 const ChatComponent = () => {
-  const { chatUserId } = useParams(); // recipientChatUserId
+  const { chatUserId } = useParams(); // vendor chatUserId
+  const { shop } = useShop();
+  const shopId = shop?.id;
 
   const connectionRef = useRef(null);
 
@@ -27,49 +30,39 @@ const ChatComponent = () => {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
 
-  // =================================================
-  // 0️⃣ RESOLVE MY CHAT USER ID (SOURCE OF TRUTH)
-  // =================================================
+  // =========================
+  // 0️⃣ Resolve my chat user
+  // =========================
   useEffect(() => {
     const token = localStorage.getItem("authToken");
-    if (!token) {
-      toast.error("Authentication required");
-      return;
-    }
+    if (!token) return;
 
-    const loadMe = async () => {
-      try {
-        const res = await axios.get(
-          `${API_BASE_URL}/api/chat/me`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-
-        setMyChatUserId(res.data.chatUserId);
-      } catch {
-        toast.error("Failed to resolve chat identity");
-      }
-    };
-
-    loadMe();
+    axios
+      .get(`${API_BASE_URL}/api/chat/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => setMyChatUserId(res.data.chatUserId))
+      .catch(() => toast.error("Failed to resolve chat identity"));
   }, []);
 
-  // =================================================
-  // 🧹 CLEAR OLD STATE WHEN CHAT CHANGES
-  // =================================================
+  // =========================
+  // 🔥 HARD RESET WHEN SHOP CHANGES
+  // =========================
   useEffect(() => {
     setMessages([]);
 
     if (connectionRef.current) {
       connectionRef.current.stop();
       connectionRef.current = null;
+      console.log("🔁 SignalR reset due to shop change");
     }
-  }, [chatUserId]);
+  }, [shopId]);
 
-  // =================================================
-  // 1️⃣ SIGNALR CONNECTION (HARD RESET PER CHAT)
-  // =================================================
+  // =========================
+  // 1️⃣ SignalR connection
+  // =========================
   useEffect(() => {
-    if (!myChatUserId || !chatUserId) return;
+    if (!myChatUserId || !chatUserId || !shopId) return;
 
     const token = localStorage.getItem("authToken");
     if (!token) return;
@@ -81,55 +74,46 @@ const ChatComponent = () => {
       .withAutomaticReconnect()
       .build();
 
-    connection.on(
-      "ReceiveMessage",
-      (senderChatUserId, recipientChatUserId, content) => {
-        if (
-          senderChatUserId === chatUserId ||
-          recipientChatUserId === chatUserId
-        ) {
-          setMessages((prev) => [
-            ...prev,
-            {
-              from: senderChatUserId === myChatUserId ? "me" : "other",
-              text: content,
-              time: new Date().toLocaleTimeString(),
-            },
-          ]);
-        }
+    connection.on("ReceiveMessage", (senderId, recipientId, text) => {
+      if (senderId === chatUserId || recipientId === chatUserId) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            from: senderId === myChatUserId ? "me" : "other",
+            text,
+            time: new Date().toLocaleTimeString(),
+          },
+        ]);
       }
-    );
+    });
 
     connection
       .start()
       .then(() => {
         connectionRef.current = connection;
-        console.log("✅ SignalR connected for chat:", chatUserId);
+        console.log("✅ SignalR connected for shop", shopId);
       })
       .catch(() => toast.error("Chat connection failed"));
 
     return () => {
-      connection.off("ReceiveMessage");
       connection.stop();
     };
-  }, [chatUserId, myChatUserId]);
+  }, [chatUserId, myChatUserId, shopId]);
 
-  // =================================================
-  // 2️⃣ LOAD CHAT HISTORY (REFRESH SAFE)
-  // =================================================
+  // =========================
+  // 2️⃣ Load history
+  // =========================
   useEffect(() => {
     if (!myChatUserId || !chatUserId) return;
 
-    const loadMessages = async () => {
-      setLoading(true);
-      try {
-        const token = localStorage.getItem("authToken");
+    setLoading(true);
+    const token = localStorage.getItem("authToken");
 
-        const res = await axios.get(
-          `${API_BASE_URL}/api/chat/messages/${chatUserId}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-
+    axios
+      .get(`${API_BASE_URL}/api/chat/messages/${chatUserId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => {
         setMessages(
           res.data.map((m) => ({
             from: m.sender === myChatUserId ? "me" : "other",
@@ -137,19 +121,14 @@ const ChatComponent = () => {
             time: new Date(m.timestamp).toLocaleTimeString(),
           }))
         );
-      } catch {
-        toast.error("Failed to load messages");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadMessages();
+      })
+      .catch(() => toast.error("Failed to load messages"))
+      .finally(() => setLoading(false));
   }, [chatUserId, myChatUserId]);
 
-  // =================================================
-  // 3️⃣ SEND MESSAGE (🔥 FINAL FIX)
-  // =================================================
+  // =========================
+  // 3️⃣ Send message
+  // =========================
   const sendMessage = async () => {
     if (!message.trim()) return;
 
@@ -162,19 +141,18 @@ const ChatComponent = () => {
     setSending(true);
     try {
       await conn.invoke("SendMessage", chatUserId, message);
-      console.log("📤 message sent", chatUserId);
       setMessage("");
     } catch (err) {
-      console.error("❌ send failed", err);
+      console.error(err);
       toast.error(err?.message || "Send failed");
     } finally {
       setSending(false);
     }
   };
 
-  // =================================================
-  // 4️⃣ UI
-  // =================================================
+  // =========================
+  // UI
+  // =========================
   return (
     <Container maxWidth="sm">
       <AppBar position="static">
@@ -199,14 +177,11 @@ const ChatComponent = () => {
                   bgcolor={m.from === "me" ? "#DCF8C6" : "#fff"}
                   p={1}
                   borderRadius={2}
-                  maxWidth="70%"
                 >
-                  <Typography variant="body2">
-                    {m.text}
-                    <span style={{ fontSize: 10, marginLeft: 6 }}>
-                      {m.time}
-                    </span>
-                  </Typography>
+                  {m.text}
+                  <span style={{ fontSize: 10, marginLeft: 6 }}>
+                    {m.time}
+                  </span>
                 </Box>
               </Box>
             ))
@@ -223,13 +198,7 @@ const ChatComponent = () => {
           <Button
             onClick={sendMessage}
             disabled={sending}
-            sx={{
-              position: "absolute",
-              right: 8,
-              top: "50%",
-              transform: "translateY(-50%)",
-              minWidth: 0,
-            }}
+            sx={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)" }}
           >
             <SendIcon />
           </Button>

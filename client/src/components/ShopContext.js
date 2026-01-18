@@ -1,10 +1,10 @@
 // src/context/ShopContext.js
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState } from "react";
 
 const ShopContext = createContext();
 
 export const ShopProvider = ({ children }) => {
-  const [shop, setShop] = useState(null); // { id, name }
+  const [shop, setShop] = useState(null); // { id, slug, name }
 
   return (
     <ShopContext.Provider value={{ shop, setShop }}>
