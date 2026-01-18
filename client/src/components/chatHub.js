@@ -13,12 +13,11 @@ import {
   Container,
 } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
-import { useShop } from "./ShopContext";
 
 const API_BASE_URL = "https://chat-api.connectfree4u.com";
 
 const ChatComponent = () => {
-  const { chatUserId } = useParams(); // vendor chatUserId
+  const { chatUserId } = useParams(); // other participant
   const connectionRef = useRef(null);
 
   const [myChatUserId, setMyChatUserId] = useState(null);
@@ -28,7 +27,7 @@ const ChatComponent = () => {
   const [sending, setSending] = useState(false);
 
   // =========================
-  // 0️⃣ Resolve my chat user
+  // 0️⃣ Resolve MY chat user
   // =========================
   useEffect(() => {
     const token = localStorage.getItem("authToken");
@@ -43,7 +42,7 @@ const ChatComponent = () => {
   }, []);
 
   // =========================
-  // 🔥 HARD RESET WHEN SHOP CHANGES
+  // 🔥 HARD RESET ON CHAT CHANGE
   // =========================
   useEffect(() => {
     setMessages([]);
@@ -51,9 +50,9 @@ const ChatComponent = () => {
     if (connectionRef.current) {
       connectionRef.current.stop();
       connectionRef.current = null;
-      console.log("🔁 SignalR reset due to shop change");
+      console.log("🔁 SignalR reset due to chat change");
     }
-    }, [chatUserId]);
+  }, [chatUserId]);
 
   // =========================
   // 1️⃣ SignalR connection
@@ -88,14 +87,14 @@ const ChatComponent = () => {
       .start()
       .then(() => {
         connectionRef.current = connection;
-        console.log("✅ SignalR connected for shop", shopId);
+        console.log("✅ SignalR connected for chat:", chatUserId);
       })
       .catch(() => toast.error("Chat connection failed"));
 
     return () => {
       connection.stop();
     };
-  }, [chatUserId, myChatUserId, shopId]);
+  }, [chatUserId, myChatUserId]);
 
   // =========================
   // 2️⃣ Load history
@@ -195,7 +194,12 @@ const ChatComponent = () => {
           <Button
             onClick={sendMessage}
             disabled={sending}
-            sx={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)" }}
+            sx={{
+              position: "absolute",
+              right: 8,
+              top: "50%",
+              transform: "translateY(-50%)",
+            }}
           >
             <SendIcon />
           </Button>
