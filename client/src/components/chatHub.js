@@ -3,7 +3,6 @@ import { HubConnectionBuilder } from "@microsoft/signalr";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { jwtDecode } from "jwt-decode";
 import {
   Box,
   Button,
@@ -29,41 +28,54 @@ const ChatComponent = () => {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
 
-// =========================
-// 0️⃣ RESOLVE MY CHAT USER ID (CORRECT)
-// =========================
-useEffect(() => {
-  const token = localStorage.getItem("authToken");
-  if (!token) {
-    toast.error("Authentication required");
-    return;
-  }
-
-  const loadMe = async () => {
-    try {
-      const res = await axios.get(
-        `${API_BASE_URL}/api/chat/me`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      setMyChatUserId(res.data.chatUserId);
-    } catch {
-      toast.error("Failed to resolve chat identity");
-    }
-  };
-
-  loadMe();
-}, []);
-
-
-  // =========================
-  // 1️⃣ SIGNALR CONNECTION
-  // =========================
+  // =================================================
+  // 0️⃣ RESOLVE MY CHAT USER ID (SOURCE OF TRUTH)
+  // =================================================
   useEffect(() => {
-    if (!myChatUserId) return;
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      toast.error("Authentication required");
+      return;
+    }
+
+    const loadMe = async () => {
+      try {
+        const res = await axios.get(
+          `${API_BASE_URL}/api/chat/me`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        setMyChatUserId(res.data.chatUserId);
+      } catch {
+        toast.error("Failed to resolve chat identity");
+      }
+    };
+
+    loadMe();
+  }, []);
+
+  // =================================================
+  // 🧹 CLEAR OLD MESSAGES WHEN CHAT CHANGES
+  // =================================================
+  useEffect(() => {
+    setMessages([]);
+  }, [chatUserId]);
+
+  // =================================================
+  // 1️⃣ SIGNALR CONNECTION (HARD RESET PER CHAT)
+  // =================================================
+  useEffect(() => {
+    if (!myChatUserId || !chatUserId) return;
 
     const token = localStorage.getItem("authToken");
     if (!token) return;
+
+    // 🔥 HARD RESET previous connection
+    if (connectionRef.current) {
+      connectionRef.current.off("ReceiveMessage");
+      connectionRef.current.stop();
+      connectionRef.current = null;
+    }
 
     const connection = new HubConnectionBuilder()
       .withUrl(`${API_BASE_URL}/chathub`, {
@@ -75,7 +87,7 @@ useEffect(() => {
     connection.on(
       "ReceiveMessage",
       (senderChatUserId, recipientChatUserId, content) => {
-        // only bind messages for THIS chat
+        // bind only messages for this conversation
         if (
           senderChatUserId === chatUserId ||
           recipientChatUserId === chatUserId
@@ -96,20 +108,21 @@ useEffect(() => {
       .start()
       .then(() => {
         connectionRef.current = connection;
-        console.log("✅ SignalR connected");
+        console.log("✅ SignalR connected for chat:", chatUserId);
       })
       .catch(() => toast.error("Chat connection failed"));
 
     return () => {
+      connection.off("ReceiveMessage");
       connection.stop();
     };
   }, [chatUserId, myChatUserId]);
 
-  // =========================
-  // 2️⃣ LOAD CHAT HISTORY
-  // =========================
+  // =================================================
+  // 2️⃣ LOAD CHAT HISTORY (REFRESH SAFE)
+  // =================================================
   useEffect(() => {
-    if (!myChatUserId) return;
+    if (!myChatUserId || !chatUserId) return;
 
     const loadMessages = async () => {
       setLoading(true);
@@ -118,9 +131,7 @@ useEffect(() => {
 
         const res = await axios.get(
           `${API_BASE_URL}/api/chat/messages/${chatUserId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
 
         setMessages(
@@ -140,9 +151,9 @@ useEffect(() => {
     loadMessages();
   }, [chatUserId, myChatUserId]);
 
-  // =========================
+  // =================================================
   // 3️⃣ SEND MESSAGE
-  // =========================
+  // =================================================
   const sendMessage = async () => {
     if (!message.trim()) return;
 
@@ -163,9 +174,9 @@ useEffect(() => {
     }
   };
 
-  // =========================
+  // =================================================
   // 4️⃣ UI
-  // =========================
+  // =================================================
   return (
     <Container maxWidth="sm">
       <AppBar position="static">
