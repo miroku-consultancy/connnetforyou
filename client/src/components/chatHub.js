@@ -20,7 +20,6 @@ const ChatComponent = () => {
   const { chatUserId } = useParams(); // recipientChatUserId
 
   const connectionRef = useRef(null);
-  const bottomRef = useRef(null);
 
   const [myChatUserId, setMyChatUserId] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -55,10 +54,15 @@ const ChatComponent = () => {
   }, []);
 
   // =================================================
-  // 🧹 CLEAR OLD MESSAGES WHEN CHAT CHANGES
+  // 🧹 CLEAR OLD STATE WHEN CHAT CHANGES
   // =================================================
   useEffect(() => {
     setMessages([]);
+
+    if (connectionRef.current) {
+      connectionRef.current.stop();
+      connectionRef.current = null;
+    }
   }, [chatUserId]);
 
   // =================================================
@@ -70,13 +74,6 @@ const ChatComponent = () => {
     const token = localStorage.getItem("authToken");
     if (!token) return;
 
-    // 🔥 HARD RESET previous connection
-    if (connectionRef.current) {
-      connectionRef.current.off("ReceiveMessage");
-      connectionRef.current.stop();
-      connectionRef.current = null;
-    }
-
     const connection = new HubConnectionBuilder()
       .withUrl(`${API_BASE_URL}/chathub`, {
         accessTokenFactory: () => token,
@@ -87,7 +84,6 @@ const ChatComponent = () => {
     connection.on(
       "ReceiveMessage",
       (senderChatUserId, recipientChatUserId, content) => {
-        // bind only messages for this conversation
         if (
           senderChatUserId === chatUserId ||
           recipientChatUserId === chatUserId
@@ -152,7 +148,7 @@ const ChatComponent = () => {
   }, [chatUserId, myChatUserId]);
 
   // =================================================
-  // 3️⃣ SEND MESSAGE
+  // 3️⃣ SEND MESSAGE (🔥 FINAL FIX)
   // =================================================
   const sendMessage = async () => {
     if (!message.trim()) return;
@@ -166,9 +162,11 @@ const ChatComponent = () => {
     setSending(true);
     try {
       await conn.invoke("SendMessage", chatUserId, message);
+      console.log("📤 message sent", chatUserId);
       setMessage("");
-    } catch {
-      toast.error("Send failed");
+    } catch (err) {
+      console.error("❌ send failed", err);
+      toast.error(err?.message || "Send failed");
     } finally {
       setSending(false);
     }
@@ -213,7 +211,6 @@ const ChatComponent = () => {
               </Box>
             ))
           )}
-          <div ref={bottomRef} />
         </Box>
 
         <Box position="relative">
