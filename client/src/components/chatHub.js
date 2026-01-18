@@ -19,9 +19,6 @@ const API_BASE_URL = "https://chat-api.connectfree4u.com";
 
 const ChatComponent = () => {
   const { chatUserId } = useParams(); // vendor chatUserId
-  const { shop } = useShop();
-  const shopId = shop?.id;
-
   const connectionRef = useRef(null);
 
   const [myChatUserId, setMyChatUserId] = useState(null);
@@ -56,13 +53,13 @@ const ChatComponent = () => {
       connectionRef.current = null;
       console.log("🔁 SignalR reset due to shop change");
     }
-  }, [shopId]);
+    }, [chatUserId]);
 
   // =========================
   // 1️⃣ SignalR connection
   // =========================
   useEffect(() => {
-    if (!myChatUserId || !chatUserId || !shopId) return;
+    if (!myChatUserId || !chatUserId) return;
 
     const token = localStorage.getItem("authToken");
     if (!token) return;
