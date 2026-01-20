@@ -18,6 +18,7 @@ const shopIcons = {
   "TheVegKingFastFood": "🥡",
   "Zerocollection": "🌅",
   "DivineCafe&FastFood": "🥡",
+  "YadavTransport": "🚚",
 };
 
 const displayName = (slug) =>
