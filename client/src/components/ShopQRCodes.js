@@ -17,7 +17,7 @@ const shops = [
   "DivineCafe&FastFood",
   "YadavTransport",
   "PatanjaliArogyaKendra",
-  "SecondWife",
+  "SecondWifeFamilyRestaurant",
   "NaginderLittiHouse"
 ];
 

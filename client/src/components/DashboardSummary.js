@@ -20,7 +20,7 @@ const shopIcons = {
   "DivineCafe&FastFood": "🥡",
   "YadavTransport": "🚚",
   "PatanjaliArogyaKendra": "🌿",
-  "SecondWife": "👩‍🍳",   // home chef / kitchen brand
+  "SecondWifeFamilyRestaurant": "👩‍🍳",   // home chef / kitchen brand
   "NaginderLittiHouse": "🍘", // snack / litti-like feel
 };
 
