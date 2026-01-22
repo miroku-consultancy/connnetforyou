@@ -17,6 +17,8 @@ const shops = [
   "DivineCafe&FastFood",
   "YadavTransport",
   "PatanjaliArogyaKendra",
+  "SecondWife",
+  "NaginderLittiHouse"
 ];
 
 const baseUrl = "https://www.connectfree4u.com/#/";
