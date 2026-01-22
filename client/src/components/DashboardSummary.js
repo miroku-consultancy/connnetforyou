@@ -19,6 +19,7 @@ const shopIcons = {
   "Zerocollection": "🌅",
   "DivineCafe&FastFood": "🥡",
   "YadavTransport": "🚚",
+  "PatanjaliArogyaKendra": "🌿",
 };
 
 const displayName = (slug) =>
