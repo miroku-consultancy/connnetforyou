@@ -20,8 +20,14 @@ const shopIcons = {
   "DivineCafe&FastFood": "🥡",
   "YadavTransport": "🚚",
   "PatanjaliArogyaKendra": "🌿",
-  "SecondWifeFamilyRestaurant": "👩‍🍳",   // home chef / kitchen brand
-  "NaginderLittiHouse": "🍘", // snack / litti-like feel
+  "SecondWifeFamilyRestaurant": "👩‍🍳",
+  "NaginderLittiHouse": "🍘",
+  "BiryaniWala": "🍛",
+  "AardeesChickenShicken": "🍗",
+  "OmSaiKitchen": "🍽️",
+  "BalajiGrill": "🔥",
+  "MohanLamaAmazingMomos": "🥟",
+  "RajaZaikaKalkattaKathiRoll": "🌯",
 };
 
 const displayName = (slug) =>

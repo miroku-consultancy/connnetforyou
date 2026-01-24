@@ -18,7 +18,13 @@ const shops = [
   "YadavTransport",
   "PatanjaliArogyaKendra",
   "SecondWifeFamilyRestaurant",
-  "NaginderLittiHouse"
+  "NaginderLittiHouse",
+   "BiryaniWala",
+  "AardeesChickenShicken",
+  "OmSaiKitchen",
+  "BalajiGrill",
+  "MohanLamaAmazingMomos",
+  "RajaZaikaKalkattaKathiRoll",
 ];
 
 const baseUrl = "https://www.connectfree4u.com/#/";
