@@ -109,5 +109,24 @@ router.get('/', async (req, res) => {
   }
 });
 
+// 🔥 ADD THIS NEW ROUTE - GET /api/shops/public (ALL shops for dashboard)
+router.get('/public', async (req, res) => {
+  try {
+    // Fetch ALL shops from your table - NO auth, NO location filter
+    const result = await pool.query(`
+      SELECT id, name, slug, address, phone, image_url, 
+             open_time, close_time, minordervalue, lat, lng, is_featured 
+      FROM shops 
+      ORDER BY is_featured DESC NULLS LAST, created_at DESC
+    `);
+    
+    console.log(`📦 Found ${result.rows.length} shops for dashboard`);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('🛑 Public shops fetch error:', err);
+    res.status(500).json({ error: 'Failed to fetch shops', message: err.message });
+  }
+});
+
 
 module.exports = router;
