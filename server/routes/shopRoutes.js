@@ -4,23 +4,27 @@ const pool = require('../db');
 
 const router = express.Router();
 
-// 🔥 CHUNK 1 - PUBLIC SHOPS (ALL SHOPS - PUT FIRST)
+// 🔥 CHUNK 1 - PUBLIC SHOPS WITH RATINGS (UPDATED!)
 router.get('/public', async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT id, name, slug, address, phone, image_url, 
-             open_time, close_time, minordervalue, lat, lng, is_featured 
+             open_time, close_time, minordervalue, lat, lng, is_featured,
+             COALESCE(rating, 4.2) as rating,
+             COALESCE(review_count, 0) as review_count,
+             COALESCE(orders_count, 0) as orders_count
       FROM shops 
-      ORDER BY is_featured DESC NULLS LAST, created_at DESC
+      ORDER BY is_featured DESC NULLS LAST, rating DESC, orders_count DESC, created_at DESC
     `);
     
-    console.log(`📦 Found ${result.rows.length} shops for dashboard`);
+    console.log(`📦 Found ${result.rows.length} shops with ratings for dashboard`);
     res.json(result.rows || []);
   } catch (err) {
     console.error('🛑 Public shops fetch error:', err);
     res.status(500).json({ error: 'Failed to fetch shops' });
   }
 });
+
 
 // ✅ NEW: GET /api/shops/vendor
 router.get('/vendor', async (req, res) => {
