@@ -4,6 +4,24 @@ const pool = require('../db');
 
 const router = express.Router();
 
+// 🔥 CHUNK 1 - PUBLIC SHOPS (ALL SHOPS - PUT FIRST)
+router.get('/public', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT id, name, slug, address, phone, image_url, 
+             open_time, close_time, minordervalue, lat, lng, is_featured 
+      FROM shops 
+      ORDER BY is_featured DESC NULLS LAST, created_at DESC
+    `);
+    
+    console.log(`📦 Found ${result.rows.length} shops for dashboard`);
+    res.json(result.rows || []);
+  } catch (err) {
+    console.error('🛑 Public shops fetch error:', err);
+    res.status(500).json({ error: 'Failed to fetch shops' });
+  }
+});
+
 // ✅ NEW: GET /api/shops/vendor
 router.get('/vendor', async (req, res) => {
   try {
@@ -106,24 +124,6 @@ router.get('/', async (req, res) => {
   } catch (err) {
     console.error('🛑 Nearby shop fetch error:', err);
     res.status(500).json({ error: 'Server error', message: err.message });
-  }
-});
-
-// 🔥 ADD THIS NEW ROUTE - GET /api/shops/public (ALL shops for dashboard)
-router.get('/public', async (req, res) => {
-  try {
-    const result = await pool.query(`
-      SELECT id, name, slug, address, phone, image_url, 
-             open_time, close_time, minordervalue, lat, lng, is_featured 
-      FROM shops 
-      ORDER BY is_featured DESC NULLS LAST, created_at DESC
-    `);
-    
-    console.log(`📦 Found ${result.rows.length} shops for dashboard`);
-    res.json(result.rows);
-  } catch (err) {
-    console.error('🛑 Public shops fetch error:', err);
-    res.status(500).json({ error: 'Failed to fetch shops', message: err.message });
   }
 });
 
