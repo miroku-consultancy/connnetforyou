@@ -112,7 +112,6 @@ router.get('/', async (req, res) => {
 // 🔥 ADD THIS NEW ROUTE - GET /api/shops/public (ALL shops for dashboard)
 router.get('/public', async (req, res) => {
   try {
-    // Fetch ALL shops from your table - NO auth, NO location filter
     const result = await pool.query(`
       SELECT id, name, slug, address, phone, image_url, 
              open_time, close_time, minordervalue, lat, lng, is_featured 
