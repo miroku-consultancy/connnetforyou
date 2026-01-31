@@ -4,7 +4,7 @@ const pool = require('../db');
 
 const router = express.Router();
 
-// 🔥 CHUNK 1 - PUBLIC SHOPS WITH RATINGS (UPDATED!)
+// 🔥 PUBLIC SHOPS - EXCLUDE ConnectFREE4U (ID=1,24)
 router.get('/public', async (req, res) => {
   try {
     const result = await pool.query(`
@@ -14,10 +14,11 @@ router.get('/public', async (req, res) => {
              COALESCE(review_count, 0) as review_count,
              COALESCE(orders_count, 0) as orders_count
       FROM shops 
+      WHERE id NOT IN (1, 24)  -- 🚫 EXCLUDE ID 1 & 24
       ORDER BY is_featured DESC NULLS LAST, rating DESC, orders_count DESC, created_at DESC
     `);
     
-    console.log(`📦 Found ${result.rows.length} shops with ratings for dashboard`);
+    console.log(`📦 Found ${result.rows.length} shops (excluding IDs 1,24) for dashboard`);
     res.json(result.rows || []);
   } catch (err) {
     console.error('🛑 Public shops fetch error:', err);
