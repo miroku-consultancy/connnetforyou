@@ -17,7 +17,9 @@ import SendIcon from "@mui/icons-material/Send";
 const API_BASE_URL = "https://chat-api.connectfree4u.com";
 
 const ChatComponent = () => {
-  const { chatUserId } = useParams(); // other participant
+  //const { chatUserId } = useParams(); // other participant
+  const { threadId } = useParams(); // conversation thread
+
   const connectionRef = useRef(null);
 
   const [myChatUserId, setMyChatUserId] = useState(null);
@@ -52,14 +54,15 @@ const ChatComponent = () => {
       connectionRef.current = null;
       console.log("🔁 SignalR reset due to chat change");
     }
-  }, [chatUserId]);
+    }, [threadId]);
+  //}, [chatUserId]);
 
   // =========================
   // 1️⃣ SignalR connection
   // =========================
   useEffect(() => {
-    if (!myChatUserId || !chatUserId) return;
-
+    //if (!myChatUserId || !chatUserId) return;
+if (!myChatUserId || !threadId) return;
     const token = localStorage.getItem("authToken");
     if (!token) return;
 
@@ -70,46 +73,62 @@ const ChatComponent = () => {
       .withAutomaticReconnect()
       .build();
 
-    connection.on("ReceiveMessage", (senderId, recipientId, text) => {
-      if (senderId === chatUserId || recipientId === chatUserId) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            from: senderId === myChatUserId ? "me" : "other",
-            text,
-            time: new Date().toLocaleTimeString(),
-          },
-        ]);
-      }
-    });
+    // connection.on("ReceiveMessage", (senderId, recipientId, text) => {
+    //   if (senderId === chatUserId || recipientId === chatUserId) {
+    //     setMessages((prev) => [
+    //       ...prev,
+    //       {
+    //         from: senderId === myChatUserId ? "me" : "other",
+    //         text,
+    //         time: new Date().toLocaleTimeString(),
+    //       },
+    //     ]);
+    //   }
+    // });
+connection.on("ReceiveMessage", (recvThreadId, senderId, text) => {
+  if (recvThreadId !== threadId) return;
+
+  setMessages((prev) => [
+    ...prev,
+    {
+      from: senderId === myChatUserId ? "me" : "other",
+      text,
+      time: new Date().toLocaleTimeString(),
+    },
+  ]);
+});
+
 
     connection
       .start()
       .then(() => {
         connectionRef.current = connection;
-        console.log("✅ SignalR connected for chat:", chatUserId);
+        console.log("✅ SignalR connected for chat:", threadId);
       })
       .catch(() => toast.error("Chat connection failed"));
 
     return () => {
       connection.stop();
     };
-  }, [chatUserId, myChatUserId]);
+    }, [threadId, myChatUserId]);
+  //}, [chatUserId, myChatUserId]);
 
   // =========================
   // 2️⃣ Load history
   // =========================
   useEffect(() => {
-    if (!myChatUserId || !chatUserId) return;
-
+    //if (!myChatUserId || !chatUserId) return;
+if (!myChatUserId || !threadId) return;
     setLoading(true);
     const token = localStorage.getItem("authToken");
 
-    axios
-      .get(`${API_BASE_URL}/api/chat/messages/${chatUserId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => {
+    // axios
+    //   .get(`${API_BASE_URL}/api/chat/messages/${chatUserId}`, {
+    //     headers: { Authorization: `Bearer ${token}` },
+    //   })
+    axios.get(`${API_BASE_URL}/api/chat/threads/${threadId}/messages`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }).then((res) => {
         setMessages(
           res.data.map((m) => ({
             from: m.sender === myChatUserId ? "me" : "other",
@@ -120,7 +139,8 @@ const ChatComponent = () => {
       })
       .catch(() => toast.error("Failed to load messages"))
       .finally(() => setLoading(false));
-  }, [chatUserId, myChatUserId]);
+      }, [threadId, myChatUserId]);
+  //}, [chatUserId, myChatUserId]);
 
   // =========================
   // 3️⃣ Send message
@@ -136,7 +156,8 @@ const ChatComponent = () => {
 
     setSending(true);
     try {
-      await conn.invoke("SendMessage", chatUserId, message);
+      //await conn.invoke("SendMessage", chatUserId, message);
+      await conn.invoke("SendMessage", threadId, message);
       setMessage("");
     } catch (err) {
       console.error(err);
