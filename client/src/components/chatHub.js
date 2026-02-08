@@ -85,15 +85,27 @@ if (!myChatUserId || !threadId) return;
     //     ]);
     //   }
     // });
-connection.on("ReceiveMessage", (recvThreadId, senderId, text) => {
-  if (recvThreadId !== threadId) return;
+// connection.on("ReceiveMessage", (recvThreadId, senderId, text) => {
+//   if (recvThreadId !== threadId) return;
+
+//   setMessages((prev) => [
+//     ...prev,
+//     {
+//       from: senderId === myChatUserId ? "me" : "other",
+//       text,
+//       time: new Date().toLocaleTimeString(),
+//     },
+//   ]);
+// });
+connection.on("ReceiveMessage", (payload) => {
+  if (payload.threadId !== threadId) return;
 
   setMessages((prev) => [
     ...prev,
     {
-      from: senderId === myChatUserId ? "me" : "other",
-      text,
-      time: new Date().toLocaleTimeString(),
+      from: payload.senderId === myChatUserId ? "me" : "other",
+      text: payload.message,
+      time: new Date(payload.timestamp).toLocaleTimeString(),
     },
   ]);
 });

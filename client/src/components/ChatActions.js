@@ -50,7 +50,7 @@ const ChatActions = () => {
             }
 
             const data = await res.json();
-            navigate(`/chat/${data.recipientChatUserId}`);
+            navigate(`/chat/${data.threadId}`);
           } catch {
             alert("Failed to start chat");
           }
