@@ -98,6 +98,7 @@ if (!myChatUserId || !threadId) return;
 //   ]);
 // });
 connection.on("ReceiveMessage", (payload) => {
+  console.log("📩 Incoming message:", payload, "myChatUserId:", myChatUserId);
   if (payload.threadId !== threadId) return;
 
   setMessages((prev) => [
