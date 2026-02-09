@@ -269,10 +269,13 @@ const VendorInbox = () => {
 
       <List>
         {inbox.map((item, index) => (
-          <React.Fragment key={item.chatUserId}>
+          <React.Fragment key={item.threadId}>
             <ListItem
               button
-              onClick={() => navigate(`/chat/${item.chatUserId}`)}
+              onClick={() => {
+  console.log("Opening thread:", item.threadId);
+  navigate(`/chat/${item.threadId}`);
+}}
             >
               <ListItemText
                 primary="Customer"
