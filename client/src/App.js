@@ -105,7 +105,7 @@ const AppRoutes = () => (
         <Route path="/:shopSlug/profile" element={<UserProfileForm />} />
         <Route path="/:shopSlug/admin/add-stock" element={<AddStock />} />
         <Route
-  path="/chat/:chatUserId"
+  path="/chat/:threadId"
   element={
     <ProtectedRoute>
       <ChatHub />
