@@ -111,7 +111,7 @@ if (!myChatUserId || !threadId) return;
 // });
 connection.on("ReceiveMessage", (payload) => {
   console.log("📩 Incoming message:", payload, "myChatUserId:", myChatUserId);
-  if (payload.threadId !== threadId) return;
+  if (String(payload.threadId) !== String(threadId)) return;
 
   setMessages((prev) => [
     ...prev,
@@ -125,19 +125,17 @@ connection.on("ReceiveMessage", (payload) => {
 
 
 
-    connection
-      .start()
-      .then(() => {
-        connectionRef.current = connection;
-        console.log("✅ SignalR connected for chat:", threadId);
-      })
-      .catch(() => toast.error("Chat connection failed"));
-connection.start().then(async () => {
-  connectionRef.current = connection;
-  console.log("✅ SignalR connected for chat:", threadId);
+   connection
+  .start()
+  .then(async () => {
+    connectionRef.current = connection;
+    console.log("✅ SignalR connected for chat:", threadId);
 
-  await connection.invoke("JoinThread", threadId); // 👈 THIS IS CRITICAL
-});
+    await connection.invoke("JoinThread", threadId); // ✅ join group
+    console.log("👥 Joined thread group:", threadId);
+  })
+  .catch(() => toast.error("Chat connection failed"));
+
 
     return () => {
       connection.stop();
