@@ -36,19 +36,7 @@ const { shop } = useShop();
   // =========================
   useEffect(() => {
     const token = localStorage.getItem("authToken");
-    if (!token) return;
-
-  //   axios
-  //     .get(`${API_BASE_URL}/api/chat/me`, {
-  //       headers: { Authorization: `Bearer ${token}` },
-  //     })
-  //     .then((res) => setMyChatUserId(res.data.chatUserId))
-  //     .catch(() => toast.error("Failed to resolve chat identity"));
-  // }, []);
-
-useEffect(() => {
-  const token = localStorage.getItem("authToken");
-  if (!token || !shop?.id) return;
+    if (!token || !shop?.id) return;
 
   axios
     .get(`${API_BASE_URL}/api/chat/me?shopId=${shop.id}`, {
@@ -57,8 +45,16 @@ useEffect(() => {
     .then((res) => setMyChatUserId(res.data.chatUserId))
     .catch(() => toast.error("Failed to resolve chat identity"));
 }, [shop]);
+  //   axios
+  //     .get(`${API_BASE_URL}/api/chat/me`, {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     })
+  //     .then((res) => setMyChatUserId(res.data.chatUserId))
+  //     .catch(() => toast.error("Failed to resolve chat identity"));
+  // }, []);
 
 
+  
   // =========================
   // 🔥 HARD RESET ON CHAT CHANGE
   // =========================
@@ -136,6 +132,12 @@ connection.on("ReceiveMessage", (payload) => {
         console.log("✅ SignalR connected for chat:", threadId);
       })
       .catch(() => toast.error("Chat connection failed"));
+connection.start().then(async () => {
+  connectionRef.current = connection;
+  console.log("✅ SignalR connected for chat:", threadId);
+
+  await connection.invoke("JoinThread", threadId); // 👈 THIS IS CRITICAL
+});
 
     return () => {
       connection.stop();
