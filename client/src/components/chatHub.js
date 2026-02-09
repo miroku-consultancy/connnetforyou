@@ -103,12 +103,13 @@ connection.on("ReceiveMessage", (payload) => {
   setMessages((prev) => [
     ...prev,
     {
-      from: payload.senderId === myChatUserId ? "me" : "other",
+      from: payload.senderChatUserId === myChatUserId ? "me" : "other",
       text: payload.message,
       time: new Date(payload.timestamp).toLocaleTimeString(),
     },
   ]);
 });
+
 
 
     connection
