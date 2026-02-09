@@ -13,12 +13,15 @@ import {
   Container,
 } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
+import { useShop } from "./ShopContext";
+
 
 const API_BASE_URL = "https://chat-api.connectfree4u.com";
 
 const ChatComponent = () => {
   //const { chatUserId } = useParams(); // other participant
   const { threadId } = useParams(); // conversation thread
+const { shop } = useShop();
 
   const connectionRef = useRef(null);
 
@@ -35,13 +38,26 @@ const ChatComponent = () => {
     const token = localStorage.getItem("authToken");
     if (!token) return;
 
-    axios
-      .get(`${API_BASE_URL}/api/chat/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => setMyChatUserId(res.data.chatUserId))
-      .catch(() => toast.error("Failed to resolve chat identity"));
-  }, []);
+  //   axios
+  //     .get(`${API_BASE_URL}/api/chat/me`, {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     })
+  //     .then((res) => setMyChatUserId(res.data.chatUserId))
+  //     .catch(() => toast.error("Failed to resolve chat identity"));
+  // }, []);
+
+useEffect(() => {
+  const token = localStorage.getItem("authToken");
+  if (!token || !shop?.id) return;
+
+  axios
+    .get(`${API_BASE_URL}/api/chat/me?shopId=${shop.id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    .then((res) => setMyChatUserId(res.data.chatUserId))
+    .catch(() => toast.error("Failed to resolve chat identity"));
+}, [shop]);
+
 
   // =========================
   // 🔥 HARD RESET ON CHAT CHANGE
