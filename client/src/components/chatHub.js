@@ -34,17 +34,22 @@ const { shop } = useShop();
   // =========================
   // 0️⃣ Resolve MY chat user
   // =========================
-  useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    if (!token || !shop?.id) return;
+
+
+useEffect(() => {
+  const token = localStorage.getItem("authToken");
+  if (!token) return;
+
+  let url = shop?.id
+    ? `${API_BASE_URL}/api/chat/me?shopId=${shop.id}`
+    : `${API_BASE_URL}/api/chat/me`; // 👈 vendor path
 
   axios
-    .get(`${API_BASE_URL}/api/chat/me?shopId=${shop.id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    .get(url, { headers: { Authorization: `Bearer ${token}` } })
     .then((res) => setMyChatUserId(res.data.chatUserId))
     .catch(() => toast.error("Failed to resolve chat identity"));
 }, [shop]);
+
   //   axios
   //     .get(`${API_BASE_URL}/api/chat/me`, {
   //       headers: { Authorization: `Bearer ${token}` },
