@@ -1,5 +1,5 @@
 const express = require("express");
-const admin = require("../firebaseAdmin"); // your existing firebase admin
+const admin = require('./firebaseAdmin'); // your existing firebase admin
 const pool = require("../db");
 
 const router = express.Router();
