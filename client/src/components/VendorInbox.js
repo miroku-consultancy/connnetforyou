@@ -95,7 +95,6 @@ const VendorInbox = () => {
   primary={item.customerName || "Customer"}
   secondary={item.lastMessage}
 />
-
               <Typography variant="caption">
                 {new Date(item.lastTimestamp).toLocaleTimeString()}
               </Typography>
