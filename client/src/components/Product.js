@@ -8,6 +8,7 @@ import { jwtDecode } from 'jwt-decode';
 import ChatActions from "./ChatActions";
 import { useShop } from './ShopContext';
 
+
 const API_BASE_URL = 'https://connnet4you-server.onrender.com';
 
 const CartImageCarousel = ({ imageList, resolveImageUrl, name }) => {
@@ -40,7 +41,6 @@ const Product = () => {
   const { user, loadingUser } = useUser();
   const navigate = useNavigate();
   const { shopSlug } = useParams();
-
   const getSafeShopSlug = (slug) => (!slug || slug === 'undefined' || slug === 'null' ? null : slug);
 
   const safeShopSlug = getSafeShopSlug(shopSlug);
@@ -82,7 +82,7 @@ const Product = () => {
   // Check vendor status
   useEffect(() => {
     const token = localStorage.getItem('authToken');
-    console.log(token , "tokencheck")
+    console.log(token, "tokencheck")
     if (token) {
       try {
         const decoded = jwtDecode(token);
@@ -102,9 +102,9 @@ const Product = () => {
     }
   }, [safeShopSlug, navigate]);
 
-useEffect(() => {
-  console.log("[Product] current shopSlug:", safeShopSlug);
-}, [safeShopSlug]);
+  useEffect(() => {
+    console.log("[Product] current shopSlug:", safeShopSlug);
+  }, [safeShopSlug]);
 
   // Fetch shop info
   useEffect(() => {
@@ -120,15 +120,16 @@ useEffect(() => {
         const shop = await response.json();
         setShopId(shop.id);
         setShop({
-        id: shop.id,
-        slug: shop.slug,
-        name: shop.name,
-      });
-      console.log("[ShopContext] setShop from Product page:", {
-  id: shop.id,
-  slug: shop.slug,
-  name: shop.name,
-});
+          id: shop.id,
+          slug: shop.slug,
+          name: shop.name,
+          priceMarkupPercent: Number(shop.price_markup_percent || 0),
+        });
+        console.log("[ShopContext] setShop from Product page:", {
+          id: shop.id,
+          slug: shop.slug,
+          name: shop.name,
+        });
 
       } catch {
         navigate('/');
@@ -252,8 +253,8 @@ useEffect(() => {
           <span role="img" aria-label="user" className="user-icon">👤</span>
           <div className="user-info-container">
             <p>Welcome back, <strong>{user.name || user.email?.split('@')[0]}</strong></p>
-<ChatActions  />
-  {addresses.length > 0 ? (
+            <ChatActions />
+            {addresses.length > 0 ? (
               <p className="user-address-banner">
                 <strong>Delivering to:</strong>{' '}
                 <select value={selectedAddressId || ''} onChange={handleAddressSelect} className="address-select">
@@ -265,7 +266,7 @@ useEffect(() => {
                 </select>
                 <br />
                 <button onClick={() => setShowAddressPopup(true)} className="edit-btn">✏️ Edit Address</button>
-                
+
               </p>
             ) : (
               <button onClick={() => { setTempAddress({ name: '', street: '', city: '', zip: '', phone: '' }); setSelectedAddressId(null); setShowAddressPopup(true); }} className="edit-btn">➕ Add Address</button>
@@ -350,6 +351,7 @@ const ProductCard = ({
   safeShopSlug,
   parseImageList
 }) => {
+  const { shop } = useShop();
   const hasVariants = Array.isArray(product.variants) && product.variants.length > 0;
   const [selectedVariant, setSelectedVariant] = useState(hasVariants ? product.variants[0] : null);
 
@@ -363,14 +365,17 @@ const ProductCard = ({
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const handleAdd = () => {
-    const price = Number(selectedVariant?.price) || Number(product.price) || 0;
+    //const price = Number(selectedVariant?.price) || Number(product.price) || 0;
+    const basePrice = Number(selectedVariant?.price) || Number(product.price) || 0;
+    const markupPercent = Number(shop?.priceMarkupPercent || 0);
+    const finalPrice = basePrice + (basePrice * markupPercent / 100);
     const item = {
       ...product,
       id: uniqueKey,
       unit: selectedVariant?.unit?.name,
       size: selectedVariant?.size?.name,
       color: selectedVariant?.color?.name,
-      price
+      price: finalPrice
     };
     addToCart(item, 1);
     setQuantities((prev) => ({ ...prev, [uniqueKey]: 1 }));
@@ -378,14 +383,17 @@ const ProductCard = ({
 
   const handleQtyChange = (delta) => {
     const newQty = Math.max(0, qty + delta);
-    const price = Number(selectedVariant?.price) || Number(product.price) || 0;
+    //const price = Number(selectedVariant?.price) || Number(product.price) || 0;
+    const basePrice = Number(selectedVariant?.price) || Number(product.price) || 0;
+    const markupPercent = Number(shop?.priceMarkupPercent || 0);
+    const finalPrice = basePrice + (basePrice * markupPercent / 100);
     const item = {
       ...product,
       id: uniqueKey,
       unit: selectedVariant?.unit?.name,
       size: selectedVariant?.size?.name,
       color: selectedVariant?.color?.name,
-      price
+      price: finalPrice
     };
     if (delta !== 0) {
       addToCart(item, delta);
@@ -512,12 +520,16 @@ const ProductCard = ({
                 .map((id) => {
                   const foundVariant = product.variants.find((v) => v.unit?.id === id);
                   const unit = foundVariant?.unit;
-                  const price = Number(foundVariant?.price) || 0;
+                  const basePrice = Number(foundVariant?.price) || 0;
+                  const markupPercent = Number(shop?.priceMarkupPercent || 0);
+                  const finalPrice = basePrice + (basePrice * markupPercent / 100);
+
                   return unit ? (
                     <option key={id} value={id}>
-                      {unit.name} ₹{price.toFixed(2)}
+                      {unit.name} ₹{finalPrice.toFixed(2)}
                     </option>
                   ) : null;
+
                 })}
             </select>
           )}
@@ -525,7 +537,15 @@ const ProductCard = ({
       )}
 
       <div className="price-display">
-        ₹{(Number(selectedVariant?.price || product.price) * (qty || 1)).toFixed(2)}
+        {/* ₹{(Number(selectedVariant?.price || product.price) * (qty || 1)).toFixed(2)} */}
+        {(() => {
+          const basePrice = Number(selectedVariant?.price) || Number(product.price) || 0;
+          const markupPercent = Number(shop?.priceMarkupPercent || 0);
+          const finalPrice = basePrice + (basePrice * markupPercent / 100);
+
+          return `₹${(finalPrice * (qty || 1)).toFixed(2)}`;
+        })()}
+
       </div>
     </div>
   );
