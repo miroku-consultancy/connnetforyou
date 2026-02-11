@@ -22,6 +22,7 @@ const categoriesRouter = require('./routes/categories');
 
 const whatsappRoutes = require('./routes/whatsapp');
 const tenantRoutes = require('./routes/tenantRoutes');
+const chatNotifyRoutes = require("./routes/chatNotify");
 
 const app = express();
 
@@ -75,6 +76,7 @@ app.use('/api/notifications', notificationRoutes); // ✅ Handles GET /api/notif
 app.use('/api/notifications', sseRouter);          // ✅ Handles /api/notifications/stream
 app.use('/api/units', unitRoutes);
 app.use('/api', saveFcmTokenRouter);
+app.use("/api", chatNotifyRoutes);
 
 app.use('/api', whatsappRoutes);
 app.use('/api/categories', categoriesRouter);
