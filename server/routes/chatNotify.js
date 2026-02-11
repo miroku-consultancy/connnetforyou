@@ -59,28 +59,42 @@ router.post("/notify/chat", async (req, res) => {
     if (!senderUser) {
       return res.status(404).json({ error: "Sender not found" });
     }
+// 3️⃣ Resolve shop_id from tenants (GUID -> INT)
+const tenantResult = await pool.query(
+  "SELECT external_shop_id FROM tenants WHERE id = $1",
+  [tenantId]
+);
 
-    // 3️⃣ Check role in user_shop_roles
-    const roleResult = await pool.query(
-      "SELECT role FROM user_shop_roles WHERE user_id = $1 AND shop_id = $2 LIMIT 1",
-      [senderExternalUserId, tenantId]
+const shopId = tenantResult.rows[0]?.external_shop_id;
+
+let senderName = "New message";
+let role = null;
+
+if (shopId) {
+  // 4️⃣ Check role in user_shop_roles
+  const roleResult = await pool.query(
+    "SELECT role FROM user_shop_roles WHERE user_id = $1 AND shop_id = $2 LIMIT 1",
+    [senderExternalUserId, shopId]
+  );
+
+  role = roleResult.rows[0]?.role;
+
+  if (role === "vendor") {
+    // 5️⃣ Vendor → get shop name
+    const shopResult = await pool.query(
+      "SELECT name FROM shops WHERE id = $1",
+      [shopId]
     );
+    senderName = shopResult.rows[0]?.name || "Shop";
+  } else {
+    // 6️⃣ Customer → use user name
+    senderName = senderUser.name || "Customer";
+  }
+} else {
+  // Fallback
+  senderName = senderUser.name || "Customer";
+}
 
-    const role = roleResult.rows[0]?.role; // e.g. 'vendor' or undefined
-
-    let senderName = "New message";
-
-    if (role === "vendor") {
-      // 4️⃣ Vendor → get shop name
-      const shopResult = await pool.query(
-        "SELECT name FROM shops WHERE id = $1",
-        [tenantId]
-      );
-      senderName = shopResult.rows[0]?.name || "Shop";
-    } else {
-      // 5️⃣ Customer → use user name
-      senderName = senderUser.name || "Customer";
-    }
 
     // 6️⃣ Build FCM message
     const message = {
