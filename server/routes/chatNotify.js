@@ -28,7 +28,7 @@ router.post("/notify/chat", async (req, res) => {
     const {
       receiverExternalUserId,
       senderExternalUserId,
-      tenantId,   // shop_id
+      tenantId,   // 👈 this IS shop_id in ecom DB
       body
     } = req.body;
 
@@ -37,6 +37,8 @@ router.post("/notify/chat", async (req, res) => {
     if (!receiverExternalUserId || !senderExternalUserId || !tenantId) {
       return res.status(400).json({ error: "Missing fields" });
     }
+
+    const shopId = tenantId; // ✅ just use it directly
 
     // 1️⃣ Get FCM token for receiver
     const tokenResult = await pool.query(
@@ -59,42 +61,28 @@ router.post("/notify/chat", async (req, res) => {
     if (!senderUser) {
       return res.status(404).json({ error: "Sender not found" });
     }
-// 3️⃣ Resolve shop_id from tenants (GUID -> INT)
-const tenantResult = await pool.query(
-  "SELECT external_shop_id FROM tenants WHERE id = $1",
-  [tenantId]
-);
 
-const shopId = tenantResult.rows[0]?.external_shop_id;
-
-let senderName = "New message";
-let role = null;
-
-if (shopId) {
-  // 4️⃣ Check role in user_shop_roles
-  const roleResult = await pool.query(
-    "SELECT role FROM user_shop_roles WHERE user_id = $1 AND shop_id = $2 LIMIT 1",
-    [senderExternalUserId, shopId]
-  );
-
-  role = roleResult.rows[0]?.role;
-
-  if (role === "vendor") {
-    // 5️⃣ Vendor → get shop name
-    const shopResult = await pool.query(
-      "SELECT name FROM shops WHERE id = $1",
-      [shopId]
+    // 3️⃣ Check role in user_shop_roles
+    const roleResult = await pool.query(
+      "SELECT role FROM user_shop_roles WHERE user_id = $1 AND shop_id = $2 LIMIT 1",
+      [senderExternalUserId, shopId]
     );
-    senderName = shopResult.rows[0]?.name || "Shop";
-  } else {
-    // 6️⃣ Customer → use user name
-    senderName = senderUser.name || "Customer";
-  }
-} else {
-  // Fallback
-  senderName = senderUser.name || "Customer";
-}
 
+    const role = roleResult.rows[0]?.role;
+
+    let senderName = "New message";
+
+    if (role === "vendor") {
+      // 4️⃣ Vendor → get shop name
+      const shopResult = await pool.query(
+        "SELECT name FROM shops WHERE id = $1",
+        [shopId]
+      );
+      senderName = shopResult.rows[0]?.name || "Shop";
+    } else {
+      // 5️⃣ Customer → use user name
+      senderName = senderUser.name || "Customer";
+    }
 
     // 6️⃣ Build FCM message
     const message = {
@@ -113,7 +101,7 @@ if (shopId) {
     };
 
     // 7️⃣ Send push
-    const resp = await admin.messaging().send(message);
+    await admin.messaging().send(message);
     console.log("✅ Chat push sent to", receiverExternalUserId, "from", senderName);
 
     res.json({ ok: true });
@@ -122,6 +110,7 @@ if (shopId) {
     res.status(500).json({ error: "Failed to send notification" });
   }
 });
+
 
 
 module.exports = router;
