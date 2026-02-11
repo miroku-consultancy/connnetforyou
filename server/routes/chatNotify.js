@@ -28,17 +28,15 @@ router.post("/notify/chat", async (req, res) => {
     const {
       receiverExternalUserId,
       senderExternalUserId,
-      tenantId,   // 👈 this IS shop_id in ecom DB
+      shopId,   // 👈 INT shop id from ecom (from .NET JWT claim)
       body
     } = req.body;
 
     console.log("🔔 Notify called", req.body);
 
-    if (!receiverExternalUserId || !senderExternalUserId || !tenantId) {
+    if (!receiverExternalUserId || !senderExternalUserId || !shopId) {
       return res.status(400).json({ error: "Missing fields" });
     }
-
-    const shopId = tenantId; // ✅ just use it directly
 
     // 1️⃣ Get FCM token for receiver
     const tokenResult = await pool.query(
@@ -110,6 +108,7 @@ router.post("/notify/chat", async (req, res) => {
     res.status(500).json({ error: "Failed to send notification" });
   }
 });
+
 
 
 
