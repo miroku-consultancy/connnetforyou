@@ -21,6 +21,7 @@ const API_BASE_URL = "https://chat-api.connectfree4u.com";
 const ChatComponent = () => {
   //const { chatUserId } = useParams(); // other participant
   const { threadId } = useParams(); // conversation thread
+const { shop } = useShop();
 
   const connectionRef = useRef(null);
 
@@ -52,18 +53,6 @@ useEffect(() => {
     });
 }, [threadId]);
 
-
-
-  //   axios
-  //     .get(`${API_BASE_URL}/api/chat/me`, {
-  //       headers: { Authorization: `Bearer ${token}` },
-  //     })
-  //     .then((res) => setMyChatUserId(res.data.chatUserId))
-  //     .catch(() => toast.error("Failed to resolve chat identity"));
-  // }, []);
-
-
-  
   // =========================
   // 🔥 HARD RESET ON CHAT CHANGE
   // =========================
@@ -94,30 +83,6 @@ if (!myChatUserId || !threadId) return;
       .withAutomaticReconnect()
       .build();
 
-    // connection.on("ReceiveMessage", (senderId, recipientId, text) => {
-    //   if (senderId === chatUserId || recipientId === chatUserId) {
-    //     setMessages((prev) => [
-    //       ...prev,
-    //       {
-    //         from: senderId === myChatUserId ? "me" : "other",
-    //         text,
-    //         time: new Date().toLocaleTimeString(),
-    //       },
-    //     ]);
-    //   }
-    // });
-// connection.on("ReceiveMessage", (recvThreadId, senderId, text) => {
-//   if (recvThreadId !== threadId) return;
-
-//   setMessages((prev) => [
-//     ...prev,
-//     {
-//       from: senderId === myChatUserId ? "me" : "other",
-//       text,
-//       time: new Date().toLocaleTimeString(),
-//     },
-//   ]);
-// });
 connection.on("ReceiveMessage", (payload) => {
   console.log("📩 Incoming message:", payload, "myChatUserId:", myChatUserId);
   if (String(payload.threadId) !== String(threadId)) return;
@@ -212,10 +177,13 @@ if (!myChatUserId || !threadId) return;
   return (
     <Container maxWidth="sm">
       <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6">Chat</Typography>
-        </Toolbar>
-      </AppBar>
+  <Toolbar>
+    <Typography variant="h6">
+      {shop?.name || "Chat"}
+    </Typography>
+  </Toolbar>
+</AppBar>
+
 
       <Box display="flex" flexDirection="column" height="80vh">
         <Box flex={1} p={2} overflow="auto">
