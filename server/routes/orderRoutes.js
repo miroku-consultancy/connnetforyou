@@ -87,18 +87,21 @@ for (const row of shopUsers.rows) {
   if (!fcmToken) continue;
 
   const fcmMessage = {
-    token: fcmToken,
-    data: {
-      type: "order",                         // ✅ THIS IS THE KEY
-      title: "New Order Received",
-      body: `${userName} placed a new order`,
-      shopId: String(shopId),
-      orderId: String(orderId),
-    },
-    android: {
-      priority: "high",
-    },
-  };
+  token: fcmToken,
+  notification: {                      // ✅ ADD THIS
+    title: "New Order Received",
+    body: `${userName} placed a new order`,
+  },
+  data: {
+    type: "order",                     // ✅ still keep this
+    shopId: String(shopId),
+    orderId: String(orderId),
+  },
+  android: {
+    priority: "high",
+  },
+};
+
 
   try {
     await admin.messaging().send(fcmMessage);
@@ -194,17 +197,20 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
         Delivered: 'Your order has been delivered! 🎉',
       };
 
-      const message = {
+  const message = {
   token: fcmToken,
-  data: {
-    type: "order",   // ✅ IMPORTANT
+  notification: {                      // ✅ ADD THIS
     title: "Order Update",
     body: statusMessages[status] || `Your order status changed to: ${status}`,
+  },
+  data: {
+    type: "order",
     orderId: String(updatedOrder.id),
     status: String(status),
   },
   android: { priority: "high" },
 };
+
 
 
       await admin.messaging().send(message);

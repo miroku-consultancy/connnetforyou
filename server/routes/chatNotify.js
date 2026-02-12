@@ -107,17 +107,20 @@ const chatUrl = `https://www.connectfree4u.com/#/chat/${threadId}`;
     // 6️⃣ Build FCM message
 const message = {
   token: fcmToken,
-  data: {
-    type: "chat",                 // ✅ IMPORTANT
+  notification: {
     title: senderName,
     body: body || "New message",
+  },
+  data: {
+    type: "chat",
     threadId: String(threadId),
-    url: chatUrl
+    shopId: String(shopId),
   },
   android: {
     priority: "high",
   },
 };
+
 
     // 7️⃣ Send push
     await admin.messaging().send(message);
