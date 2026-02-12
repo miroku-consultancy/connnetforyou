@@ -48,14 +48,16 @@ router.post("/notify/chat", async (req, res) => {
       receiverExternalUserId,
       senderExternalUserId,
       shopId,   // 👈 INT shop id from ecom (from .NET JWT claim)
+      threadId,
       body
     } = req.body;
 
     console.log("🔔 Notify called", req.body);
 
-    if (!receiverExternalUserId || !senderExternalUserId || !shopId) {
-      return res.status(400).json({ error: "Missing fields" });
-    }
+    if (!receiverExternalUserId || !senderExternalUserId || !shopId || !threadId) {
+  return res.status(400).json({ error: "Missing fields" });
+}
+
 
     // 1️⃣ Get FCM token for receiver
     const tokenResult = await pool.query(
@@ -100,22 +102,22 @@ router.post("/notify/chat", async (req, res) => {
       // 5️⃣ Customer → use user name
       senderName = senderUser.name || "Customer";
     }
+const chatUrl = `https://www.connectfree4u.com/#/chat/${threadId}`;
 
     // 6️⃣ Build FCM message
-    const message = {
-      token: fcmToken,
-      notification: {
-        title: senderName,
-        body: body || "New message"
-      },
-      android: { priority: "high" },
-      webpush: {
-        notification: {
-          icon: "/favicon.ico",
-          click_action: "/"
-        }
-      }
-    };
+const message = {
+  token: fcmToken,
+  data: {
+    type: "chat",                 // ✅ IMPORTANT
+    title: senderName,
+    body: body || "New message",
+    threadId: String(threadId),
+    url: chatUrl
+  },
+  android: {
+    priority: "high",
+  },
+};
 
     // 7️⃣ Send push
     await admin.messaging().send(message);

@@ -72,6 +72,42 @@ router.post('/', authMiddleware, async (req, res) => {
         user_name: userName,
         address: addressText,
       });
+      // 🔔 Send FCM push to shop (ORDER notification)
+const shopUsers = await pool.query(
+  `SELECT u.id, ut.fcm_token
+   FROM users u
+   JOIN user_shop_roles usr ON usr.user_id = u.id
+   LEFT JOIN user_tokens ut ON ut.user_id = u.id
+   WHERE usr.shop_id = $1 AND usr.role = 'vendor'`,
+  [shopId]
+);
+
+for (const row of shopUsers.rows) {
+  const fcmToken = row.fcm_token;
+  if (!fcmToken) continue;
+
+  const fcmMessage = {
+    token: fcmToken,
+    data: {
+      type: "order",                         // ✅ THIS IS THE KEY
+      title: "New Order Received",
+      body: `${userName} placed a new order`,
+      shopId: String(shopId),
+      orderId: String(orderId),
+    },
+    android: {
+      priority: "high",
+    },
+  };
+
+  try {
+    await admin.messaging().send(fcmMessage);
+    console.log(`✅ Order push sent to shop ${shopId}`);
+  } catch (err) {
+    console.error("❌ Failed to send order push:", err.message);
+  }
+}
+
     }
 
     // ✅ Send WhatsApp confirmation to user
@@ -159,19 +195,17 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
       };
 
       const message = {
-        token: fcmToken,
-        notification: {
-          title: 'Order Update',
-          body: statusMessages[status] || `Your order status changed to: ${status}`,
-        },
-        webpush: {
-          notification: {
-            icon: '/favicon.ico',
-            click_action: '/my-orders',
-          },
-        },
-        android: { priority: 'high' },
-      };
+  token: fcmToken,
+  data: {
+    type: "order",   // ✅ IMPORTANT
+    title: "Order Update",
+    body: statusMessages[status] || `Your order status changed to: ${status}`,
+    orderId: String(updatedOrder.id),
+    status: String(status),
+  },
+  android: { priority: "high" },
+};
+
 
       await admin.messaging().send(message);
       console.log(`✅ Push sent to user ${updatedOrder.user_id}`);
