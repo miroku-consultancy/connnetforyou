@@ -64,6 +64,89 @@ await resend.emails.send({
 });
 
 // 2️⃣ Verify OTP and generate JWT + Refresh Token
+// router.post('/login-with-token', async (req, res) => {
+//   const { email, token, shop_slug } = req.body;
+
+//   if (!email || !token || !shop_slug) {
+//     return res.status(400).json({ error: 'Email, OTP, and shop slug are required' });
+//   }
+
+//   try {
+//     const shopResult = await pool.query('SELECT id FROM shops WHERE slug = $1', [shop_slug]);
+//     if (shopResult.rowCount === 0) {
+//       return res.status(400).json({ error: 'Invalid shop slug' });
+//     }
+//     const shopId = shopResult.rows[0].id;
+
+//     const userResult = await pool.query('SELECT * FROM public.users WHERE email = $1', [email]);
+//     const user = userResult.rows[0];
+
+//     if (!user || user.otp !== token) {
+//       return res.status(401).json({ error: 'Invalid OTP or email' });
+//     }
+
+//     if (new Date(user.otp_expires_at) < new Date()) {
+//       return res.status(401).json({ error: 'OTP expired' });
+//     }
+
+//     const roleResult = await pool.query(`
+//       SELECT role FROM user_shop_roles
+//       WHERE user_id = $1 AND shop_id = $2
+//       LIMIT 1
+//     `, [user.id, shopId]);
+
+//     const roleRow = roleResult.rows[0];
+//     const role = roleRow?.role || 'customer';
+
+//     // Generate Access Token (short-lived)
+//     const accessToken = jwt.sign(
+//       {
+//         id: user.id,
+//         email: user.email,
+//         shop_id: shopId,
+//         role: role
+//       },
+//       process.env.JWT_SECRET,
+//       { expiresIn: '180d' }
+//     );
+
+//     // Generate Refresh Token (long-lived)
+//     const refreshToken = jwt.sign(
+//       {
+//         id: user.id,
+//         email: user.email,
+//       },
+//       process.env.REFRESH_SECRET,
+//       { expiresIn: '7d' }
+//     );
+
+//     // Store refresh token in DB
+//     await pool.query(
+//       `UPDATE public.users 
+//    SET refresh_token = $1, otp = NULL, otp_expires_at = NULL, last_login_at = NOW() 
+//    WHERE id = $2`,
+//       [refreshToken, user.id]
+//     );
+
+
+//     res.json({
+//       message: 'Login successful',
+//       token: accessToken,
+//       refreshToken,
+//       user: {
+//         id: user.id,
+//         email: user.email,
+//         shop_id: shopId,
+//         role: role
+//       }
+//     });
+//   } catch (err) {
+//     console.error('Error during login:', err);
+//     res.status(500).json({ error: 'Server error during login' });
+//   }
+// });
+
+// 2️⃣ Verify OTP and generate JWT + Refresh Token
 router.post('/login-with-token', async (req, res) => {
   const { email, token, shop_slug } = req.body;
 
@@ -72,6 +155,82 @@ router.post('/login-with-token', async (req, res) => {
   }
 
   try {
+    // 🔥 GOOGLE PLAY REVIEWER BYPASS
+      if (email && email.toLowerCase().trim() === 'reviewer@connectfree4u.com' && token === '000000') {
+
+      // Find or create user
+      let userResult = await pool.query('SELECT * FROM public.users WHERE email = $1', [email]);
+      let user = userResult.rows[0];
+
+      if (!user) {
+        const insertRes = await pool.query(
+          'INSERT INTO public.users (email) VALUES ($1) RETURNING *',
+          [email]
+        );
+        user = insertRes.rows[0];
+      }
+
+      // Resolve shop
+      const shopResult = await pool.query('SELECT id FROM shops WHERE slug = $1', [shop_slug]);
+      if (shopResult.rowCount === 0) {
+        return res.status(400).json({ error: 'Invalid shop slug' });
+      }
+      const shopId = shopResult.rows[0].id;
+
+      // Resolve role (default to customer)
+      const roleResult = await pool.query(
+        `SELECT role FROM user_shop_roles WHERE user_id = $1 AND shop_id = $2 LIMIT 1`,
+        [user.id, shopId]
+      );
+      const role = roleResult.rows[0]?.role || 'customer';
+
+      // Generate Access Token
+      const accessToken = jwt.sign(
+        {
+          id: user.id,
+          email: user.email,
+          shop_id: shopId,
+          role: role
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: '180d' }
+      );
+
+      // Generate Refresh Token
+      const refreshToken = jwt.sign(
+        {
+          id: user.id,
+          email: user.email
+        },
+        process.env.REFRESH_SECRET,
+        { expiresIn: '7d' }
+      );
+
+      // Store refresh token
+      await pool.query(
+        `UPDATE public.users 
+         SET refresh_token = $1, last_login_at = NOW() 
+         WHERE id = $2`,
+        [refreshToken, user.id]
+      );
+
+      return res.json({
+        message: 'Login successful (reviewer)',
+        token: accessToken,
+        refreshToken,
+        user: {
+          id: user.id,
+          email: user.email,
+          shop_id: shopId,
+          role: role
+        }
+      });
+    }
+
+    // ==========================
+    // 👇 NORMAL OTP FLOW BELOW
+    // ==========================
+
     const shopResult = await pool.query('SELECT id FROM shops WHERE slug = $1', [shop_slug]);
     if (shopResult.rowCount === 0) {
       return res.status(400).json({ error: 'Invalid shop slug' });
@@ -89,16 +248,17 @@ router.post('/login-with-token', async (req, res) => {
       return res.status(401).json({ error: 'OTP expired' });
     }
 
-    const roleResult = await pool.query(`
-      SELECT role FROM user_shop_roles
-      WHERE user_id = $1 AND shop_id = $2
-      LIMIT 1
-    `, [user.id, shopId]);
+    const roleResult = await pool.query(
+      `SELECT role FROM user_shop_roles
+       WHERE user_id = $1 AND shop_id = $2
+       LIMIT 1`,
+      [user.id, shopId]
+    );
 
     const roleRow = roleResult.rows[0];
     const role = roleRow?.role || 'customer';
 
-    // Generate Access Token (short-lived)
+    // Generate Access Token
     const accessToken = jwt.sign(
       {
         id: user.id,
@@ -110,24 +270,23 @@ router.post('/login-with-token', async (req, res) => {
       { expiresIn: '180d' }
     );
 
-    // Generate Refresh Token (long-lived)
+    // Generate Refresh Token
     const refreshToken = jwt.sign(
       {
         id: user.id,
-        email: user.email,
+        email: user.email
       },
       process.env.REFRESH_SECRET,
       { expiresIn: '7d' }
     );
 
-    // Store refresh token in DB
+    // Store refresh token + clear OTP
     await pool.query(
       `UPDATE public.users 
-   SET refresh_token = $1, otp = NULL, otp_expires_at = NULL, last_login_at = NOW() 
-   WHERE id = $2`,
+       SET refresh_token = $1, otp = NULL, otp_expires_at = NULL, last_login_at = NOW() 
+       WHERE id = $2`,
       [refreshToken, user.id]
     );
-
 
     res.json({
       message: 'Login successful',
@@ -145,6 +304,7 @@ router.post('/login-with-token', async (req, res) => {
     res.status(500).json({ error: 'Server error during login' });
   }
 });
+
 
 // 3️⃣ Refresh token endpoint
 router.post('/refresh-token', async (req, res) => {
