@@ -14,7 +14,7 @@ router.get('/public', async (req, res) => {
              COALESCE(review_count, 0) as review_count,
              COALESCE(orders_count, 0) as orders_count
       FROM shops 
-      WHERE id NOT IN (1, 24)  -- 🚫 EXCLUDE ID 1 & 24
+      WHERE id NOT IN (1)  -- 🚫 EXCLUDE ID 1 & 24
       ORDER BY is_featured DESC NULLS LAST, rating DESC, orders_count DESC, created_at DESC
     `);
     
