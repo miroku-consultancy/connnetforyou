@@ -100,14 +100,18 @@ const DashboardSummary = () => {
           //   const width = container.firstChild.offsetWidth + 24;
           //   container.scrollTo({ left: width * next, behavior: 'smooth' });
           // }
-const container = scrollRef.current;
-const firstCard = container?.children?.[0];
+const scrollToIndex = (i) => {
+  const container = scrollRef.current;
+  const firstCard = container?.children?.[0];
 
-if (container && firstCard) {
-  const gap = 24; // must match CSS gap
-  const width = firstCard.offsetWidth + gap;
-  container.scrollTo({ left: width * next, behavior: 'smooth' });
-}
+  if (container && firstCard) {
+    const gap = 24; // must match CSS gap
+    const width = firstCard.offsetWidth + gap;
+    container.scrollTo({ left: width * i, behavior: 'smooth' });
+    setIndex(i);
+  }
+};
+
 
 
           return next;
@@ -249,10 +253,16 @@ if (container && firstCard) {
       </div>
 
       <div className="carousel-dots">
-        {(shops.length > 0 ? shops : fallbackShops).map((_, i) => (
-          <span key={i} className={`dot ${i === index ? 'active' : ''}`} />
-        ))}
-      </div>
+  {(shops.length > 0 ? shops : fallbackShops).map((_, i) => (
+    <span
+      key={i}
+      className={`dot ${i === index ? 'active' : ''}`}
+      onClick={() => scrollToIndex(i)}
+      style={{ cursor: 'pointer' }}
+    />
+  ))}
+</div>
+
     </div>
   );
 };
