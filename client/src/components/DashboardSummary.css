@@ -9,7 +9,8 @@
   text-align: center;
   color: #222;
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;   /* hide only horizontal background overflow if you want */
+  overflow-y: auto;     /* allow vertical scroll */
 }
 
 .dashboard-container::before {

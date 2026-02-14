@@ -95,11 +95,21 @@ const DashboardSummary = () => {
       intervalRef.current = setInterval(() => {
         setIndex((prev) => {
           const next = (prev + 1) % shops.length;
-          const container = scrollRef.current;
-          if (container?.firstChild) {
-            const width = container.firstChild.offsetWidth + 24;
-            container.scrollTo({ left: width * next, behavior: 'smooth' });
-          }
+          // const container = scrollRef.current;
+          // if (container?.firstChild) {
+          //   const width = container.firstChild.offsetWidth + 24;
+          //   container.scrollTo({ left: width * next, behavior: 'smooth' });
+          // }
+const container = scrollRef.current;
+const firstCard = container?.children?.[0];
+
+if (container && firstCard) {
+  const gap = 24; // must match CSS gap
+  const width = firstCard.offsetWidth + gap;
+  container.scrollTo({ left: width * next, behavior: 'smooth' });
+}
+
+
           return next;
         });
       }, 3000);
@@ -204,8 +214,9 @@ const DashboardSummary = () => {
       )}
       <p className="dashboard-subtitle">
         {shops.length > 0
-          ? "Please enable location access to discover shops near you!"
-          : "No nearby shops found."}
+  ? "Discover shops near you!"
+  : "No nearby shops found. Please enable location access."}
+
       </p>
 
       <div
