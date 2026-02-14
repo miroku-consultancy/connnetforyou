@@ -30,7 +30,7 @@ const Header = () => {
       });
   }, [shopSlug]);
 
-  // Hide header on dashboard if you want
+  // Hide header on dashboard (you said you’ll remove hero text there)
   if (location.pathname === '/dashboard') {
     return null;
   }
@@ -83,19 +83,18 @@ const Header = () => {
         />
 
         <div className="shop-info">
-          {/* BRAND TITLE WITH SAME FEEL AS DASHBOARD */}
-          <motion.h1
-            className="brand-title"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            ConnectFREE4U
-          </motion.h1>
-
           {shop ? (
             <>
-              <span className="shop-name">{shop.name}</span>
+              {/* THIS uses shop.name and gives Dashboard hero feel */}
+              <motion.h1
+                className="brand-title"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                {shop.name}
+              </motion.h1>
+
               {shop.address && <span className="shop-address">{shop.address}</span>}
               {shop.phone && (
                 <span className="shop-phone">

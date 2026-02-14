@@ -31,11 +31,12 @@ const shopIcons = {
   "ShadhuIcecream": "🧁",
 };
 
-const displayName = (slug) => slug.replace(/-/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').replace(/&/g, ' & ');
+const displayName = (slug) =>
+  slug.replace(/-/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').replace(/&/g, ' & ');
 
 const getRating = (slug) => {
   const ratings = [4.2, 4.5, 4.8, 4.3, 4.9, 4.1, 4.7, 4.6, 4.4, 4.0];
-  return ratings[(slug.length % ratings.length)];
+  return ratings[slug.length % ratings.length];
 };
 
 const DashboardSummary = () => {
@@ -52,7 +53,7 @@ const DashboardSummary = () => {
   const { clearAllCarts } = useCart();
   const { setUser } = useUser();
 
-  // ✅ VISIT COUNT EFFECT
+  // Visit count
   useEffect(() => {
     const logVisitAndFetchCount = async () => {
       try {
@@ -67,7 +68,7 @@ const DashboardSummary = () => {
     logVisitAndFetchCount();
   }, []);
 
-  // ✅ GEOLOCATION + SHOPS EFFECT
+  // Geo + shops
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -97,7 +98,7 @@ const DashboardSummary = () => {
     }
   }, []);
 
-  // ✅ SCROLL FUNCTION
+  // Scroll to index
   const scrollToIndex = (i) => {
     const container = scrollRef.current;
     const firstCard = container?.children?.[0];
@@ -109,7 +110,7 @@ const DashboardSummary = () => {
     }
   };
 
-  // ✅ AUTO-SCROLL EFFECT
+  // Auto scroll
   useEffect(() => {
     if (!isPaused && shops.length > 0) {
       intervalRef.current = setInterval(() => {
@@ -124,11 +125,10 @@ const DashboardSummary = () => {
   }, [isPaused, shops]);
 
   const handleClick = (slug) => navigate(`/${slug}/products`);
-
   const handleUserInteractionStart = () => setIsPaused(true);
   const handleUserInteractionEnd = () => setIsPaused(false);
 
-  // ✅ IMAGE FALLBACK FUNCTION
+  // Image fallback
   const getImageElement = (shop) => {
     const baseUrl = "https://www.connectfree4u.com/images/shops";
     const extensions = ['jpeg', 'jpg', 'png', 'JPG'];
@@ -158,7 +158,6 @@ const DashboardSummary = () => {
     return (
       <div className="dashboard-container">
         <div style={{ textAlign: 'center', padding: '100px 20px' }}>
-          <div className="shimmer" style={{ width: 50, height: 50, margin: '0 auto 20px', borderRadius: '50%', background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite' }} />
           <p>Loading nearby shops...</p>
         </div>
       </div>
@@ -167,63 +166,38 @@ const DashboardSummary = () => {
 
   return (
     <div className="dashboard-container">
-      {/* Animated Hero */}
-      <motion.div 
+      {/* Hero */}
+      <motion.div
         className="hero"
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
       >
         <div className="hero-gradient"></div>
-        <div className="floating-orbs">
-          {[...Array(6)].map((_, i) => (
-            <motion.div key={i} className="orb" 
-              animate={{
-                y: [0, -20, 0],
-                x: [0, 10, 0],
-                rotate: [0, 180, 360],
-              }}
-              transition={{ duration: 8 + i, repeat: Infinity, ease: "easeInOut" }}
-            />
-          ))}
-        </div>
         <div className="hero-content">
-          <motion.h1 
-            animate={{ scale: [1, 1.05, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          >
-            ConnectFREE4U
+          <motion.h1 animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 2, repeat: Infinity }}>
+            Welcome to Local Stores
           </motion.h1>
-          <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-          >
-            Discover nearby shops, chat & order instantly
-          </motion.p>
+          <p>Discover nearby shops, chat & order instantly</p>
+
           {visitCount !== null && (
-            <motion.div className="visit-chip" 
-              whileHover={{ scale: 1.05 }}
-            >
-              👁 {visitCount.toLocaleString()} visits
-            </motion.div>
+            <div className="visit-chip">👁 {visitCount.toLocaleString()} visits</div>
           )}
-          <motion.a
+
+          <a
             className="install-btn"
             href="https://play.google.com/store/apps/details?id=com.connectfree4u.connectfree4u"
             target="_blank"
             rel="noopener noreferrer"
-            whileHover={{ y: -4, scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
           >
             📲 Install App
-          </motion.a>
+          </a>
         </div>
       </motion.div>
 
       <h2 className="section-title">Nearby Shops</h2>
 
-      {/* Enhanced Carousel */}
+      {/* Carousel */}
       <motion.div
         className="carousel-container"
         ref={scrollRef}
@@ -232,7 +206,7 @@ const DashboardSummary = () => {
         onTouchStart={handleUserInteractionStart}
         onTouchEnd={handleUserInteractionEnd}
         drag="x"
-        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.1}
         whileDrag={{ scale: 1.01 }}
       >
         <AnimatePresence>
@@ -242,66 +216,27 @@ const DashboardSummary = () => {
               className={`shop-card ${i === index ? 'active' : ''}`}
               role="button"
               onClick={() => handleClick(shop.slug)}
-              initial={{ opacity: 0, scale: 0.8, y: 50 }}
-              animate={{ 
-                opacity: 1, 
-                scale: i === index ? 1.08 : 1,
-                y: 0,
-                rotateY: i === index ? -5 : 0
-              }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              whileHover={{ 
-                scale: 1.1, 
-                y: -12,
-                boxShadow: "0 25px 50px rgba(34, 197, 94, 0.4)"
-              }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ 
-                type: "spring", 
-                stiffness: 300, 
-                damping: 20,
-                delay: i * 0.1
-              }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: i === index ? 1.05 : 1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
             >
-              <div className="shop-image-wrap">
-                {getImageElement(shop)}
-              </div>
+              <div className="shop-image-wrap">{getImageElement(shop)}</div>
               <h3 className="shop-name">{displayName(shop.slug)}</h3>
               {shop.address && <p className="shop-address">{shop.address}</p>}
-              <div className="shop-rating">
-                ⭐ {getRating(shop.slug).toFixed(1)}
-              </div>
+              <div className="shop-rating">⭐ {getRating(shop.slug).toFixed(1)}</div>
               <div className="shop-login-cta">Open Shop →</div>
             </motion.div>
           ))}
         </AnimatePresence>
       </motion.div>
 
-      {/* Glowing Dots */}
+      {/* Dots */}
       <div className="carousel-dots">
         {list.map((_, i) => (
-          <motion.span
+          <span
             key={i}
             className={`dot ${i === index ? 'active' : ''}`}
             onClick={() => scrollToIndex(i)}
-            whileHover={{ scale: 1.4 }}
-            whileTap={{ scale: 0.9 }}
-          />
-        ))}
-      </div>
-
-      {/* Background Particles */}
-      <div className="particles">
-        {[...Array(20)].map((_, i) => (
-          <motion.div 
-            className="particle" 
-            key={i}
-            animate={{
-              y: [0, -100, 0],
-              x: [0, 50, 0],
-              opacity: [0.3, 0.8, 0.3]
-            }}
-            transition={{ duration: 10 + i * 0.5, repeat: Infinity }}
           />
         ))}
       </div>
