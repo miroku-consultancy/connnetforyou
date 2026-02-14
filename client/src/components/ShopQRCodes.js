@@ -4,7 +4,7 @@ import { QRCodeSVG } from 'qrcode.react';
 const shops = [
   "ConnectFREE4U",
   "Kanji-Sweets",
-  "SanjayVegStore",
+  "RajeevVegStore",
   "Ganga-Medical-hall",
   "ALNazeerMuradabadiChickenBiryani",
   "Janta7DaysChineseFastFood",
@@ -19,12 +19,13 @@ const shops = [
   "PatanjaliArogyaKendra",
   "SecondWifeFamilyRestaurant",
   "NaginderLittiHouse",
-   "BiryaniWala",
+   "FarukShawarmaPoint",
   "AardeesChickenShicken",
   "OmSaiKitchen",
   "BalajiGrill",
   "MohanLamaAmazingMomos",
   "RajaZaikaKalkattaKathiRoll",
+  "ShadhuIcecream",
 ];
 
 const baseUrl = "https://www.connectfree4u.com/#/";

@@ -11,7 +11,7 @@ const shopIcons = {
   "Janta7DaysChineseFastFood": "🥡",
   "QureshiKababCenter": "🍢",
   "Vow-vista": "🌅",
-  "SanjayVegStore": "🥬",
+  "RajeevVegStore": "🥬",
   "Ganga-Medical-hall": "💊",
   "Desi-swaad": "🍛",
   "Home-chef": "🥮",
@@ -22,12 +22,13 @@ const shopIcons = {
   "PatanjaliArogyaKendra": "🌿",
   "SecondWifeFamilyRestaurant": "👩‍🍳",
   "NaginderLittiHouse": "🍘",
-  "BiryaniWala": "🍛",
+  "FarukShawarmaPoint": "🍛",
   "AardeesChickenShicken": "🍗",
   "OmSaiKitchen": "🍽️",
   "BalajiGrill": "🔥",
   "MohanLamaAmazingMomos": "🥟",
   "RajaZaikaKalkattaKathiRoll": "🌯",
+  "ShadhuIcecream": "🧁",
 };
 
 const displayName = (slug) =>
