@@ -18,7 +18,7 @@ router.get('/public', async (req, res) => {
       ORDER BY is_featured DESC NULLS LAST, rating DESC, orders_count DESC, created_at DESC
     `);
     
-    console.log(`📦 Found ${result.rows.length} shops (excluding IDs 1,24) for dashboard`);
+    console.log(`📦 Found ${result.rows.length} shops (excluding IDs 1) for dashboard`);
     res.json(result.rows || []);
   } catch (err) {
     console.error('🛑 Public shops fetch error:', err);
