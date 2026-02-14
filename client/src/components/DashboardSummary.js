@@ -116,7 +116,7 @@ const DashboardSummary = () => {
 
   const getImageElement = (shop) => {
     const baseUrl = "https://www.connectfree4u.com/images/shops";
-    const extensions = ['jpeg', 'jpg', 'png'];
+    const extensions = ['jpeg', 'jpg', 'png', 'JPG'];
     let attempt = 0;
 
     return (
