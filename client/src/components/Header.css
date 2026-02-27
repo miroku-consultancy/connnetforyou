@@ -1,145 +1,157 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
 
+* {
+  box-sizing: border-box;
+}
+
 .header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 36px;
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  width: 100%;
+  padding: 16px 28px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   border-bottom: 1px solid rgba(255,255,255,0.15);
   color: #fff;
   font-family: 'Montserrat', sans-serif;
-  flex-wrap: wrap;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
-  position: relative; /* NOT sticky */
+  position: relative;
   z-index: 100;
 }
 
-/* Glow layer */
-.header::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at 20% 50%, rgba(34,197,94,0.35), transparent 55%),
-    radial-gradient(circle at 80% 50%, rgba(59,130,246,0.35), transparent 55%);
-  z-index: -1;
+/* Top Row */
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
 
-/* Left */
+/* Left Section */
 .left-box {
   display: flex;
   align-items: center;
-  gap: 20px;
-  flex: 1;
-  min-width: 280px;
+  gap: 14px;
+  min-width: 0;
 }
 
 .logo {
-  width: 72px;
-  height: 72px;
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  width: 60px;
+  height: 60px;
+  border-radius: 14px;
+  object-fit: cover;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
 }
 
-/* SAME FEEL AS DASHBOARD HERO */
+.shop-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* Brand Title */
 .brand-title {
-  margin: 0 0 6px;
-  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  margin: 0 0 4px;
+  font-size: clamp(1.4rem, 2.5vw, 2rem);
   font-weight: 800;
   letter-spacing: 0.02em;
   background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-shadow:
-    0 2px 10px rgba(0,0,0,0.35),
-    0 0 20px rgba(34,197,94,0.25);
 }
 
 .shop-address {
-  font-size: 13px;
+  font-size: 12px;
   opacity: 0.85;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .shop-phone a {
+  font-size: 12px;
   color: #a7f3d0;
   text-decoration: none;
 }
 
-/* Center nav */
-.nav {
-  flex: 2;
-  text-align: center;
+.shop-loading {
+  font-size: 14px;
+  opacity: 0.7;
 }
 
-/* Right */
+/* Menu Toggle */
+.menu-toggle {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 1.4rem;
+  color: white;
+  cursor: pointer;
+  display: none;
+}
+
+/* Navigation */
+.nav {
+  overflow: hidden;
+  width: 100%;
+  margin-top: 16px;
+}
+
+/* Right Section */
 .right-box {
-  flex: 1;
+  margin-top: 12px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 8px;
+  align-items: flex-end;
+  gap: 6px;
 }
 
 .shop-hours {
   background: rgba(255,255,255,0.1);
   padding: 8px 14px;
   border-radius: 20px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
 }
 
-.status-badge.open { color: #22c55e; margin-left: 8px; }
-.status-badge.closed { color: #ef4444; margin-left: 8px; }
+.status-badge.open {
+  color: #22c55e;
+}
+
+.status-badge.closed {
+  color: #ef4444;
+}
 
 .powered-by {
-  font-size: 13px;
-  opacity: 0.9;
+  font-size: 12px;
+  opacity: 0.85;
 }
 
-/* Toggle */
-.menu-toggle {
-  display: none;
-  background: rgba(255,255,255,0.15);
-  border: 1px solid rgba(255,255,255,0.25);
-  border-radius: 12px;
-  padding: 10px;
-  font-size: 1.5rem;
-  color: #fff;
-}
+/* ========================= */
+/* 📱 MOBILE RESPONSIVE */
+/* ========================= */
 
-/* Responsive */
 @media (max-width: 768px) {
+
   .header {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 16px 20px;
+    padding: 14px 18px;
   }
 
   .menu-toggle {
     display: block;
-    position: absolute;
-    right: 20px;
-    top: 20px;
   }
 
-  .nav {
-    display: none;
-    width: 100%;
-    margin-top: 12px;
+  .brand-title {
+    font-size: 1.3rem;
   }
 
-  .nav.open {
-    display: block;
-  }
-
-  .left-box,
   .right-box {
-    width: 100%;
-    justify-content: center;
-    margin-top: 12px;
+    align-items: center;
+    text-align: center;
   }
+
+  .shop-address {
+    white-space: normal;
+  }
+
 }
