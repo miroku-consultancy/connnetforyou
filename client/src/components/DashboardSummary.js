@@ -205,9 +205,9 @@ const DashboardSummary = () => {
         onMouseLeave={handleUserInteractionEnd}
         onTouchStart={handleUserInteractionStart}
         onTouchEnd={handleUserInteractionEnd}
-        drag="x"
-        dragElastic={0.1}
-        whileDrag={{ scale: 1.01 }}
+        //drag="x"
+        //dragElastic={0.1}
+        //whileDrag={{ scale: 1.01 }}
       >
         <AnimatePresence>
           {list.map((shop, i) => (

@@ -312,9 +312,32 @@ body {
 
 .dot:hover::after { opacity: 0.3; }
 
+
 /* Responsive */
-@media (max-width: 768px) {
+/* @media (max-width: 768px) {
   .dashboard-container { padding: 16px; }
   .shop-card { min-width: 240px; padding: 20px; }
   .hero { padding: 40px 16px; min-height: 280px; }
+} */
+@media (max-width: 768px) {
+
+  .carousel-container {
+    gap: 12px;
+    padding: 10px 6px;
+  }
+
+  .shop-card {
+    flex: 0 0 90%;
+    min-width: unset;
+    max-width: unset;
+  }
+
+  .hero {
+    padding: 30px 10px;
+  }
+
+  .hero h1 {
+    font-size: 1.8rem;
+  }
+
 }
