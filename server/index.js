@@ -48,7 +48,8 @@ const allowedOrigins = [
   'https://connect4u-client.onrender.com',
   'https://connectfree4u.com',
   'https://www.connectfree4u.com',
-];
+  'https://jusping.com',
+  'https://www.jusping.com',
 
 // Configure CORS middleware
 app.use(cors({
