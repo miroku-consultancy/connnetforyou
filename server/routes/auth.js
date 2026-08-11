@@ -49,7 +49,7 @@ router.post('/send-token', async (req, res) => {
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 await resend.emails.send({
-  from: 'connectfree4u <no-reply@connectfree4u.com>',
+  from: 'jusPing <noreply@jusping.com>',
   to: email,
   subject: 'Your Login OTP',
   text: `Your login OTP is: ${otp}. It expires in 5 minutes.`,
@@ -156,7 +156,7 @@ router.post('/login-with-token', async (req, res) => {
 
   try {
     // 🔥 GOOGLE PLAY REVIEWER BYPASS
-      if (email && email.toLowerCase().trim() === 'reviewer@connectfree4u.com' && token === '000000') {
+      if (email && email.toLowerCase().trim() === 'reviewer@jusping.com' && token === '000000') {
 
       // Find or create user
       let userResult = await pool.query('SELECT * FROM public.users WHERE email = $1', [email]);
