@@ -50,6 +50,7 @@ const allowedOrigins = [
   'https://www.connectfree4u.com',
   'https://jusping.com',
   'https://www.jusping.com',
+  ];
 
 // Configure CORS middleware
 app.use(cors({
