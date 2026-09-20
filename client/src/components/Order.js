@@ -269,7 +269,7 @@ useEffect(() => {
       if (!response.ok) throw new Error(result.error || 'Failed to place order');
       const fullOrder = { ...orderData, orderId: result.orderId };
       localStorage.setItem('orderSummary', JSON.stringify(fullOrder));
-      navigate(`/${effectiveShopSlug}/order-summary`);
+      navigate(`/order-summary`);
     } catch (error) {
       console.error('[handleOrder] COD flow error:', error);
       alert('Failed to place order. Please try again.');
