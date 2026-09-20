@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import './Product.css';
 import { useCart } from './CartContext';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useUser } from './UserContext';
 import AddressPopup from './AddressPopup';
 import { jwtDecode } from 'jwt-decode';
 import ChatActions from "./ChatActions";
 import { useShop } from './ShopContext';
-
+import { useTenant } from '../context/TenantContext';
 
 const API_BASE_URL = 'https://connnet4you-server.onrender.com';
 
@@ -35,15 +35,13 @@ const Product = () => {
     zip: '',
     phone: '',
   });
-  const [shopId, setShopId] = useState(null);
   const { setShop } = useShop();
+const { tenant, loading: tenantLoading } = useTenant();
+
+const shopId = tenant?.shopId;
   const { cart, cartLoaded, addToCart } = useCart();
   const { user, loadingUser } = useUser();
   const navigate = useNavigate();
-  const { shopSlug } = useParams();
-  const getSafeShopSlug = (slug) => (!slug || slug === 'undefined' || slug === 'null' ? null : slug);
-
-  const safeShopSlug = getSafeShopSlug(shopSlug);
 
   const resolveImageUrl = (image) => {
     if (!image) return '';
@@ -95,48 +93,6 @@ const Product = () => {
     }
   }, []);
 
-  // useEffect(() => {
-  //   if (!safeShopSlug) {
-  //     //alert('Invalid shop URL.');
-  //     navigate('/');
-  //   }
-  // }, [safeShopSlug, navigate]);
-
-  useEffect(() => {
-    console.log("[Product] current shopSlug:", safeShopSlug);
-  }, [safeShopSlug]);
-
-  // Fetch shop info
-  // useEffect(() => {
-  //   const fetchShopInfo = async () => {
-  //     if (!safeShopSlug) return;
-  //     try {
-  //       const response = await fetch(`${API_BASE_URL}/api/shops/${safeShopSlug}`);
-  //       if (!response.ok) {
-  //         alert('Shop not found');
-  //         navigate('/');
-  //         return;
-  //       }
-  //       const shop = await response.json();
-  //       setShopId(shop.id);
-  //       setShop({
-  //         id: shop.id,
-  //         slug: shop.slug,
-  //         name: shop.name,
-  //         priceMarkupPercent: Number(shop.price_markup_percent || 0),
-  //       });
-  //       console.log("[ShopContext] setShop from Product page:", {
-  //         id: shop.id,
-  //         slug: shop.slug,
-  //         name: shop.name,
-  //       });
-
-  //     } catch {
-  //       navigate('/');
-  //     }
-  //   };
-  //   fetchShopInfo();
-  // }, [safeShopSlug, navigate, setShop]);
 
   // Fetch products
   useEffect(() => {
@@ -292,7 +248,6 @@ const Product = () => {
                   addToCart={addToCart}
                   resolveImageUrl={resolveImageUrl}
                   isVendor={isVendor}
-                  safeShopSlug={safeShopSlug}
                   parseImageList={parseImageList}
                 />
               ))}
@@ -328,7 +283,7 @@ const Product = () => {
                 </li>
               ))}
             </ul>
-            <button onClick={() => navigate(`/${safeShopSlug}/order`)} className="login-btn">Proceed to Order</button>
+            <button onClick={() => navigate(`/order`)} className="login-btn">Proceed to Order</button>
           </div>
         </div>
       )}
@@ -348,7 +303,6 @@ const ProductCard = ({
   addToCart,
   resolveImageUrl,
   isVendor,
-  safeShopSlug,
   parseImageList
 }) => {
   const { shop } = useShop();
