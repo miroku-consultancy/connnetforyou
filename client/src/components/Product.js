@@ -95,48 +95,48 @@ const Product = () => {
     }
   }, []);
 
-  useEffect(() => {
-    if (!safeShopSlug) {
-      //alert('Invalid shop URL.');
-      navigate('/');
-    }
-  }, [safeShopSlug, navigate]);
+  // useEffect(() => {
+  //   if (!safeShopSlug) {
+  //     //alert('Invalid shop URL.');
+  //     navigate('/');
+  //   }
+  // }, [safeShopSlug, navigate]);
 
   useEffect(() => {
     console.log("[Product] current shopSlug:", safeShopSlug);
   }, [safeShopSlug]);
 
   // Fetch shop info
-  useEffect(() => {
-    const fetchShopInfo = async () => {
-      if (!safeShopSlug) return;
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/shops/${safeShopSlug}`);
-        if (!response.ok) {
-          alert('Shop not found');
-          navigate('/');
-          return;
-        }
-        const shop = await response.json();
-        setShopId(shop.id);
-        setShop({
-          id: shop.id,
-          slug: shop.slug,
-          name: shop.name,
-          priceMarkupPercent: Number(shop.price_markup_percent || 0),
-        });
-        console.log("[ShopContext] setShop from Product page:", {
-          id: shop.id,
-          slug: shop.slug,
-          name: shop.name,
-        });
+  // useEffect(() => {
+  //   const fetchShopInfo = async () => {
+  //     if (!safeShopSlug) return;
+  //     try {
+  //       const response = await fetch(`${API_BASE_URL}/api/shops/${safeShopSlug}`);
+  //       if (!response.ok) {
+  //         alert('Shop not found');
+  //         navigate('/');
+  //         return;
+  //       }
+  //       const shop = await response.json();
+  //       setShopId(shop.id);
+  //       setShop({
+  //         id: shop.id,
+  //         slug: shop.slug,
+  //         name: shop.name,
+  //         priceMarkupPercent: Number(shop.price_markup_percent || 0),
+  //       });
+  //       console.log("[ShopContext] setShop from Product page:", {
+  //         id: shop.id,
+  //         slug: shop.slug,
+  //         name: shop.name,
+  //       });
 
-      } catch {
-        navigate('/');
-      }
-    };
-    fetchShopInfo();
-  }, [safeShopSlug, navigate, setShop]);
+  //     } catch {
+  //       navigate('/');
+  //     }
+  //   };
+  //   fetchShopInfo();
+  // }, [safeShopSlug, navigate, setShop]);
 
   // Fetch products
   useEffect(() => {

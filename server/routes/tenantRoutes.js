@@ -8,7 +8,7 @@ const router = express.Router();
  */
 router.get('/', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM tenants ORDER BY id DESC');
+    const result = await pool.query('SELECT * FROM tenant ORDER BY id DESC');
     res.json(result.rows);
   } catch (err) {
     console.error('🛑 Tenant fetch error:', err);
@@ -48,7 +48,7 @@ router.post('/', async (req, res) => {
     }
 
     const result = await pool.query(
-      `INSERT INTO tenants (
+      `INSERT INTO tenant (
           room_no, name, email, phone, aadhar, pan, tenant_address,
           owner_name, owner_address, rent_month_year, payment_mode,
           payment_date, advance_payment_date, rent_final_per_month,
@@ -103,7 +103,7 @@ router.put('/:id', async (req, res) => {
     } = req.body;
 
     const result = await pool.query(
-      `UPDATE tenants SET
+      `UPDATE tenant SET
           room_no = $1,
           name = $2,
           email = $3,
@@ -166,7 +166,7 @@ router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
-    const result = await pool.query('DELETE FROM tenants WHERE id = $1', [id]);
+    const result = await pool.query('DELETE FROM tenant WHERE id = $1', [id]);
 
     if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Tenant not found' });

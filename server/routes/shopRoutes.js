@@ -4,7 +4,7 @@ const pool = require('../db');
 
 const router = express.Router();
 
-// 🔥 PUBLIC SHOPS - EXCLUDE ConnectFREE4U (ID=1,24)
+// 🔥 PUBLIC SHOPS - EXCLUDE JusPing (ID=1,24)
 router.get('/public', async (req, res) => {
   try {
     const result = await pool.query(`

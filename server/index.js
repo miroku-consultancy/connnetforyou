@@ -23,6 +23,7 @@ const categoriesRouter = require('./routes/categories');
 const whatsappRoutes = require('./routes/whatsapp');
 const tenantRoutes = require('./routes/tenantRoutes');
 const chatNotifyRoutes = require("./routes/chatNotify");
+const tenantsRoutes = require('./routes/tenantsRoutes');
 
 const app = express();
 
@@ -53,10 +54,37 @@ const allowedOrigins = [
   ];
 
 // Configure CORS middleware
+// app.use(cors({
+//   origin: (origin, callback) => {
+//     if (!origin || allowedOrigins.includes(origin)) callback(null, true);
+//     else callback(new Error('Not allowed by CORS'));
+//   },
+//   credentials: true,
+// }));
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) callback(null, true);
-    else callback(new Error('Not allowed by CORS'));
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    try {
+      const hostname = new URL(origin).hostname;
+
+      if (
+        hostname === 'jusping.com' ||
+        hostname.endsWith('.jusping.com')
+      ) {
+        return callback(null, true);
+      }
+    } catch (err) {
+      console.error('Invalid origin:', origin);
+    }
+
+    return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
 }));
@@ -71,6 +99,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/address', addressRoutes);
 app.use('/api/stripe', stripeRoutes);
 app.use('/api/shops', shopRoutes);
+app.use('/api/tenants', tenantsRoutes);
 // Mount it at /api/orders
 app.use('/api/orders', ordersStatusRouter);
 // Use both SSE and normal notifications
@@ -86,7 +115,7 @@ app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/razorpay', require('./routes/razorpay'));
 
 //rent collection related apis
-app.use('/api/tenants', tenantRoutes);
+app.use('/api/tenant', tenantRoutes);
 
 // Serve static assets (images and frontend build)
 app.use('/images', express.static(imagesDir));

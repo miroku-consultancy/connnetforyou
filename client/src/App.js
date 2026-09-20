@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import {
-  HashRouter as Router,
+  BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
@@ -76,23 +76,23 @@ const AppRoutes = () => (
     <Header />
     <main>
       <Routes>
-        <Route path="/" element={<Navigate to="/JusPing/dashboard" replace />} />
-        <Route path="/JusPing/dashboard" element={<DashboardSummary />} />
+        <Route path="/" element={<Navigate to="/ConnectFREE4U/dashboard" replace />} />
+        <Route path="/ConnectFREE4U/dashboard" element={<DashboardSummary />} />
         
-        <Route path="/:shopSlug/login" element={<EmailTokenLogin />} />
+        <Route path="/login" element={<EmailTokenLogin />} />
         {/* <Route path="/:shopSlug/products" element={<ProtectedRoute><Product /></ProtectedRoute>} /> */}
-        <Route path="/:shopSlug/products" element={<Product />} />
+        <Route path="/products" element={<Product />} />
         {/* <Route path="/:shopSlug/order" element={<ProtectedRoute><Order /></ProtectedRoute>} /> */}
-        <Route path="/:shopSlug/order" element={<Order />} />
-        <Route path="/:shopSlug/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
-        <Route path="/:shopSlug/order-summary" element={<ProtectedRoute><OrderSummary /></ProtectedRoute>} />
-        <Route path="/:shopSlug/order-history" element={<OrderHistory />} />
-        <Route path="/:shopSlug/address" element={<AddressPopup />} />
-        <Route path="/:shopSlug/admin/add-product" element={<AddProduct />} />
-        <Route path="/:shopSlug/admin/dashboard" element={<ProtectedRoute><ShopDashboard /></ProtectedRoute>} />
+        <Route path="/order" element={<Order />} />
+        <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
+        <Route path="/order-summary" element={<ProtectedRoute><OrderSummary /></ProtectedRoute>} />
+        <Route path="/order-history" element={<OrderHistory />} />
+        <Route path="/address" element={<AddressPopup />} />
+        <Route path="/admin/add-product" element={<AddProduct />} />
+        <Route path="/admin/dashboard" element={<ProtectedRoute><ShopDashboard /></ProtectedRoute>} />
         <Route path="/vendor/dashboard" element={<VendorDashboard />} />
-        <Route path="/:shopSlug/shop-orders" element={<ProtectedRoute><ShopOrderHistory /></ProtectedRoute>} />
-        <Route path="/:shopSlug/admin/edit-product/:id" element={<ProtectedRoute><UpdateProduct /></ProtectedRoute>} />
+        <Route path="/shop-orders" element={<ProtectedRoute><ShopOrderHistory /></ProtectedRoute>} />
+        <Route path="/admin/edit-product/:id" element={<ProtectedRoute><UpdateProduct /></ProtectedRoute>} />
         <Route path="/qr-login" element={<QrLoginPage />} />
         <Route path="/qr-codes" element={<ShopQRCodes />} />
         <Route path="/consent" element={<ConsentPage />} />
@@ -102,8 +102,8 @@ const AppRoutes = () => (
         <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
         <Route path="/terms-of-service" element={<TermsOfServicePage />} />
         <Route path="/profile" element={<ProtectedRoute><UserProfileForm /></ProtectedRoute>} />
-        <Route path="/:shopSlug/profile" element={<UserProfileForm />} />
-        <Route path="/:shopSlug/admin/add-stock" element={<AddStock />} />
+        <Route path="/profile" element={<UserProfileForm />} />
+        <Route path="/admin/add-stock" element={<AddStock />} />
         <Route
   path="/chat/:threadId"
   element={

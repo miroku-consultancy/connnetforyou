@@ -124,7 +124,10 @@ const DashboardSummary = () => {
     return () => clearInterval(intervalRef.current);
   }, [isPaused, shops]);
 
-  const handleClick = (slug) => navigate(`/${slug}/products`);
+  // const handleClick = (slug) => navigate(`/${slug}/products`);
+  const handleClick = (slug) => {
+  window.location.href = `https://${slug}.jusping.com/products`;
+};
   const handleUserInteractionStart = () => setIsPaused(true);
   const handleUserInteractionEnd = () => setIsPaused(false);
 
