@@ -37,6 +37,8 @@ const resolveImageUrl = (image) => {
 };
 
 const Order = () => {
+  
+  const [shop, setShop] = useState(null);
   const { cart, cartLoaded, addToCart } = useCart();
   const items = Object.values(cart);
   const navigate = useNavigate();
@@ -104,6 +106,7 @@ useEffect(() => {
 
       const data = await res.json();
       setShop(data);
+      setMinOrderValue(Number(data.minordervalue || 200));
     } catch (error) {
       console.error('Error:', error);
     }
