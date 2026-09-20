@@ -74,7 +74,7 @@ const ShopQRCodes = () => {
       >
         {shops.map((shop) => {
           const url = shop === "JusPing"
-            ? "https://www.connectfree4u.com"
+            ? "https://www.jusping.com"
             : `${baseUrl}${shop}/products`;
 
           return (
