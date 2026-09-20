@@ -28,7 +28,7 @@ const shops = [
   "ShadhuIcecream",
 ];
 
-const baseUrl = "https://www.connectfree4u.com/#/";
+const baseUrl = "https://www.jusping.com/#/";
 
 const displayName = (shop) =>
   shop
