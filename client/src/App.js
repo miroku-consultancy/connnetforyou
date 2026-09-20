@@ -76,8 +76,9 @@ const AppRoutes = () => (
     <Header />
     <main>
       <Routes>
-        <Route path="/" element={<Navigate to="/ConnectFREE4U/dashboard" replace />} />
-        <Route path="/ConnectFREE4U/dashboard" element={<DashboardSummary />} />
+        {/* <Route path="/" element={<Navigate to="/ConnectFREE4U/dashboard" replace />} /> */}
+        <Route path="/" element={<DashboardSummary />} />
+        {/* <Route path="/ConnectFREE4U/dashboard" element={<DashboardSummary />} /> */}
         
         <Route path="/login" element={<EmailTokenLogin />} />
         {/* <Route path="/:shopSlug/products" element={<ProtectedRoute><Product /></ProtectedRoute>} /> */}

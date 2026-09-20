@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import { toast } from 'react-toastify';
 import { useUser } from './UserContext';
 import ConsentPage from './ConsentPage';
+import { useTenant } from '../context/TenantContext';
 import './EmailTokenLogin.css';
 
 const EmailTokenLogin = () => {
@@ -14,8 +15,9 @@ const EmailTokenLogin = () => {
   const [showConsent, setShowConsent] = useState(false);
 
   const navigate = useNavigate();
-  const { shopSlug } = useParams();
   const { refreshUser } = useUser();
+  const { tenant } = useTenant();
+const shopSlug = tenant?.shopSlug;
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -25,8 +27,14 @@ const EmailTokenLogin = () => {
         if (decoded.exp * 1000 > Date.now()) {
           // Inside your EmailTokenLogin.js after login success:
           const params = new URLSearchParams(window.location.search);
-          const redirectPath = params.get('redirect') || `/${shopSlug}${shopSlug === 'JusPing' ? '/dashboard' : '/products'}`;
-          navigate(redirectPath);
+
+const redirectPath =
+  params.get('redirect') ||
+  (shopSlug === 'JusPing'
+    ? '/'
+    : '/products');
+
+navigate(redirectPath);
 
         } else {
           localStorage.removeItem('authToken');
@@ -76,9 +84,13 @@ const EmailTokenLogin = () => {
         refreshUser();
         toast.success('🎉 Login successful!');
         const searchParams = new URLSearchParams(window.location.search);
-        const redirectPath = searchParams.get('redirect') || (shopSlug === 'JusPing' ? '/dashboard' : '/order');
-        navigate(`/${shopSlug}${redirectPath}`);
+        const redirectPath =
+  searchParams.get('redirect') ||
+  (shopSlug === 'JusPing'
+  ? '/'
+  : '/order');
 
+navigate(redirectPath);
       } else {
         toast.error(data.error || 'Invalid OTP');
       }
