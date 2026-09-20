@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useCart } from './CartContext';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import './Cart.css';
 
 const API_BASE_URL = 'https://connnet4you-server.onrender.com'; // or use env
@@ -8,17 +8,7 @@ const API_BASE_URL = 'https://connnet4you-server.onrender.com'; // or use env
 const Cart = () => {
   const { cart, updateQuantity } = useCart();
   const navigate = useNavigate();
-  const { shopSlug } = useParams();
 
-  const getSafeShopSlug = (slug) =>
-    !slug || slug === 'undefined' || slug === 'null' ? null : slug;
-
-  const safeShopSlug =
-    getSafeShopSlug(shopSlug) ||
-    (() => {
-      const pathParts = window.location.pathname.split('/').filter(Boolean);
-      return pathParts.length > 0 ? pathParts[0] : null;
-    })();
 
   const items = Object.values(cart);
   const [visible, setVisible] = useState(false);
@@ -135,13 +125,7 @@ const Cart = () => {
 
       <button
         className="proceed-btn"
-        onClick={() => {
-          if (safeShopSlug) {
-            navigate(`/${safeShopSlug}/order`);
-          } else {
-           // alert('Invalid shop URL');
-          }
-        }}
+        onClick={() => navigate('/order')}
       >
         Proceed to Order
       </button>

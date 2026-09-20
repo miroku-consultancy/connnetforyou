@@ -1,9 +1,13 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { useTenant } from '../context/TenantContext';
 
 const CartContext = createContext();
 export const useCart = () => useContext(CartContext);
 
-export const CartProvider = ({ children, userId, shopSlug }) => {
+export const CartProvider = ({ children, userId }) => {
+  const { tenant } = useTenant();
+  const shopSlug = tenant?.shopSlug;
+
   const [cart, setCart] = useState({});
   const [cartLoaded, setCartLoaded] = useState(false);
   const lastKey = useRef(null);

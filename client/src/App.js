@@ -53,20 +53,19 @@ import {
 } from './components/firebase-messaging';
 import { register as registerServiceWorker } from './components/serviceWorker';
 
-const extractShopSlug = (pathname) => {
-  const match = pathname.match(/^\/([^/]+)/);
-  return match ? match[1] : null;
-};
+// const extractShopSlug = (pathname) => {
+//   const match = pathname.match(/^\/([^/]+)/);
+//   return match ? match[1] : null;
+// };
 const API_BASE = 'https://connnet4you-server.onrender.com';
 
 const CartProviderWithParams = ({ children }) => {
   const { user } = useUser();
-  const location = useLocation();
-  const shopSlug = extractShopSlug(location.pathname);
-   if (user === undefined) return null;
+
+  if (user === undefined) return null;
 
   return (
-    <CartProvider userId={user?.id} shopSlug={shopSlug}>
+    <CartProvider userId={user?.id}>
       {children}
     </CartProvider>
   );
