@@ -130,7 +130,7 @@ const DashboardSummary = () => {
 
   // Image fallback
   const getImageElement = (shop) => {
-    const baseUrl = "https://www.connectfree4u.com/images/shops";
+    const baseUrl = "https://www.jusping.com/images/shops";
     const extensions = ['jpeg', 'jpg', 'png', 'JPG'];
     let attempt = 0;
 
