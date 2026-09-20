@@ -42,7 +42,7 @@ const Order = () => {
   const navigate = useNavigate();
   const { user } = useUser();
  const { tenant } = useTenant();
-const shopId = tenant?.shopId;
+const shopSlug = tenant?.shopSlug;
   const [initialAddressLoadComplete, setInitialAddressLoadComplete] = useState(false);
   const [showAddressPopup, setShowAddressPopup] = useState(false);
   const [addresses, setAddresses] = useState([]);
@@ -91,23 +91,26 @@ const shopId = tenant?.shopId;
   // Fetch shop min order value
 useEffect(() => {
   const fetchShopData = async () => {
-    if (!shopId) return;
+    if (!shopSlug) return;
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/shops/${shopId}`);
+      const res = await fetch(
+        `${API_BASE_URL}/api/shops/${shopSlug}`
+      );
 
-      if (!res.ok) throw new Error('Failed to fetch shop data');
+      if (!res.ok) {
+        throw new Error(`Failed to fetch shop data: ${res.status}`);
+      }
 
       const data = await res.json();
-      setMinOrderValue(Number(data.minordervalue) || 200);
-    } catch (err) {
-      console.error(err);
-      setMinOrderValue(200);
+      setShop(data);
+    } catch (error) {
+      console.error('Error:', error);
     }
   };
 
   fetchShopData();
-}, [shopId]);
+}, [shopSlug]);
 
   // Redirect if cart is empty
   useEffect(() => {
