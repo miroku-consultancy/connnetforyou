@@ -77,7 +77,7 @@ const Payment = () => {
         key: 'rzp_test_V4nnUsy6IaZrw2', // 🔁 Replace with your actual Razorpay key
         amount: data.amount,
         currency: 'INR',
-        name: 'ConnectFREE4U',
+        name: 'JusPing',
         description: 'Order Payment',
         order_id: data.id,
         handler: async function (response) {

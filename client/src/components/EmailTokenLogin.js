@@ -25,7 +25,7 @@ const EmailTokenLogin = () => {
         if (decoded.exp * 1000 > Date.now()) {
           // Inside your EmailTokenLogin.js after login success:
           const params = new URLSearchParams(window.location.search);
-          const redirectPath = params.get('redirect') || `/${shopSlug}${shopSlug === 'ConnectFREE4U' ? '/dashboard' : '/products'}`;
+          const redirectPath = params.get('redirect') || `/${shopSlug}${shopSlug === 'JusPing' ? '/dashboard' : '/products'}`;
           navigate(redirectPath);
 
         } else {
@@ -76,7 +76,7 @@ const EmailTokenLogin = () => {
         refreshUser();
         toast.success('🎉 Login successful!');
         const searchParams = new URLSearchParams(window.location.search);
-        const redirectPath = searchParams.get('redirect') || (shopSlug === 'ConnectFREE4U' ? '/dashboard' : '/order');
+        const redirectPath = searchParams.get('redirect') || (shopSlug === 'JusPing' ? '/dashboard' : '/order');
         navigate(`/${shopSlug}${redirectPath}`);
 
       } else {

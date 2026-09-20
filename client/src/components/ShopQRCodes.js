@@ -2,7 +2,7 @@ import React from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 
 const shops = [
-  "ConnectFREE4U",
+  "JusPing",
   "Kanji-Sweets",
   "RajeevVegStore",
   "Ganga-Medical-hall",
@@ -61,7 +61,7 @@ const ShopQRCodes = () => {
           marginBottom: '20px',
         }}
       >
-        ConnectFREE4U Shops
+        JusPing Shops
       </h1>
 
       <div
@@ -73,7 +73,7 @@ const ShopQRCodes = () => {
         }}
       >
         {shops.map((shop) => {
-          const url = shop === "ConnectFREE4U"
+          const url = shop === "JusPing"
             ? "https://www.connectfree4u.com"
             : `${baseUrl}${shop}/products`;
 
@@ -160,9 +160,9 @@ const ShopQRCodes = () => {
                   transition: 'box-shadow 0.3s ease',
                   alignSelf: 'center',
                 }}
-                title="ConnectFREE4U"
+                title="JusPing"
               >
-                ConnectFREE4U
+                JusPing
               </p>
             </div>
           );

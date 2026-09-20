@@ -61,7 +61,7 @@ const Order = () => {
   const [isTakeaway, setIsTakeaway] = useState(false);
   const [minOrderValue, setMinOrderValue] = useState(200);
 
-  const effectiveShopSlug = user?.shop_slug || paramShopSlug || 'ConnectFREE4U';
+  const effectiveShopSlug = user?.shop_slug || paramShopSlug || 'JusPing';
   const total = items.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
 
   // Load user addresses once
@@ -158,7 +158,7 @@ const Order = () => {
   const handleOrder = async () => {
     const token = localStorage.getItem('authToken');
     if (!token) {
-      navigate(`/${paramShopSlug || 'ConnectFREE4U'}/login?redirect=${window.location.pathname}`);
+      navigate(`/${paramShopSlug || 'JusPing'}/login?redirect=${window.location.pathname}`);
       return;
     }
     if (!paymentMethod) {

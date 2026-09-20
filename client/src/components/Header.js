@@ -129,7 +129,7 @@
 //           </span>
 //         )}
 //         <span className="powered-by">
-//           Powered by <strong>ConnectFREE4U</strong>
+//           Powered by <strong>JusPing</strong>
 //         </span>
 //       </div>
 //     </motion.header>
@@ -317,7 +317,7 @@ const Header = () => {
           )}
 
           <span className="powered-by">
-            Powered by <strong>ConnectFREE4U</strong>
+            Powered by <strong>JusPing</strong>
           </span>
         </div>
       )}

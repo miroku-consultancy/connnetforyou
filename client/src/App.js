@@ -76,8 +76,8 @@ const AppRoutes = () => (
     <Header />
     <main>
       <Routes>
-        <Route path="/" element={<Navigate to="/ConnectFREE4U/dashboard" replace />} />
-        <Route path="/ConnectFREE4U/dashboard" element={<DashboardSummary />} />
+        <Route path="/" element={<Navigate to="/JusPing/dashboard" replace />} />
+        <Route path="/JusPing/dashboard" element={<DashboardSummary />} />
         
         <Route path="/:shopSlug/login" element={<EmailTokenLogin />} />
         {/* <Route path="/:shopSlug/products" element={<ProtectedRoute><Product /></ProtectedRoute>} /> */}
