@@ -143,44 +143,51 @@ import { motion, AnimatePresence } from "framer-motion";
 import "./Header.css";
 import MenuBar from "./MenuBar";
 import { FaBars, FaTimes } from "react-icons/fa";
+import { useTenant } from "../context/TenantContext";
 
-const API_BASE_URL = "https://connnet4you-server.onrender.com";
+
+//const API_BASE_URL = "https://connnet4you-server.onrender.com";
 
 const Header = () => {
   const location = useLocation();
-  const [shop, setShop] = useState(null);
+  //const [shop, setShop] = useState(null);
+  
+const { tenant } = useTenant();
+
+  const shop = tenant?.shop;
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const shopSlug = location.pathname.split("/")[1] || "";
+  //const shopSlug = location.pathname.split("/")[1] || "";
+  
 
   /* =========================
      FETCH SHOP INFO
   ========================= */
-  useEffect(() => {
-    if (!shopSlug || shopSlug === "dashboard") return;
+  // useEffect(() => {
+  //   if (!shopSlug || shopSlug === "dashboard") return;
 
-    fetch(`${API_BASE_URL}/api/shops/${shopSlug}`)
-      .then((res) => {
-        if (res.ok) return res.json();
-        if (res.status === 404)
-          return {
-            name: "Shop Not Found",
-            slug: null,
-            address: "",
-            phone: "",
-          };
-        return Promise.reject();
-      })
-      .then(setShop)
-      .catch(() => {
-        setShop({
-          name: "Error fetching shop",
-          slug: null,
-          address: "",
-          phone: "",
-        });
-      });
-  }, [shopSlug]);
+  //   fetch(`${API_BASE_URL}/api/shops/${shopSlug}`)
+  //     .then((res) => {
+  //       if (res.ok) return res.json();
+  //       if (res.status === 404)
+  //         return {
+  //           name: "Shop Not Found",
+  //           slug: null,
+  //           address: "",
+  //           phone: "",
+  //         };
+  //       return Promise.reject();
+  //     })
+  //     .then(setShop)
+  //     .catch(() => {
+  //       setShop({
+  //         name: "Error fetching shop",
+  //         slug: null,
+  //         address: "",
+  //         phone: "",
+  //       });
+  //     });
+  // }, [shopSlug]);
 
   /* =========================
      HIDE HEADER ON DASHBOARD

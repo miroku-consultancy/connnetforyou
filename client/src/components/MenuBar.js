@@ -1,14 +1,16 @@
 // components/MenuBar.js
 import React, { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useUser } from './UserContext';
 import LogoutButton from './LogoutButton';
+import { useTenant } from '../context/TenantContext';
 import './MenuBar.css';
 
 const MenuBar = ({ closeMenu }) => {
   const { user } = useUser();
-  const location = useLocation();
-  const shopSlug = location.pathname.split('/')[1] || '';
+  const { tenant } = useTenant();
+
+  const shop = tenant?.shop;
   const [navItems, setNavItems] = useState([]);
   const [expandedIndex, setExpandedIndex] = useState(null);
   const [isVendor, setIsVendor] = useState(false);
@@ -68,7 +70,7 @@ const MenuBar = ({ closeMenu }) => {
           {expandedIndex === 'user' && (
             <div className="dropdown">
               <Link to="/profile" className="dropdown-item" onClick={handleLinkClick}>📝 Edit Profile</Link>
-              <Link to={`/${shopSlug}/order-history`} className="dropdown-item" onClick={handleLinkClick}>📜 Order History</Link>
+              <Link to={`/order-history`} className="dropdown-item" onClick={handleLinkClick}>📜 Order History</Link>
               <LogoutButton onClick={handleLinkClick} />
             </div>
           )}
@@ -83,7 +85,7 @@ const MenuBar = ({ closeMenu }) => {
             onMouseEnter={() => setExpandedIndex(idx)}
             onMouseLeave={() => setExpandedIndex(null)}
           >
-            <Link to={`/${shopSlug}${itm.id}`} className="nav-link" onClick={handleLinkClick}>
+            <Link to={itm.id} className="nav-link" onClick={handleLinkClick}>
               {itm.name}
             </Link>
             {expandedIndex === idx && itm.description?.length > 0 && (
@@ -143,9 +145,9 @@ const MenuBar = ({ closeMenu }) => {
             {expandedIndex === 'vendor' && (
               <div className="dropdown">
                 <Link to="/vendor/dashboard" className="dropdown-item" onClick={handleLinkClick}>📊 Dashboard</Link>
-                <Link to={`/${shopSlug}/shop-orders`} className="dropdown-item" onClick={handleLinkClick}>🛍️ Shop Orders</Link>
-                <Link to={`/${shopSlug}/admin/add-product`} className="dropdown-item" onClick={handleLinkClick}>➕ Add Product</Link>
-                <Link to={`/${shopSlug}/admin/add-stock`} className="dropdown-item" onClick={handleLinkClick}>➕ Add Stock</Link>
+                <Link to={`/shop-orders`} className="dropdown-item" onClick={handleLinkClick}>🛍️ Shop Orders</Link>
+                <Link to={`/admin/add-product`} className="dropdown-item" onClick={handleLinkClick}>➕ Add Product</Link>
+                <Link to={`/admin/add-stock`} className="dropdown-item" onClick={handleLinkClick}>➕ Add Stock</Link>
               </div>
             )}
           </div>

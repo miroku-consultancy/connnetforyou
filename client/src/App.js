@@ -41,6 +41,7 @@ import AddStock from './components/AddStock';
 import ChatHub from "./components/chatHub";
 import VendorInbox from "./components/VendorInbox";
 import { ShopProvider } from './components/ShopContext';
+import { TenantProvider } from "./context/TenantContext";
 
 //import Banner from './components/Banner';
 
@@ -177,10 +178,12 @@ const App = () => {
   return (
   <Router>
     <UserProvider>
+      <TenantProvider>
       <ShopProvider>     {/* ✅ ADD THIS */}
         <AppRoutes />
         <ToastContainer position="top-right" autoClose={3000} />
       </ShopProvider>
+      </TenantProvider>
     </UserProvider>
   </Router>
 );
