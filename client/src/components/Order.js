@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from './CartContext';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useUser } from './UserContext';
 import AddressPopup from './AddressPopup';
+import { useTenant } from '../context/TenantContext';
 import './Order.css';
 
 const API_BASE_URL = 'https://connnet4you-server.onrender.com';
@@ -40,8 +41,8 @@ const Order = () => {
   const items = Object.values(cart);
   const navigate = useNavigate();
   const { user } = useUser();
-  const { shopSlug: paramShopSlug } = useParams();
-
+ const { tenant } = useTenant();
+const shopId = tenant?.shopId;
   const [initialAddressLoadComplete, setInitialAddressLoadComplete] = useState(false);
   const [showAddressPopup, setShowAddressPopup] = useState(false);
   const [addresses, setAddresses] = useState([]);
@@ -61,7 +62,6 @@ const Order = () => {
   const [isTakeaway, setIsTakeaway] = useState(false);
   const [minOrderValue, setMinOrderValue] = useState(200);
 
-  const effectiveShopSlug = user?.shop_slug || paramShopSlug || 'JusPing';
   const total = items.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
 
   // Load user addresses once
@@ -89,27 +89,32 @@ const Order = () => {
   }, [user]);
 
   // Fetch shop min order value
-  useEffect(() => {
-    const fetchShopData = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/shops/${effectiveShopSlug}`);
-        if (!res.ok) throw new Error('Failed to fetch shop data');
-        const data = await res.json();
-        setMinOrderValue(Number(data.minordervalue) || 200);
-      } catch (err) {
-        console.error(err);
-        setMinOrderValue(200);
-      }
-    };
-    fetchShopData();
-  }, [effectiveShopSlug]);
+useEffect(() => {
+  const fetchShopData = async () => {
+    if (!shopId) return;
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/shops/${shopId}`);
+
+      if (!res.ok) throw new Error('Failed to fetch shop data');
+
+      const data = await res.json();
+      setMinOrderValue(Number(data.minordervalue) || 200);
+    } catch (err) {
+      console.error(err);
+      setMinOrderValue(200);
+    }
+  };
+
+  fetchShopData();
+}, [shopId]);
 
   // Redirect if cart is empty
   useEffect(() => {
     if (cartLoaded && items.length === 0) {
-      navigate(`/${effectiveShopSlug}/products`);
+      navigate(`/products`);
     }
-  }, [cartLoaded, items, navigate, effectiveShopSlug]);
+  }, [cartLoaded, items, navigate]);
 
   // Handle takeaway/min order warning
   useEffect(() => {
@@ -158,7 +163,7 @@ const Order = () => {
   const handleOrder = async () => {
     const token = localStorage.getItem('authToken');
     if (!token) {
-      navigate(`/${paramShopSlug || 'JusPing'}/login?redirect=${window.location.pathname}`);
+      navigate(`/login?redirect=${window.location.pathname}`);
       return;
     }
     if (!paymentMethod) {
@@ -234,7 +239,7 @@ const Order = () => {
               const fullOrder = { ...orderData, orderId: result.orderId };
               localStorage.setItem('orderSummary', JSON.stringify(fullOrder));
 
-              navigate(`/${effectiveShopSlug}/order-summary`);
+              navigate(`/order-summary`);
             } catch (err) {
               console.error('[RazorpayHandler] Error:', err);
               alert('Order failed after payment. Please contact support.');
