@@ -10,35 +10,42 @@ export const TenantProvider = ({ children }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const resolveTenant = async () => {
-      try {
-        setLoading(true);
+  const resolveTenant = async () => {
+    const domain = window.location.hostname.toLowerCase();
 
-        const domain = window.location.hostname;
+    // Root JusPing platform domain — not a tenant
+    if (domain === "jusping.com" || domain === "www.jusping.com") {
+      setTenant(null);
+      setLoading(false);
+      return;
+    }
 
-        const response = await fetch(
-          `${API_BASE_URL}/api/tenants/resolve?domain=${encodeURIComponent(domain)}`
-        );
+    try {
+      setLoading(true);
 
-        if (!response.ok) {
-          throw new Error("Tenant not found");
-        }
+      const response = await fetch(
+        `${API_BASE_URL}/api/tenants/resolve?domain=${encodeURIComponent(domain)}`
+      );
 
-        const data = await response.json();
-
-        console.log("[Tenant] Resolved:", data);
-
-        setTenant(data);
-      } catch (err) {
-        console.error("[Tenant] Resolution failed:", err);
-        setError(err);
-      } finally {
-        setLoading(false);
+      if (!response.ok) {
+        throw new Error("Tenant not found");
       }
-    };
 
-    resolveTenant();
-  }, []);
+      const data = await response.json();
+
+      console.log("[Tenant] Resolved:", data);
+
+      setTenant(data);
+    } catch (err) {
+      console.error("[Tenant] Resolution failed:", err);
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  resolveTenant();
+}, []);
 
   return (
     <TenantContext.Provider
