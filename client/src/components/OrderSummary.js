@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useCart } from './CartContext';
 import { useUser } from './UserContext';
 import BluetoothPrinter from './BluetoothPrinter'; // ✅ Import printer component
@@ -42,7 +42,6 @@ const OrderSummary = () => {
   const [showPrinter, setShowPrinter] = useState(false);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { shopSlug } = useParams();
   const { clearCart } = useCart();
   const navigationHandled = useRef(false);
   const { user } = useUser();
@@ -70,17 +69,17 @@ const OrderSummary = () => {
       if (e.state?.fromSummary && !navigationHandled.current) {
         navigationHandled.current = true;
         clearCart();
-        navigate(`/${shopSlug}/products`, { replace: true });
+        navigate(`/products`, { replace: true });
       }
     };
 
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
-  }, [searchParams, clearCart, navigate, shopSlug]);
+  }, [searchParams, clearCart, navigate]);
 
   const handleGoToProducts = () => {
     clearCart();
-    navigate(`/${shopSlug}/products`);
+    navigate(`/products`);
   };
 
   const handlePrint = () => {

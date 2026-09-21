@@ -152,11 +152,13 @@ const Header = () => {
   const location = useLocation();
   //const [shop, setShop] = useState(null);
   
-const { tenant } = useTenant();
+const { tenant, loading } = useTenant();
 
-  const shop = tenant?.shop;
+const shop = tenant?.shop;
   const [menuOpen, setMenuOpen] = useState(false);
-
+if (location.hostname === "jusping.com" || location.hostname === "www.jusping.com") {
+  return null;
+}
   //const shopSlug = location.pathname.split("/")[1] || "";
   
 
