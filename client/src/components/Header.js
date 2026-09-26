@@ -1,234 +1,276 @@
-// import React, { useEffect, useState } from 'react';
-// import { useLocation } from 'react-router-dom';
-// import { motion } from 'framer-motion';
-// import './Header.css';
-// import MenuBar from './MenuBar';
-// import { FaBars, FaTimes } from 'react-icons/fa';
-
-// const API_BASE_URL = 'https://connnet4you-server.onrender.com';
-
-// const Header = () => {
-//   const location = useLocation();
-//   const [shop, setShop] = useState(null);
-//   const [menuOpen, setMenuOpen] = useState(false);
-//   const shopSlug = location.pathname.split('/')[1] || '';
-
-//   useEffect(() => {
-//     if (!shopSlug || shopSlug === 'dashboard') return;
-
-//     fetch(`${API_BASE_URL}/api/shops/${shopSlug}`)
-//       .then(res => {
-//         if (res.ok) return res.json();
-//         if (res.status === 404)
-//           return { name: 'Shop Not Found', slug: null, address: '', phone: '' };
-//         return Promise.reject();
-//       })
-//       .then(setShop)
-//       .catch(err => {
-//         console.error('Shop fetch error:', err);
-//         setShop({ name: 'Error fetching shop', slug: null, address: '', phone: '' });
-//       });
-//   }, [shopSlug]);
-
-//   // Hide header on dashboard (you said you’ll remove hero text there)
-//   if (location.pathname === '/dashboard') {
-//     return null;
-//   }
-
-//   const formatTime = (timeStr) => {
-//     if (!timeStr) return '';
-//     const [hour, minute] = timeStr.split(':');
-//     let h = parseInt(hour, 10);
-//     const suffix = h >= 12 ? 'PM' : 'AM';
-//     h = h % 12 || 12;
-//     return `${h}:${minute} ${suffix}`;
-//   };
-
-//   const toggleMenu = () => setMenuOpen((prev) => !prev);
-
-//   const isShopOpen = () => {
-//     if (!shop?.open_time || !shop?.close_time) return true;
-//     const now = new Date();
-//     const nowMinutes = now.getHours() * 60 + now.getMinutes();
-//     const [openH, openM] = shop.open_time.split(':').map(Number);
-//     const [closeH, closeM] = shop.close_time.split(':').map(Number);
-//     const openMinutes = openH * 60 + openM;
-//     const closeMinutes = closeH * 60 + closeM;
-//     return nowMinutes >= openMinutes && nowMinutes <= closeMinutes;
-//   };
-
-//   const shopLogoSrc = shop?.slug
-//     ? `/images/shops/${shop.slug}.JPG`
-//     : '/images/shops/logo.png';
-
-//   return (
-//     <motion.header
-//       className="header"
-//       initial={{ y: -80, opacity: 0 }}
-//       animate={{ y: 0, opacity: 1 }}
-//       transition={{ duration: 0.6, ease: "easeOut" }}
-//     >
-//       {/* Left */}
-//       <div className="left-box">
-//         <motion.img
-//           src={shopLogoSrc}
-//           alt="Shop logo"
-//           className="logo"
-//           onError={(e) => {
-//             e.currentTarget.onerror = null;
-//             e.currentTarget.src = '/images/shops/logo.png';
-//           }}
-//           whileHover={{ scale: 1.08, rotate: 2 }}
-//           transition={{ type: "spring", stiffness: 300 }}
-//         />
-
-//         <div className="shop-info">
-//           {shop ? (
-//             <>
-//               {/* THIS uses shop.name and gives Dashboard hero feel */}
-//               <motion.h1
-//                 className="brand-title"
-//                 initial={{ opacity: 0, y: -10 }}
-//                 animate={{ opacity: 1, y: 0 }}
-//                 transition={{ duration: 0.5 }}
-//               >
-//                 {shop.name}
-//               </motion.h1>
-
-//               {shop.address && <span className="shop-address">{shop.address}</span>}
-//               {shop.phone && (
-//                 <span className="shop-phone">
-//                   📞 <a href={`tel:${shop.phone}`}>{shop.phone}</a>
-//                 </span>
-//               )}
-//             </>
-//           ) : (
-//             <span className="shop-loading">Loading shop info…</span>
-//           )}
-//         </div>
-//       </div>
-
-//       {/* Toggle */}
-//       <button className="menu-toggle" onClick={toggleMenu}>
-//         {menuOpen ? <FaTimes /> : <FaBars />}
-//       </button>
-
-//       {/* Center Menu */}
-//       <nav className={`nav ${menuOpen ? 'open' : ''}`}>
-//         <MenuBar closeMenu={() => setMenuOpen(false)} />
-//       </nav>
-
-//       {/* Right */}
-//       <div className="right-box">
-//         {shop?.open_time && shop?.close_time && (
-//           <span className="shop-hours">
-//             🕒 {formatTime(shop.open_time)} – {formatTime(shop.close_time)}
-//             <span className={`status-badge ${isShopOpen() ? 'open' : 'closed'}`}>
-//               {isShopOpen() ? '🟢 Open' : '🔴 Closed'}
-//             </span>
-//           </span>
-//         )}
-//         <span className="powered-by">
-//           Powered by <strong>JusPing</strong>
-//         </span>
-//       </div>
-//     </motion.header>
-//   );
-// };
-
-// export default Header;
-import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  FaBars,
+  FaTimes,
+  FaHeart,
+  FaBell,
+  FaMapMarkerAlt,
+  FaSearch,
+} from "react-icons/fa";
+
 import "./Header.css";
 import MenuBar from "./MenuBar";
-import { FaBars, FaTimes } from "react-icons/fa";
 import { useTenant } from "../context/TenantContext";
 
-
-//const API_BASE_URL = "https://connnet4you-server.onrender.com";
-
-const Header = () => {
+const Header = ({
+  searchValue = "",
+  onSearchChange,
+  onLocationChange,
+  notificationCount = 0,
+}) => {
   const location = useLocation();
-  //const [shop, setShop] = useState(null);
-  
-const { tenant, loading } = useTenant();
+  const navigate = useNavigate();
 
-const shop = tenant?.shop;
+  const { tenant, loading } = useTenant();
+  const shop = tenant?.shop;
+
   const [menuOpen, setMenuOpen] = useState(false);
-if (location.hostname === "jusping.com" || location.hostname === "www.jusping.com") {
-  return null;
-}
-  //const shopSlug = location.pathname.split("/")[1] || "";
-  
+  const [locationLoading, setLocationLoading] =
+    useState(false);
+  const [locationError, setLocationError] =
+    useState(false);
 
-  /* =========================
-     FETCH SHOP INFO
-  ========================= */
-  // useEffect(() => {
-  //   if (!shopSlug || shopSlug === "dashboard") return;
+  // Root JusPing domain detection
+  const hostname =
+    window.location.hostname.toLowerCase();
 
-  //   fetch(`${API_BASE_URL}/api/shops/${shopSlug}`)
-  //     .then((res) => {
-  //       if (res.ok) return res.json();
-  //       if (res.status === 404)
-  //         return {
-  //           name: "Shop Not Found",
-  //           slug: null,
-  //           address: "",
-  //           phone: "",
-  //         };
-  //       return Promise.reject();
-  //     })
-  //     .then(setShop)
-  //     .catch(() => {
-  //       setShop({
-  //         name: "Error fetching shop",
-  //         slug: null,
-  //         address: "",
-  //         phone: "",
-  //       });
-  //     });
-  // }, [shopSlug]);
+  const isRootDomain =
+    hostname === "jusping.com" ||
+    hostname === "www.jusping.com" ||
+    hostname === "localhost" ||
+    hostname === "127.0.0.1";
 
-  /* =========================
-     HIDE HEADER ON DASHBOARD
-  ========================= */
-  if (location.pathname === "/dashboard") {
-    return null;
+  const goTo = (path) => {
+    setMenuOpen(false);
+    navigate(path);
+  };
+
+  const handleSearch = (event) => {
+    onSearchChange?.(event.target.value);
+  };
+
+  const handleLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationError(true);
+      return;
+    }
+
+    setLocationLoading(true);
+    setLocationError(false);
+
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        setLocationLoading(false);
+        setLocationError(false);
+
+        // Let DashboardSummary call the existing shops API.
+        onLocationChange?.({
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+        });
+      },
+      (error) => {
+        console.warn(
+          "Location unavailable:",
+          error.message
+        );
+
+        setLocationLoading(false);
+        setLocationError(true);
+      },
+      {
+        enableHighAccuracy: false,
+        timeout: 10000,
+        maximumAge: 300000,
+      }
+    );
+  };
+
+  // ==========================================
+  // ROOT JUSPING HEADER
+  // ==========================================
+
+  if (isRootDomain) {
+    return (
+      <motion.header
+        className="jp-header"
+        initial={{ y: -60, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{
+          duration: 0.4,
+          ease: "easeOut",
+        }}
+      >
+        {/* Brand */}
+        <div
+          className="jp-brand"
+          onClick={() => goTo("/")}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              goTo("/");
+            }
+          }}
+        >
+          <div className="jp-logo-mark">
+            <span>●</span>
+          </div>
+
+          <div className="jp-brand-text">
+            <div className="jp-brand-name">
+              Jus<span>Ping</span>
+            </div>
+
+            <small>
+              Local Shops • Services • Community
+            </small>
+          </div>
+        </div>
+
+        {/* Search */}
+        <div className="jp-search">
+          <FaSearch className="jp-search-icon" />
+
+          <input
+            type="search"
+            value={searchValue}
+            placeholder="Search shops, services, products..."
+            onChange={handleSearch}
+            aria-label="Search shops and services"
+          />
+
+          {searchValue && (
+            <button
+              className="jp-clear"
+              onClick={() =>
+                onSearchChange?.("")
+              }
+              aria-label="Clear search"
+              type="button"
+            >
+              ×
+            </button>
+          )}
+        </div>
+
+        {/* Near You */}
+        <button
+          className="jp-location"
+          // onClick={handleLocation}
+          type="button"
+          disabled={locationLoading}
+        >
+          <span className="jp-location-pin">
+            <FaMapMarkerAlt />
+          </span>
+
+          <span>
+            <strong>
+              {locationLoading
+                ? "Locating..."
+                : "Near You"}
+            </strong>
+
+            <small>
+              {locationError
+                ? "Location unavailable"
+                : locationLoading
+                ? "Finding nearby shops"
+                : "Use my location"}
+            </small>
+          </span>
+        </button>
+
+        {/* Favorites */}
+        <button
+          className="jp-header-icon"
+          aria-label="Favorites"
+          // onClick={() => goTo("/favorites")}
+          type="button"
+        >
+          <FaHeart />
+        </button>
+
+        {/* Notifications */}
+        <button
+          className="jp-header-icon jp-notification"
+          aria-label="Notifications"
+          // onClick={() => goTo("/notifications")}
+          type="button"
+        >
+          <FaBell />
+
+          {notificationCount > 0 && (
+            <i>{notificationCount}</i>
+          )}
+        </button>
+
+        {/* Menu */}
+        <button
+          className="jp-header-icon"
+          aria-label="Menu"
+          // onClick={() => goTo("/more")}
+          type="button"
+        >
+          <FaBars />
+        </button>
+      </motion.header>
+    );
   }
 
-  /* =========================
-     FORMAT TIME
-  ========================= */
+  // ==========================================
+  // EXISTING TENANT / SHOP HEADER
+  // ==========================================
+
   const formatTime = (timeStr) => {
     if (!timeStr) return "";
+
     const [hour, minute] = timeStr.split(":");
     let h = parseInt(hour, 10);
+
     const suffix = h >= 12 ? "PM" : "AM";
     h = h % 12 || 12;
+
     return `${h}:${minute} ${suffix}`;
   };
 
-  /* =========================
-     SHOP OPEN STATUS
-  ========================= */
   const isShopOpen = () => {
-    if (!shop?.open_time || !shop?.close_time) return true;
+    if (!shop?.open_time || !shop?.close_time) {
+      return true;
+    }
 
     const now = new Date();
-    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    const nowMinutes =
+      now.getHours() * 60 + now.getMinutes();
 
-    const [openH, openM] = shop.open_time.split(":").map(Number);
-    const [closeH, closeM] = shop.close_time.split(":").map(Number);
+    const [openH, openM] =
+      shop.open_time.split(":").map(Number);
 
-    const openMinutes = openH * 60 + openM;
-    const closeMinutes = closeH * 60 + closeM;
+    const [closeH, closeM] =
+      shop.close_time.split(":").map(Number);
 
-    return nowMinutes >= openMinutes && nowMinutes <= closeMinutes;
+    const openMinutes =
+      openH * 60 + openM;
+
+    const closeMinutes =
+      closeH * 60 + closeM;
+
+    // Supports stores with overnight operating hours.
+    if (closeMinutes < openMinutes) {
+      return (
+        nowMinutes >= openMinutes ||
+        nowMinutes <= closeMinutes
+      );
+    }
+
+    return (
+      nowMinutes >= openMinutes &&
+      nowMinutes <= closeMinutes
+    );
   };
-
-  const toggleMenu = () => setMenuOpen((prev) => !prev);
 
   const shopLogoSrc = shop?.slug
     ? `/images/shops/${shop.slug}.JPG`
@@ -239,94 +281,141 @@ if (location.hostname === "jusping.com" || location.hostname === "www.jusping.co
       className="header"
       initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
+      transition={{
+        duration: 0.6,
+        ease: "easeOut",
+      }}
     >
-      {/* =========================
-          TOP ROW (Logo + Name + Toggle)
-      ========================= */}
+      {/* Shop logo and details */}
       <div className="header-top">
         <div className="left-box">
           <motion.img
             src={shopLogoSrc}
             alt="Shop logo"
             className="logo"
-            onError={(e) => {
-              e.currentTarget.onerror = null;
-              e.currentTarget.src = "/images/shops/logo.png";
+            onError={(event) => {
+              event.currentTarget.onerror = null;
+              event.currentTarget.src =
+                "/images/shops/logo.png";
             }}
             whileHover={{ scale: 1.05 }}
           />
 
           <div className="shop-info">
-            {shop ? (
+            {loading ? (
+              <span className="shop-loading">
+                Loading shop info…
+              </span>
+            ) : shop ? (
               <>
                 <motion.h1
                   className="brand-title"
-                  initial={{ opacity: 0, y: -6 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{
+                    opacity: 0,
+                    y: -6,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                  }}
                 >
                   {shop.name}
                 </motion.h1>
 
                 {shop.address && (
-                  <span className="shop-address">{shop.address}</span>
+                  <span className="shop-address">
+                    {shop.address}
+                  </span>
                 )}
 
                 {shop.phone && (
                   <span className="shop-phone">
-                    📞 <a href={`tel:${shop.phone}`}>{shop.phone}</a>
+                    📞{" "}
+                    <a href={`tel:${shop.phone}`}>
+                      {shop.phone}
+                    </a>
                   </span>
                 )}
               </>
             ) : (
-              <span className="shop-loading">Loading shop info…</span>
+              <span className="shop-loading">
+                Shop information unavailable
+              </span>
             )}
           </div>
         </div>
 
-        <button className="menu-toggle" onClick={toggleMenu}>
-          {menuOpen ? <FaTimes /> : <FaBars />}
+        <button
+          className="menu-toggle"
+          onClick={() =>
+            setMenuOpen((prev) => !prev)
+          }
+          aria-label="Toggle menu"
+          type="button"
+        >
+          {menuOpen ? (
+            <FaTimes />
+          ) : (
+            <FaBars />
+          )}
         </button>
       </div>
 
-      {/* =========================
-          ANIMATED NAV
-      ========================= */}
+      {/* Existing tenant menu */}
       <AnimatePresence>
         {menuOpen && (
           <motion.nav
             className="nav"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
+            initial={{
+              height: 0,
+              opacity: 0,
+            }}
+            animate={{
+              height: "auto",
+              opacity: 1,
+            }}
+            exit={{
+              height: 0,
+              opacity: 0,
+            }}
             transition={{ duration: 0.3 }}
           >
-            <MenuBar closeMenu={() => setMenuOpen(false)} />
+            <MenuBar
+              closeMenu={() =>
+                setMenuOpen(false)
+              }
+            />
           </motion.nav>
         )}
       </AnimatePresence>
 
-      {/* =========================
-          SHOP HOURS + POWERED
-      ========================= */}
+      {/* Existing shop hours and status */}
       {shop && (
         <div className="right-box">
-          {shop.open_time && shop.close_time && (
-            <span className="shop-hours">
-              🕒 {formatTime(shop.open_time)} –{" "}
-              {formatTime(shop.close_time)}
-              <span
-                className={`status-badge ${
-                  isShopOpen() ? "open" : "closed"
-                }`}
-              >
-                {isShopOpen() ? " 🟢 Open" : " 🔴 Closed"}
+          {shop.open_time &&
+            shop.close_time && (
+              <span className="shop-hours">
+                🕒{" "}
+                {formatTime(shop.open_time)} –{" "}
+                {formatTime(shop.close_time)}
+
+                <span
+                  className={`status-badge ${
+                    isShopOpen()
+                      ? "open"
+                      : "closed"
+                  }`}
+                >
+                  {isShopOpen()
+                    ? "🟢 Open"
+                    : "🔴 Closed"}
+                </span>
               </span>
-            </span>
-          )}
+            )}
 
           <span className="powered-by">
-            Powered by <strong>JusPing</strong>
+            Powered by{" "}
+            <strong>JusPing</strong>
           </span>
         </div>
       )}
