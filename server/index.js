@@ -107,6 +107,23 @@ app.use((req, res, next) => {
 });
 // Register API routes
 app.use('/api/auth', authRoutes);
+// SERVICES DEBUG
+app.get("/api/services-debug", (req, res) => {
+    console.log("🔥 SERVICES DEBUG ENDPOINT HIT");
+
+    res.json({
+        message: "Backend route is reachable"
+    });
+});
+
+// SERVICES ROUTES
+app.use("/api/services", (req, res, next) => {
+    console.log("🔥 SERVICES MOUNT REACHED");
+    console.log("URL:", req.originalUrl);
+    console.log("Query:", req.query);
+
+    next();
+}, serviceRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/products', productRoutes);
@@ -131,10 +148,7 @@ app.use('/api/razorpay', require('./routes/razorpay'));
 //rent collection related apis
 app.use('/api/tenant', tenantRoutes);
 //services
-app.get("/api/services-debug", (req, res) => {
-  res.json({ message: "Backend route is reachable" });
-});
-app.use("/api/services", serviceRoutes);
+
 
 // Serve static assets (images and frontend build)
 app.use('/images', express.static(imagesDir));
