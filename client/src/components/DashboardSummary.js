@@ -813,7 +813,7 @@ useEffect(() => {
                       </p>
 
                       <button
-                        onClick={() => goTo("/services")}
+                        // onClick={() => goTo("/services")}
                         className="jp-book-button"
                       >
                         Book Now
