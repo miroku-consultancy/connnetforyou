@@ -5,32 +5,28 @@ const getShopId = (req) => {
 };
 
 exports.getServices = async (req, res) => {
-  console.log("GET SERVICES CONTROLLER HIT");
-  console.log("Query:", req.query);
   try {
-    const shopId = Number(
-      req.query.shopId || req.query.shop_id
-    );
+    const shopId = req.query.shopId || req.query.shop_id;
 
-    if (!Number.isInteger(shopId) || shopId <= 0) {
+    if (!shopId) {
       return res.status(400).json({
-        message: "Valid shopId is required"
+        message: "Missing shopId query parameter"
       });
     }
 
     const services = await serviceModel.getPublishedServices({
-      shopId,
+      shopId: Number(shopId),
       category: req.query.category,
       search: req.query.search
     });
 
-    res.json(services);
+    return res.status(200).json(services);
 
-  } catch (error) {
-    console.error("Get services error:", error);
+  } catch (err) {
+    console.error("Error fetching public services:", err);
 
-    res.status(500).json({
-      message: "Failed to fetch services"
+    return res.status(500).json({
+      message: "Error fetching public services"
     });
   }
 };
