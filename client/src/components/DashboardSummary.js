@@ -71,7 +71,7 @@ const shopIcons = {
   RajaZaikaKalkattaKathiRoll: "🌯",
 
   ShadhuIcecream: "🧁",
-  
+
   "City-Home-Services": "🏠",
 
 };
@@ -295,18 +295,18 @@ const DashboardSummary = () => {
 
 
   // Navigate to the selected shop
+const handleClick = (slug) => {
+  if (!slug) return;
 
-  const handleClick = (slug) => {
-
-    if (!slug) return;
-
-
-
+  if (slug.toLowerCase() === "city-home-services") {
     window.location.href =
+      "https://city-home-services.jusping.com/services";
+    return;
+  }
 
-      `https://${slug}.jusping.com/products`;
-
-  };
+  window.location.href =
+    `https://${slug}.jusping.com/products`;
+};
 
 
 
