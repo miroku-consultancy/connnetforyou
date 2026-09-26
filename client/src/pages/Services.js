@@ -1,8 +1,8 @@
-
 import React, { useEffect, useState } from 'react';
 import './Services.css';
-import { secondaryApiUrl } from '../config/apiConfig';
+
 const API_BASE_URL = 'https://connnet4you-server.onrender.com';
+
 const Services = () => {
     const [servicesData, setServicesData] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -14,16 +14,19 @@ const Services = () => {
                 setLoading(true);
                 setError('');
 
+                // 1. Get current shop domain
                 const domain = window.location.hostname;
 
-                // Resolve tenant
+                // 2. Resolve tenant using domain
                 const tenantResponse = await fetch(
-                    `https://connnet4you-server.onrender.com/api/tenants/resolve?domain=${encodeURIComponent(domain)}`
+                    `${API_BASE_URL}/api/tenants/resolve?domain=${encodeURIComponent(domain)}`
                 );
 
                 if (!tenantResponse.ok) {
+                    const errorText = await tenantResponse.text();
+
                     throw new Error(
-                        `Tenant API failed: ${tenantResponse.status}`
+                        `Tenant API failed: ${tenantResponse.status} - ${errorText}`
                     );
                 }
 
@@ -34,14 +37,13 @@ const Services = () => {
                     throw new Error('Shop ID not found');
                 }
 
-                console.log('Tenant:', tenant);
+                console.log('Resolved tenant:', tenant);
                 console.log('Shop ID:', shopId);
 
-                // Fetch published services
-                const response = await fetch(`${API_BASE_URL}/api/services?shopId=${shopId}`);
-                // const servicesResponse = await fetch(
-                //     `${secondaryApiUrl}/api/services?shopId=${shopId}`
-                // );
+                // 3. Fetch published services
+                const servicesResponse = await fetch(
+                    `${API_BASE_URL}/api/services?shopId=${shopId}`
+                );
 
                 if (!servicesResponse.ok) {
                     const errorText = await servicesResponse.text();
@@ -51,8 +53,10 @@ const Services = () => {
                     );
                 }
 
+                // 4. Parse response
                 const data = await servicesResponse.json();
 
+                // Supports either an array or { services: [...] }
                 const services = Array.isArray(data)
                     ? data
                     : data.services || [];
@@ -62,6 +66,7 @@ const Services = () => {
             } catch (err) {
                 console.error('Services loading error:', err);
                 setError(err.message || 'Failed to load services');
+
             } finally {
                 setLoading(false);
             }
@@ -70,10 +75,12 @@ const Services = () => {
         fetchServices();
     }, []);
 
+    // 5. Loading state
     if (loading) {
         return <div>Loading services...</div>;
     }
 
+    // 6. Error state
     if (error) {
         return (
             <div className="error-message">
@@ -83,10 +90,12 @@ const Services = () => {
         );
     }
 
+    // 7. Empty state
     if (servicesData.length === 0) {
         return <div>No published services available.</div>;
     }
 
+    // 8. Render services
     return (
         <section id="services">
             <h2>Our Services</h2>
@@ -95,18 +104,20 @@ const Services = () => {
             <div className="services-list">
                 {servicesData.map((service) => (
                     <div key={service.id} className="service-card">
+
                         {service.image_url && (
                             <img
                                 src={
                                     service.image_url.startsWith('http')
                                         ? service.image_url
-                                        : `${secondaryApiUrl}${service.image_url}`
+                                        : `${API_BASE_URL}${service.image_url}`
                                 }
                                 alt={service.title}
                             />
                         )}
 
                         <h3>{service.title}</h3>
+
                         <p>{service.description}</p>
 
                         {service.price != null && (
@@ -117,6 +128,7 @@ const Services = () => {
                                     : ''}
                             </p>
                         )}
+
                     </div>
                 ))}
             </div>
