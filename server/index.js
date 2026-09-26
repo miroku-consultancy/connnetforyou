@@ -91,7 +91,20 @@ app.use(cors({
 }));
 
 app.use(express.json());
+app.use((req, res, next) => {
+  if (req.originalUrl.startsWith("/api/services")) {
+    console.log("=== SERVICES REQUEST ===");
+    console.log("URL:", req.originalUrl);
+    console.log("Method:", req.method);
+    console.log("Authorization:", !!req.headers.authorization);
 
+    res.on("finish", () => {
+      console.log("Services response status:", res.statusCode);
+    });
+  }
+
+  next();
+});
 // Register API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);

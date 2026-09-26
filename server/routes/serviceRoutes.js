@@ -43,10 +43,9 @@ const upload = multer({
 
 // Public marketplace
 router.get("/", (req, res, next) => {
-  console.log("PUBLIC SERVICES ROUTE HIT:", req.originalUrl);
+  console.log("SERVICE ROUTE REACHED");
   next();
-},serviceController.getServices);
-router.get("/:id", serviceController.getService);
+}, serviceController.getServices);
 
 // Provider routes
 router.post(
