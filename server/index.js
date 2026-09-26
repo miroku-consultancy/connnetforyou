@@ -52,6 +52,7 @@ const allowedOrigins = [
   'https://www.connectfree4u.com',
   'https://jusping.com',
   'https://www.jusping.com',
+  ,'https://city-home-services.jusping.com',
   ];
 
 // Configure CORS middleware
