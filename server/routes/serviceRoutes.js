@@ -42,7 +42,10 @@ const upload = multer({
 });
 
 // Public marketplace
-router.get("/", serviceController.getServices);
+router.get("/", (req, res, next) => {
+  console.log("PUBLIC SERVICES ROUTE HIT:", req.originalUrl);
+  next();
+},serviceController.getServices);
 router.get("/:id", serviceController.getService);
 
 // Provider routes
