@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import './Services.css';
 import { secondaryApiUrl } from '../config/apiConfig';
-
+const API_BASE_URL = 'https://connnet4you-server.onrender.com';
 const Services = () => {
     const [servicesData, setServicesData] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -18,7 +18,7 @@ const Services = () => {
 
                 // Resolve tenant
                 const tenantResponse = await fetch(
-                    `${secondaryApiUrl}/api/tenants/resolve?domain=${encodeURIComponent(domain)}`
+                    `https://connnet4you-server.onrender.com/api/tenants/resolve?domain=${encodeURIComponent(domain)}`
                 );
 
                 if (!tenantResponse.ok) {
@@ -38,9 +38,10 @@ const Services = () => {
                 console.log('Shop ID:', shopId);
 
                 // Fetch published services
-                const servicesResponse = await fetch(
-                    `${secondaryApiUrl}/api/services?shopId=${shopId}`
-                );
+                const response = await fetch(`${API_BASE_URL}/api/services?shopId=${shopId}`);
+                // const servicesResponse = await fetch(
+                //     `${secondaryApiUrl}/api/services?shopId=${shopId}`
+                // );
 
                 if (!servicesResponse.ok) {
                     const errorText = await servicesResponse.text();
