@@ -139,7 +139,7 @@ const AppRoutes = () => (
     </main>
     <Cart />
     <footer>
-      <p>&copy; 2024 Connect4U. All rights reserved.</p>
+      <p>&copy; 2024 JusPing. All rights reserved.</p>
     </footer>
   </CartProviderWithParams>
 );
