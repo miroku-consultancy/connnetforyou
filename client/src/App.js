@@ -42,6 +42,9 @@ import ChatHub from "./components/chatHub";
 import VendorInbox from "./components/VendorInbox";
 import { ShopProvider } from './components/ShopContext';
 import { TenantProvider } from "./context/TenantContext";
+import AddService from "./pages/AddService";
+import Services from "./pages/Services";
+import ServiceDetails from "./pages/ServiceDetails";
 
 //import Banner from './components/Banner';
 
@@ -105,6 +108,23 @@ const AppRoutes = () => (
         <Route path="/profile" element={<ProtectedRoute><UserProfileForm /></ProtectedRoute>} />
         <Route path="/profile" element={<UserProfileForm />} />
         <Route path="/admin/add-stock" element={<AddStock />} />
+        {/* Public service marketplace */}
+<Route path="/services" element={<Services />} />
+
+{/* Public service details */}
+<Route path="/service/:id" element={<ServiceDetails />} />
+
+{/* Add service under a shop's tenant website */}
+<Route
+  path="/:shopSlug/add-service"
+  element={<AddService />}
+/>
+
+{/* Services under a shop's tenant website */}
+<Route
+  path="/:shopSlug/services"
+  element={<Services />}
+/>
         <Route
   path="/chat/:threadId"
   element={
