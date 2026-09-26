@@ -1,8 +1,6 @@
-
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-
 import {
   FaBars,
   FaTimes,
@@ -38,23 +36,22 @@ const Header = ({
   const shop = tenant?.shop;
 
   const [menuOpen, setMenuOpen] = useState(false);
-  const [locationLoading, setLocationLoading] = useState(false);
-  const [locationError, setLocationError] = useState(false);
+  const [locationLoading, setLocationLoading] =
+    useState(false);
+  const [locationError, setLocationError] =
+    useState(false);
 
+  // Logo fallback state
   const [logoIndex, setLogoIndex] = useState(0);
 
-  // Reset logo search when tenant changes.
+  // Reset logo search whenever the tenant changes
   useEffect(() => {
     setLogoIndex(0);
   }, [shop?.slug]);
 
-  // Close menu when route changes.
-  useEffect(() => {
-    setMenuOpen(false);
-  }, [location.pathname]);
-
-  // Root JusPing domain detection.
-  const hostname = window.location.hostname.toLowerCase();
+  // Root JusPing domain detection
+  const hostname =
+    window.location.hostname.toLowerCase();
 
   const isRootDomain =
     hostname === "jusping.com" ||
@@ -91,7 +88,10 @@ const Header = ({
         });
       },
       (error) => {
-        console.warn("Location unavailable:", error.message);
+        console.warn(
+          "Location unavailable:",
+          error.message
+        );
 
         setLocationLoading(false);
         setLocationError(true);
@@ -125,10 +125,8 @@ const Header = ({
           onClick={() => goTo("/")}
           role="button"
           tabIndex={0}
-          aria-label="JusPing home"
           onKeyDown={(event) => {
-            if (event.key === "Enter" || event.key === " ") {
-              event.preventDefault();
+            if (event.key === "Enter") {
               goTo("/");
             }
           }}
@@ -152,7 +150,7 @@ const Header = ({
             </div>
 
             <small>
-              Local Shops · Services · Community
+              Local Shops • Services • Community
             </small>
           </div>
         </div>
@@ -176,7 +174,7 @@ const Header = ({
               aria-label="Clear search"
               type="button"
             >
-              <FaTimes />
+              ×
             </button>
           )}
         </div>
@@ -192,9 +190,11 @@ const Header = ({
             <FaMapMarkerAlt />
           </span>
 
-          <span className="jp-location-text">
+          <span>
             <strong>
-              {locationLoading ? "Locating..." : "Near You"}
+              {locationLoading
+                ? "Locating..."
+                : "Near You"}
             </strong>
 
             <small>
@@ -227,11 +227,7 @@ const Header = ({
           <FaBell />
 
           {notificationCount > 0 && (
-            <i>
-              {notificationCount > 99
-                ? "99+"
-                : notificationCount}
-            </i>
+            <i>{notificationCount}</i>
           )}
         </button>
 
@@ -249,7 +245,7 @@ const Header = ({
   }
 
   // ==========================================
-  // TENANT / SHOP HEADER
+  // EXISTING TENANT / SHOP HEADER
   // ==========================================
 
   const formatTime = (timeStr) => {
@@ -270,7 +266,6 @@ const Header = ({
     }
 
     const now = new Date();
-
     const nowMinutes =
       now.getHours() * 60 + now.getMinutes();
 
@@ -283,7 +278,7 @@ const Header = ({
     const openMinutes = openH * 60 + openM;
     const closeMinutes = closeH * 60 + closeM;
 
-    // Supports overnight operating hours.
+    // Supports stores with overnight operating hours.
     if (closeMinutes < openMinutes) {
       return (
         nowMinutes >= openMinutes ||
@@ -314,21 +309,18 @@ const Header = ({
     if (logoIndex < LOGO_EXTENSIONS.length) {
       setLogoIndex((prev) => prev + 1);
     } else {
+      // All logo formats failed; hide broken image.
       event.currentTarget.style.display = "none";
     }
   };
 
-  // ==========================================
-  // TENANT HEADER UI
-  // ==========================================
-
   return (
     <motion.header
       className="header"
-      initial={{ y: -60, opacity: 0 }}
+      initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{
-        duration: 0.4,
+        duration: 0.6,
         ease: "easeOut",
       }}
     >
@@ -341,13 +333,13 @@ const Header = ({
             alt="Shop logo"
             className="logo"
             onError={handleShopLogoError}
-            whileHover={{ scale: 1.04 }}
+            whileHover={{ scale: 1.05 }}
           />
 
           <div className="shop-info">
             {loading ? (
               <span className="shop-loading">
-                Loading shop info...
+                Loading shop info…
               </span>
             ) : shop ? (
               <>
@@ -367,13 +359,13 @@ const Header = ({
 
                 {shop.address && (
                   <span className="shop-address">
-                    <FaMapMarkerAlt />
-                    <span>{shop.address}</span>
+                    {shop.address}
                   </span>
                 )}
 
                 {shop.phone && (
                   <span className="shop-phone">
+                    📞{" "}
                     <a href={`tel:${shop.phone}`}>
                       {shop.phone}
                     </a>
@@ -388,19 +380,19 @@ const Header = ({
           </div>
         </div>
 
-        {/* Mobile menu button */}
         <button
           className="menu-toggle"
           onClick={() =>
             setMenuOpen((prev) => !prev)
           }
-          aria-label={
-            menuOpen ? "Close menu" : "Open menu"
-          }
-          aria-expanded={menuOpen}
+          aria-label="Toggle menu"
           type="button"
         >
-          {menuOpen ? <FaTimes /> : <FaBars />}
+          {menuOpen ? (
+            <FaTimes />
+          ) : (
+            <FaBars />
+          )}
         </button>
       </div>
 
@@ -421,42 +413,44 @@ const Header = ({
               height: 0,
               opacity: 0,
             }}
-            transition={{ duration: 0.25 }}
+            transition={{ duration: 0.3 }}
           >
             <MenuBar
-              closeMenu={() => setMenuOpen(false)}
+              closeMenu={() =>
+                setMenuOpen(false)
+              }
             />
           </motion.nav>
         )}
       </AnimatePresence>
 
-      {/* Shop hours and status */}
+      {/* Existing shop hours and status */}
       {shop && (
         <div className="right-box">
-          {shop.open_time && shop.close_time && (
-            <div className="shop-hours">
-              <span className="shop-hours-icon">
-                🕒
-              </span>
-
-              <span className="shop-hours-time">
+          {shop.open_time &&
+            shop.close_time && (
+              <span className="shop-hours">
+                🕒{" "}
                 {formatTime(shop.open_time)} –{" "}
                 {formatTime(shop.close_time)}
-              </span>
 
-              <span
-                className={`status-badge ${
-                  isShopOpen() ? "open" : "closed"
-                }`}
-              >
-                <span className="status-dot" />
-                {isShopOpen() ? "Open" : "Closed"}
+                <span
+                  className={`status-badge ${
+                    isShopOpen()
+                      ? "open"
+                      : "closed"
+                  }`}
+                >
+                  {isShopOpen()
+                    ? "🟢 Open"
+                    : "🔴 Closed"}
+                </span>
               </span>
-            </div>
-          )}
+            )}
 
           <span className="powered-by">
-            Powered by <strong>JusPing</strong>
+            Powered by{" "}
+            <strong>JusPing</strong>
           </span>
         </div>
       )}
