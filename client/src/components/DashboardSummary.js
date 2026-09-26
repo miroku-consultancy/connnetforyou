@@ -71,6 +71,8 @@ const shopIcons = {
   RajaZaikaKalkattaKathiRoll: "🌯",
 
   ShadhuIcecream: "🧁",
+  
+  "City-Home-Services": "🏠",
 
 };
 
