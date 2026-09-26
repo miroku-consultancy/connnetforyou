@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import './Services.css';
-import apiUrl from '../config/apiConfig';
+import { secondaryApiUrl } from '../config/apiConfig';
 
 const Services = () => {
     const [servicesData, setServicesData] = useState([]);
@@ -14,12 +14,11 @@ const Services = () => {
                 setLoading(true);
                 setError('');
 
-                // Get current shop domain
                 const domain = window.location.hostname;
 
                 // Resolve tenant
                 const tenantResponse = await fetch(
-                    `${apiUrl}/api/tenants/resolve?domain=${encodeURIComponent(domain)}`
+                    `${secondaryApiUrl}/api/tenants/resolve?domain=${encodeURIComponent(domain)}`
                 );
 
                 if (!tenantResponse.ok) {
@@ -29,7 +28,6 @@ const Services = () => {
                 }
 
                 const tenant = await tenantResponse.json();
-
                 const shopId = tenant.shopId;
 
                 if (!shopId) {
@@ -41,7 +39,7 @@ const Services = () => {
 
                 // Fetch published services
                 const servicesResponse = await fetch(
-                    `${apiUrl}/api/services?shopId=${shopId}`
+                    `${secondaryApiUrl}/api/services?shopId=${shopId}`
                 );
 
                 if (!servicesResponse.ok) {
@@ -54,7 +52,6 @@ const Services = () => {
 
                 const data = await servicesResponse.json();
 
-                // Backend returns an array
                 const services = Array.isArray(data)
                     ? data
                     : data.services || [];
@@ -96,23 +93,19 @@ const Services = () => {
 
             <div className="services-list">
                 {servicesData.map((service) => (
-                    <div
-                        key={service.id}
-                        className="service-card"
-                    >
+                    <div key={service.id} className="service-card">
                         {service.image_url && (
                             <img
                                 src={
                                     service.image_url.startsWith('http')
                                         ? service.image_url
-                                        : `${apiUrl}${service.image_url}`
+                                        : `${secondaryApiUrl}${service.image_url}`
                                 }
                                 alt={service.title}
                             />
                         )}
 
                         <h3>{service.title}</h3>
-
                         <p>{service.description}</p>
 
                         {service.price != null && (
