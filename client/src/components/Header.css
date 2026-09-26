@@ -1,172 +1,920 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
 
-* {
+/* ============================== */
+/* GLOBAL HEADER STYLES */
+/* ============================== */
+
+.header,
+.jp-header,
+.header *,
+.jp-header * {
   box-sizing: border-box;
 }
 
-.header {
+.header,
+.jp-header {
   width: 100%;
-  padding: 16px 28px;
-  background: rgba(15, 23, 42, 0.85);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border-bottom: 1px solid rgba(255,255,255,0.15);
-  color: #fff;
   font-family: 'Montserrat', sans-serif;
+}
+
+/* ============================== */
+/* JUSPING ROOT HEADER */
+/* ============================== */
+
+.jp-header {
   position: relative;
-  z-index: 100;
-}
+  z-index: 1000;
 
-/* Top Row */
-.header-top {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
+  gap: 20px;
+
   width: 100%;
+  min-height: 88px;
+  padding: 14px 4%;
+
+  background: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    #f0f7ff 100%
+  );
+
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+
+  color: #172554;
 }
 
-/* Left Section */
-.left-box {
+/* ============================== */
+/* ROOT BRAND */
+/* ============================== */
+
+.jp-brand {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
+
+  flex-shrink: 0;
+  min-width: 0;
+
+  cursor: pointer;
+  outline-offset: 4px;
+}
+
+.jp-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 58px;
+  height: 58px;
+  flex-shrink: 0;
+
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 15px;
+
+  overflow: hidden;
+}
+
+.jp-logo-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 4px;
+
+  object-fit: contain;
+}
+
+.jp-brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
   min-width: 0;
 }
 
-.logo {
-  width: 60px;
-  height: 60px;
-  border-radius: 14px;
-  object-fit: cover;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+.jp-brand-name {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.8px;
+  white-space: nowrap;
+  color: #0871e7;
 }
+
+.jp-brand-name span {
+  color: #0f766e;
+}
+
+.jp-brand-text small {
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+/* ============================== */
+/* ROOT SEARCH */
+/* ============================== */
+
+.jp-search {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  flex: 1;
+  min-width: 160px;
+  max-width: 540px;
+  height: 46px;
+
+  padding: 0 14px;
+
+  background: #ffffff;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.jp-search:focus-within {
+  border-color: #0871e7;
+  box-shadow: 0 0 0 3px rgba(8, 113, 231, 0.08);
+}
+
+.jp-search-icon {
+  flex-shrink: 0;
+  font-size: 15px;
+  color: #0871e7;
+}
+
+.jp-search input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+
+  padding: 0;
+  border: none;
+  outline: none;
+
+  background: transparent;
+  color: #172554;
+
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.jp-search input::placeholder {
+  color: #94a3b8;
+}
+
+.jp-search input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.jp-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+
+  border: none;
+  border-radius: 50%;
+
+  background: #f1f5f9;
+  color: #64748b;
+
+  cursor: pointer;
+}
+
+/* ============================== */
+/* ROOT LOCATION BUTTON */
+/* ============================== */
+
+.jp-location {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  min-height: 46px;
+  padding: 7px 14px;
+
+  flex-shrink: 0;
+
+  background: #eaf3ff;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+
+  color: #0871e7;
+  font-family: inherit;
+  text-align: left;
+
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.jp-location:hover {
+  background: #dbeafe;
+  border-color: #bfdbfe;
+}
+
+.jp-location:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.jp-location-pin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+
+  background: #ffffff;
+  border-radius: 10px;
+
+  font-size: 16px;
+}
+
+.jp-location-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.jp-location-text strong {
+  color: #172554;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.jp-location-text small {
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* ============================== */
+/* ROOT ICON BUTTONS */
+/* ============================== */
+
+.jp-header-icon {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+
+  background: #eaf3ff;
+  color: #0871e7;
+
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+
+  font-size: 17px;
+
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.jp-header-icon:hover {
+  background: #0871e7;
+  color: #ffffff;
+  transform: translateY(-2px);
+}
+
+.jp-notification i {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 19px;
+  height: 19px;
+  padding: 0 5px;
+
+  border: 2px solid #ffffff;
+  border-radius: 20px;
+
+  background: #ef4444;
+  color: #ffffff;
+
+  font-size: 9px;
+  font-weight: 800;
+  font-style: normal;
+}
+
+/* ============================== */
+/* TENANT / SHOP HEADER */
+/* ============================== */
+
+.header {
+  position: relative;
+  z-index: 1000;
+
+  width: 100%;
+  padding: 16px 4%;
+
+  background: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    #f0f7ff 100%
+  );
+
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+
+  color: #172554;
+}
+
+/* ============================== */
+/* TENANT HEADER TOP */
+/* ============================== */
+
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+
+  width: 100%;
+  min-width: 0;
+}
+
+.left-box {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+
+  flex: 1;
+  min-width: 0;
+}
+
+/* ============================== */
+/* TENANT LOGO */
+/* ============================== */
+
+.logo {
+  display: block;
+
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+
+  object-fit: cover;
+
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 15px;
+
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+}
+
+/* ============================== */
+/* TENANT SHOP INFO */
+/* ============================== */
 
 .shop-info {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+
   min-width: 0;
+  flex: 1;
 }
 
-/* Brand Title */
 .brand-title {
-  margin: 0 0 4px;
-  font-size: clamp(1.4rem, 2.5vw, 2rem);
+  display: block;
+  width: 100%;
+
+  margin: 0;
+
+  font-size: clamp(20px, 2.2vw, 28px);
   font-weight: 800;
-  letter-spacing: 0.02em;
-  background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  line-height: 1.3;
+  letter-spacing: -0.5px;
+
+  color: #0871e7;
+
+  overflow-wrap: anywhere;
 }
 
 .shop-address {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+
+  max-width: 100%;
+
+  color: #64748b;
   font-size: 12px;
-  opacity: 0.85;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-weight: 500;
+  line-height: 1.6;
+
+  overflow-wrap: anywhere;
+}
+
+.shop-address svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: #0871e7;
+}
+
+.shop-phone {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .shop-phone a {
-  font-size: 12px;
-  color: #a7f3d0;
+  color: #0871e7;
   text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.shop-phone a:hover {
+  color: #0f766e;
+  text-decoration: underline;
 }
 
 .shop-loading {
-  font-size: 14px;
-  opacity: 0.7;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
 }
 
-/* Menu Toggle */
+/* ============================== */
+/* MOBILE MENU BUTTON */
+/* ============================== */
+
 .menu-toggle {
-  background: rgba(255,255,255,0.12);
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 10px;
-  padding: 8px 12px;
-  font-size: 1.4rem;
-  color: white;
-  cursor: pointer;
   display: none;
+  align-items: center;
+  justify-content: center;
+
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+
+  background: #eaf3ff;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+
+  color: #0871e7;
+  font-size: 20px;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
-/* Navigation */
+.menu-toggle:hover {
+  background: #0871e7;
+  color: #ffffff;
+}
+
+/* ============================== */
+/* TENANT NAVIGATION */
+/* ============================== */
+
 .nav {
-  overflow: hidden;
   width: 100%;
   margin-top: 16px;
+
+  overflow: hidden;
 }
 
-/* Right Section */
+/* ============================== */
+/* SHOP HOURS AND STATUS */
+/* ============================== */
+
 .right-box {
-  margin-top: 12px;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  width: 100%;
+  margin-top: 14px;
+  padding-top: 12px;
+
+  border-top: 1px solid #e2e8f0;
 }
 
 .shop-hours {
-  background: rgba(255,255,255,0.1);
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+
   padding: 8px 14px;
-  border-radius: 20px;
+
+  background: #eaf3ff;
+  border: 1px solid #dbeafe;
+  border-radius: 30px;
+
+  color: #172554;
   font-size: 12px;
   font-weight: 700;
 }
 
+.shop-hours-icon {
+  font-size: 14px;
+}
+
+.shop-hours-time {
+  color: #172554;
+  font-weight: 700;
+}
+
+/* ============================== */
+/* STATUS BADGES */
+/* ============================== */
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 5px 10px;
+  border-radius: 20px;
+
+  font-size: 11px;
+  font-weight: 800;
+}
+
 .status-badge.open {
-  color: #22c55e;
+  background: #dcfce7;
+  color: #15803d;
 }
 
 .status-badge.closed {
-  color: #ef4444;
+  background: #fee2e2;
+  color: #b91c1c;
 }
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* ============================== */
+/* POWERED BY */
+/* ============================== */
 
 .powered-by {
-  font-size: 12px;
-  opacity: 0.85;
-}
-.jp-logo {
-  display: flex;
-  align-items: center;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 500;
 }
 
-.jp-logo-image {
-  width: 80px;
-  height: auto;
-  object-fit: contain;
-  display: block;
+.powered-by strong {
+  color: #0871e7;
+  font-weight: 800;
 }
 
+/* ============================== */
+/* TABLET RESPONSIVE */
+/* ============================== */
 
-/* ========================= */
-/* 📱 MOBILE RESPONSIVE */
-/* ========================= */
+@media (max-width: 1024px) {
+
+  .jp-header {
+    gap: 12px;
+    padding: 14px 3%;
+  }
+
+  .jp-logo {
+    width: 50px;
+    height: 50px;
+  }
+
+  .jp-brand-name {
+    font-size: 23px;
+  }
+
+  .jp-brand-text small {
+    font-size: 9px;
+  }
+
+  .jp-search {
+    max-width: 380px;
+  }
+
+  .jp-location {
+    padding: 7px 10px;
+  }
+
+  .jp-header-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .header {
+    padding: 14px 3%;
+  }
+}
+
+/* ============================== */
+/* MOBILE RESPONSIVE */
+/* ============================== */
 
 @media (max-width: 768px) {
 
-  .header {
-    padding: 14px 18px;
+  /* Root JusPing header */
+  .jp-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+
+    padding: 12px 16px;
   }
 
-  .menu-toggle {
-    display: block;
+  .jp-brand {
+    gap: 10px;
+  }
+
+  .jp-logo {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+  }
+
+  .jp-brand-name {
+    font-size: 22px;
+  }
+
+  .jp-brand-text small {
+    font-size: 9px;
+  }
+
+  .jp-search {
+    grid-column: 1 / -1;
+    grid-row: 2;
+
+    width: 100%;
+    max-width: none;
+    height: 44px;
+  }
+
+  .jp-location {
+    grid-column: 1 / -1;
+    grid-row: 3;
+
+    width: 100%;
+    min-height: 44px;
+    justify-content: flex-start;
+  }
+
+  .jp-location-pin {
+    width: 30px;
+    height: 30px;
+  }
+
+  .jp-location-text {
+    flex: 1;
+  }
+
+  .jp-header-icon {
+    width: 38px;
+    height: 38px;
+    font-size: 15px;
+    border-radius: 11px;
+  }
+
+  /* Tenant header */
+  .header {
+    padding: 12px 16px;
+  }
+
+  .header-top {
+    gap: 10px;
+  }
+
+  .left-box {
+    gap: 11px;
+  }
+
+  .logo {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
   }
 
   .brand-title {
-    font-size: 1.3rem;
-  }
-
-  .right-box {
-    align-items: center;
-    text-align: center;
+    font-size: 20px;
   }
 
   .shop-address {
+    font-size: 11px;
+  }
+
+  .shop-phone {
+    font-size: 11px;
+  }
+
+  .menu-toggle {
+    display: flex;
+    width: 42px;
+    height: 42px;
+    font-size: 18px;
+  }
+
+  .nav {
+    margin-top: 12px;
+  }
+
+  .right-box {
+    align-items: flex-start;
+    gap: 9px;
+    margin-top: 12px;
+    padding-top: 12px;
+  }
+
+  .shop-hours {
+    gap: 8px;
+    padding: 7px 11px;
+    font-size: 11px;
+  }
+
+  .status-badge {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+
+  .powered-by {
+    font-size: 10px;
+  }
+}
+
+/* ============================== */
+/* SMALL MOBILE */
+/* ============================== */
+
+@media (max-width: 480px) {
+
+  .jp-header {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .jp-logo {
+    width: 40px;
+    height: 40px;
+  }
+
+  .jp-brand-name {
+    font-size: 20px;
+  }
+
+  .jp-brand-text small {
+    font-size: 8px;
     white-space: normal;
   }
 
- .jp-logo-image {
-    width: 110px;
+  .jp-search {
+    height: 42px;
+    padding: 0 11px;
+  }
+
+  .jp-search input {
+    font-size: 12px;
+  }
+
+  .jp-location {
+    min-height: 42px;
+  }
+
+  .jp-header-icon {
+    width: 34px;
+    height: 34px;
+    font-size: 14px;
+  }
+
+  .header {
+    padding: 10px 12px;
+  }
+
+  .left-box {
+    gap: 9px;
+  }
+
+  .logo {
+    width: 44px;
+    height: 44px;
+    border-radius: 11px;
+  }
+
+  .brand-title {
+    font-size: 17px;
+    line-height: 1.35;
+  }
+
+  .shop-address {
+    font-size: 10px;
+    line-height: 1.5;
+  }
+
+  .shop-phone {
+    font-size: 10px;
+  }
+
+  .menu-toggle {
+    width: 38px;
+    height: 38px;
+    font-size: 16px;
+    border-radius: 10px;
+  }
+
+  .shop-hours {
+    border-radius: 12px;
+    gap: 7px;
+  }
+
+  .shop-hours-time {
+    font-size: 10px;
+  }
+
+  .right-box {
+    margin-top: 10px;
+  }
+}
+
+/* ============================== */
+/* EXTRA SMALL DEVICES */
+/* ============================== */
+
+@media (max-width: 360px) {
+
+  .jp-brand {
+    gap: 7px;
+  }
+
+  .jp-logo {
+    width: 36px;
+    height: 36px;
+  }
+
+  .jp-brand-name {
+    font-size: 18px;
+  }
+
+  .jp-header-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .header {
+    padding: 10px;
+  }
+
+  .logo {
+    width: 40px;
+    height: 40px;
+  }
+
+  .brand-title {
+    font-size: 15px;
+  }
+
+  .shop-hours {
+    gap: 6px;
+    padding: 7px 9px;
   }
 }
