@@ -5,6 +5,8 @@ import { useCart } from "./CartContext";
 import { useUser } from "./UserContext";
 
 const API_BASE_URL = "https://connnet4you-server.onrender.com";
+const SERVICES_API =
+  "https://city-home-services.jusping.com/services";
 const IMAGE_BASE_URL = "https://www.jusping.com/images/shops";
 
 const PLAY_STORE_URL =
@@ -266,51 +268,50 @@ const DashboardSummary = () => {
   // -----------------------------
   // NEW: Fetch services from API
   // -----------------------------
-  useEffect(() => {
-    let cancelled = false;
+useEffect(() => {
+  let cancelled = false;
 
-    const fetchServices = async () => {
-      try {
-        const response = await fetch(
-          `${API_BASE_URL}/api/services`
-        );
+  const fetchServices = async () => {
+    try {
+      const response = await fetch(
+        "https://city-home-services.jusping.com/services"
+      );
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch services");
-        }
-
-        const data = await response.json();
-
-        // Supports either an array or { services: [] }
-        const serviceList = Array.isArray(data)
-          ? data
-          : Array.isArray(data?.services)
-          ? data.services
-          : [];
-
-        if (!cancelled) {
-          setServices(serviceList);
-        }
-      } catch (error) {
-        console.error("Failed to fetch services:", error);
-
-        if (!cancelled) {
-          setServices([]);
-        }
-      } finally {
-        if (!cancelled) {
-          setServicesLoading(false);
-        }
+      if (!response.ok) {
+        throw new Error("Failed to fetch services");
       }
-    };
 
-    fetchServices();
+      const data = await response.json();
 
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+      // Supports array or { services: [] }
+      const serviceList = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.services)
+        ? data.services
+        : [];
 
+      if (!cancelled) {
+        setServices(serviceList);
+      }
+    } catch (error) {
+      console.error("Failed to fetch services:", error);
+
+      if (!cancelled) {
+        setServices([]);
+      }
+    } finally {
+      if (!cancelled) {
+        setServicesLoading(false);
+      }
+    }
+  };
+
+  fetchServices();
+
+  return () => {
+    cancelled = true;
+  };
+}, []);
   // -----------------------------
   // Existing shop navigation
   // -----------------------------
