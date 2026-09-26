@@ -6,9 +6,15 @@ const getShopId = (req) => {
 
 exports.getServices = async (req, res) => {
   try {
-    const shopId = req.query.shopId
-      ? Number(req.query.shopId)
-      : undefined;
+    const shopId = Number(
+      req.query.shopId || req.query.shop_id
+    );
+
+    if (!Number.isInteger(shopId) || shopId <= 0) {
+      return res.status(400).json({
+        message: "Valid shopId is required"
+      });
+    }
 
     const services = await serviceModel.getPublishedServices({
       shopId,
@@ -17,9 +23,13 @@ exports.getServices = async (req, res) => {
     });
 
     res.json(services);
+
   } catch (error) {
     console.error("Get services error:", error);
-    res.status(500).json({ message: "Failed to fetch services" });
+
+    res.status(500).json({
+      message: "Failed to fetch services"
+    });
   }
 };
 
