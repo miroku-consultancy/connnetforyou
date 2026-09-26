@@ -126,6 +126,18 @@
   font-size: 12px;
   opacity: 0.85;
 }
+.jp-logo {
+  display: flex;
+  align-items: center;
+}
+
+.jp-logo-image {
+  width: 150px;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
 
 /* ========================= */
 /* 📱 MOBILE RESPONSIVE */
@@ -153,5 +165,8 @@
   .shop-address {
     white-space: normal;
   }
-
+  
+ .jp-logo-image {
+    width: 110px;
+  }
 }

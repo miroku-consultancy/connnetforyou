@@ -115,9 +115,13 @@ const Header = ({
             }
           }}
         >
-          <div className="jp-logo-mark">
-            <span>●</span>
-          </div>
+          <div className="jp-logo">
+  <img
+    src="/images/logo.png"
+    alt="JusPing"
+    className="jp-logo-image"
+  />
+</div>
 
           <div className="jp-brand-text">
             <div className="jp-brand-name">
