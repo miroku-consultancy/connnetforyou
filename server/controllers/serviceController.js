@@ -5,6 +5,8 @@ const getShopId = (req) => {
 };
 
 exports.getServices = async (req, res) => {
+  console.log("GET SERVICES CONTROLLER HIT");
+  console.log("Query:", req.query);
   try {
     const shopId = Number(
       req.query.shopId || req.query.shop_id
