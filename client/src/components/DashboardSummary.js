@@ -171,7 +171,44 @@ const DashboardSummary = () => {
 
   // Keep context integrations available.
   // Do not clear carts or reset the user on dashboard render.
+const getServiceImage = (service) => {
+  const title = (service.title || "").toLowerCase();
+  const category = (service.category || "").toLowerCase();
 
+  if (title.includes("ac") || category.includes("ac repair")) {
+    return "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=500&q=80";
+  }
+
+  if (category.includes("plumbing") || title.includes("plumbing")) {
+    return "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=500&q=80";
+  }
+
+  if (category.includes("electrical") || title.includes("electrician")) {
+    return "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=500&q=80";
+  }
+
+  if (category.includes("cleaning")) {
+    return "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=500&q=80";
+  }
+
+  if (category.includes("appliance") || title.includes("washing machine")) {
+    return "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?auto=format&fit=crop&w=500&q=80";
+  }
+
+  return "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=500&q=80";
+};
+
+const getServiceIcon = (service) => {
+  const category = (service.category || "").toLowerCase();
+
+  if (category.includes("ac repair")) return "❄️";
+  if (category.includes("plumbing")) return "🔧";
+  if (category.includes("electrical")) return "⚡";
+  if (category.includes("cleaning")) return "🧹";
+  if (category.includes("appliance")) return "🛠️";
+
+  return "🏠";
+};
   // -----------------------------
   // Visit analytics - existing API
   // -----------------------------
@@ -274,7 +311,7 @@ useEffect(() => {
   const fetchServices = async () => {
     try {
       const response = await fetch(
-        "https://city-home-services.jusping.com/services"
+        `${API_BASE_URL}/api/services?shopId=25`
       );
 
       if (!response.ok) {
@@ -283,15 +320,19 @@ useEffect(() => {
 
       const data = await response.json();
 
-      // Supports array or { services: [] }
       const serviceList = Array.isArray(data)
         ? data
         : Array.isArray(data?.services)
         ? data.services
         : [];
 
+      // Show only published services
+      const publishedServices = serviceList.filter(
+        (service) => service.status === "published"
+      );
+
       if (!cancelled) {
-        setServices(serviceList);
+        setServices(publishedServices);
       }
     } catch (error) {
       console.error("Failed to fetch services:", error);
@@ -592,7 +633,7 @@ useEffect(() => {
             <button
               className="jp-category"
               key={category.name}
-              onClick={() => goTo(category.path)}
+              // onClick={() => goTo(category.path)}
             >
               <span className={`jp-category-icon ${category.color}`}>
                 {category.icon}
