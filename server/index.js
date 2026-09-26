@@ -131,6 +131,9 @@ app.use('/api/razorpay', require('./routes/razorpay'));
 //rent collection related apis
 app.use('/api/tenant', tenantRoutes);
 //services
+app.get("/api/services-debug", (req, res) => {
+  res.json({ message: "Backend route is reachable" });
+});
 app.use("/api/services", serviceRoutes);
 
 // Serve static assets (images and frontend build)
