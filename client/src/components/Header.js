@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -13,6 +13,15 @@ import {
 import "./Header.css";
 import MenuBar from "./MenuBar";
 import { useTenant } from "../context/TenantContext";
+
+const LOGO_EXTENSIONS = [
+  "jpeg",
+  "jpg",
+  "png",
+  "JPG",
+  "JPEG",
+  "PNG",
+];
 
 const Header = ({
   searchValue = "",
@@ -31,6 +40,14 @@ const Header = ({
     useState(false);
   const [locationError, setLocationError] =
     useState(false);
+
+  // Logo fallback state
+  const [logoIndex, setLogoIndex] = useState(0);
+
+  // Reset logo search whenever the tenant changes
+  useEffect(() => {
+    setLogoIndex(0);
+  }, [shop?.slug]);
 
   // Root JusPing domain detection
   const hostname =
@@ -65,7 +82,6 @@ const Header = ({
         setLocationLoading(false);
         setLocationError(false);
 
-        // Let DashboardSummary call the existing shops API.
         onLocationChange?.({
           latitude: coords.latitude,
           longitude: coords.longitude,
@@ -116,12 +132,17 @@ const Header = ({
           }}
         >
           <div className="jp-logo">
-  <img
-    src="/images/logo.png"
-    alt="JusPing"
-    className="jp-logo-image"
-  />
-</div>
+            <img
+              src="/images/shops/logo.png"
+              alt="JusPing"
+              className="jp-logo-image"
+              onError={(event) => {
+                event.currentTarget.onerror = null;
+                event.currentTarget.src =
+                  "/images/shops/logo.JPG";
+              }}
+            />
+          </div>
 
           <div className="jp-brand-text">
             <div className="jp-brand-name">
@@ -149,9 +170,7 @@ const Header = ({
           {searchValue && (
             <button
               className="jp-clear"
-              onClick={() =>
-                onSearchChange?.("")
-              }
+              onClick={() => onSearchChange?.("")}
               aria-label="Clear search"
               type="button"
             >
@@ -256,11 +275,8 @@ const Header = ({
     const [closeH, closeM] =
       shop.close_time.split(":").map(Number);
 
-    const openMinutes =
-      openH * 60 + openM;
-
-    const closeMinutes =
-      closeH * 60 + closeM;
+    const openMinutes = openH * 60 + openM;
+    const closeMinutes = closeH * 60 + closeM;
 
     // Supports stores with overnight operating hours.
     if (closeMinutes < openMinutes) {
@@ -276,9 +292,27 @@ const Header = ({
     );
   };
 
-  const shopLogoSrc = shop?.slug
-    ? `/images/shops/${shop.slug}.JPG`
-    : "/images/shops/logo.png";
+  // ==========================================
+  // DYNAMIC SHOP LOGO
+  // ==========================================
+
+  const shopLogoBase = shop?.slug
+    ? `/images/shops/${shop.slug}`
+    : "/images/shops/logo";
+
+  const shopLogoSrc =
+    logoIndex < LOGO_EXTENSIONS.length
+      ? `${shopLogoBase}.${LOGO_EXTENSIONS[logoIndex]}`
+      : "/images/shops/logo.png";
+
+  const handleShopLogoError = (event) => {
+    if (logoIndex < LOGO_EXTENSIONS.length) {
+      setLogoIndex((prev) => prev + 1);
+    } else {
+      // All logo formats failed; hide broken image.
+      event.currentTarget.style.display = "none";
+    }
+  };
 
   return (
     <motion.header
@@ -294,14 +328,11 @@ const Header = ({
       <div className="header-top">
         <div className="left-box">
           <motion.img
+            key={shop?.slug || "default-logo"}
             src={shopLogoSrc}
             alt="Shop logo"
             className="logo"
-            onError={(event) => {
-              event.currentTarget.onerror = null;
-              event.currentTarget.src =
-                "/images/shops/logo.png";
-            }}
+            onError={handleShopLogoError}
             whileHover={{ scale: 1.05 }}
           />
 

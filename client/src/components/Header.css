@@ -132,7 +132,7 @@
 }
 
 .jp-logo-image {
-  width: 150px;
+  width: 80px;
   height: auto;
   object-fit: contain;
   display: block;
@@ -165,7 +165,7 @@
   .shop-address {
     white-space: normal;
   }
-  
+
  .jp-logo-image {
     width: 110px;
   }
