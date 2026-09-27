@@ -1,76 +1,142 @@
 
-.jp-date-options {
+/* Services and booking split layout */
+
+.jp-services-layout {
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 8px;
-  margin-top: 12px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 24px;
+  align-items: start;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 24px;
 }
 
-.jp-date-option {
+.jp-services-list-panel {
+  min-width: 0;
+}
+
+.jp-services-list-panel .jp-section-heading {
+  margin-bottom: 20px;
+}
+
+.jp-services-list-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.jp-service-select-card {
+  min-width: 0;
+  border: 2px solid transparent;
+  border-radius: 16px;
+  transition: border-color 0.2s ease;
+}
+
+.jp-service-select-card.selected {
+  border-color: #6366f1;
+  background: #eef2ff;
+}
+
+/* Booking panel */
+
+.jp-services-booking-panel {
+  position: sticky;
+  top: 20px;
+  min-width: 0;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  border-radius: 18px;
+}
+
+.jp-services-booking-panel .jp-booking-page {
+  min-height: auto;
+  padding: 0;
+  background: transparent;
+}
+
+.jp-services-booking-panel .jp-booking-container {
+  max-width: 100%;
+  padding: 0;
+}
+
+.jp-services-booking-panel .jp-booking-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.jp-services-booking-panel .jp-booking-grid > div:first-child {
+  display: none;
+}
+
+.jp-services-booking-panel .jp-booking-header {
+  margin-bottom: 16px;
+}
+
+.jp-services-booking-panel .jp-booking-form-card {
+  width: 100%;
+  min-width: 0;
+}
+
+.jp-booking-placeholder {
+  min-height: 400px;
+  padding: 40px 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 12px 4px;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  background: #fff;
-  color: #334155;
-  cursor: pointer;
-  transition: 0.2s ease;
+  justify-content: center;
+  text-align: center;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 18px;
 }
 
-.jp-date-option span,
-.jp-date-option small {
-  font-size: 11px;
+.jp-booking-placeholder-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
 }
 
-.jp-date-option strong {
-  font-size: 20px;
+.jp-booking-placeholder h2 {
+  font-size: 22px;
+  color: #172b4d;
 }
 
-.jp-date-option.active {
-  background: #eef2ff;
-  border: 2px solid #6366f1;
-  color: #4f46e5;
+.jp-booking-placeholder p {
+  max-width: 360px;
+  color: #64748b;
+  line-height: 1.6;
 }
 
-.jp-time-options {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 12px;
-}
+/* Tablet and mobile */
 
-.jp-time-option {
-  padding: 14px 10px;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  background: white;
-  color: #334155;
-  font-size: 13px;
-  cursor: pointer;
-  transition: 0.2s ease;
-}
-
-.jp-time-option.active {
-  background: #eef2ff;
-  border: 2px solid #6366f1;
-  color: #4f46e5;
-  font-weight: 600;
-}
-
-.jp-date-option:hover,
-.jp-time-option:hover {
-  border-color: #6366f1;
-}
-
-@media (max-width: 600px) {
-  .jp-date-options {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+@media (max-width: 900px) {
+  .jp-services-layout {
+    grid-template-columns: 1fr;
+    padding: 16px;
   }
 
-  .jp-time-options {
+  .jp-services-booking-panel {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .jp-services-list-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .jp-booking-placeholder {
+    min-height: 220px;
+  }
+}
+
+@media (max-width: 500px) {
+  .jp-services-list-grid {
     grid-template-columns: 1fr;
+  }
+
+  .jp-services-layout {
+    padding: 12px;
+    gap: 20px;
   }
 }

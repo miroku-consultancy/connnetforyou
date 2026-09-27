@@ -287,35 +287,28 @@ if (servicesData.length === 0) {
   );
 }
  // Main Services / Dynamic Booking UI
+  
+  // Main Services / Split-screen Booking UI
   return (
-  <main className="jp-services-page">
-    <section className="jp-section">
+    <main className="jp-services-page">
+      <div className="jp-services-layout">
 
-      {selectedService ? (
-        <ServiceBooking
-          service={selectedService.service}
-          image={selectedService.image}
-          onBack={() => setSelectedService(null)}
-        />
-      ) : (
-        <>
+        {/* LEFT: Always show all services */}
+        <section className="jp-services-list-panel">
           <div className="jp-section-heading">
             <div>
-              <h2>Popular Services</h2>
+              <h2>Available Services</h2>
               <p className="jp-services-subtitle">
-                Explore services available at this shop.
+                Select a service to book.
               </p>
             </div>
 
             <span className="jp-services-count">
-              {servicesData.length}{" "}
-              {servicesData.length === 1
-                ? "Service"
-                : "Services"}
+              {servicesData.length} Services
             </span>
           </div>
 
-          <div className="jp-card-grid">
+          <div className="jp-services-list-grid">
             {servicesData.map((service, index) => {
               const serviceName =
                 service.title || service.name || "Service";
@@ -325,29 +318,72 @@ if (servicesData.length === 0) {
                 service.service_id ??
                 `${serviceName}-${index}`;
 
+              const image = getServiceImage(service);
+
+              const isSelected =
+                selectedService &&
+                (selectedService.service.id ??
+                  selectedService.service.service_id) ===
+                  (service.id ?? service.service_id);
+
               return (
-                <ServiceCard
+                <div
                   key={serviceId}
-                  service={service}
-                  image={getServiceImage(service)}
-                  icon={getServiceIcon(service)}
-                  index={index}
-                  onBook={(service, image) =>
-                    setSelectedService({
-                      service,
-                      image,
-                    })
-                  }
-                />
+                  className={`jp-service-select-card ${
+                    isSelected ? "selected" : ""
+                  }`}
+                >
+                  <ServiceCard
+                    service={service}
+                    image={image}
+                    icon={getServiceIcon(service)}
+                    index={index}
+                    onBook={() =>
+                      setSelectedService({
+                        service,
+                        image,
+                      })
+                    }
+                  />
+                </div>
               );
             })}
           </div>
-        </>
-      )}
+        </section>
 
-    </section>
-  </main>
-);
+        {/* RIGHT: Booking form */}
+        <section className="jp-services-booking-panel">
+          {selectedService ? (
+            <ServiceBooking
+              key={
+                selectedService.service.id ??
+                selectedService.service.service_id ??
+                selectedService.service.title ??
+                selectedService.service.name
+              }
+              service={selectedService.service}
+              image={selectedService.image}
+              onBack={() => setSelectedService(null)}
+            />
+          ) : (
+            <div className="jp-booking-placeholder">
+              <div className="jp-booking-placeholder-icon">
+                📅
+              </div>
+
+              <h2>Select a service to get started</h2>
+
+              <p>
+                Choose any service from the list to view
+                available booking dates and time slots.
+              </p>
+            </div>
+          )}
+        </section>
+
+      </div>
+    </main>
+  );
 };
 
 export default Services;

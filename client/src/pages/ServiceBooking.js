@@ -124,7 +124,7 @@ const ServiceBooking = ({ service, image, onBack }) => {
                   <div className="jp-booking-image-overlay" />
 
                   <span className="jp-booking-image-label">
-                    ✓ Selected Service
+                     Selected Service
                   </span>
                 </div>
               )}
