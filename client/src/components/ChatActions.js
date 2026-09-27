@@ -9,6 +9,11 @@ const ChatActions = () => {
   const navigate = useNavigate();
   const { shop } = useShop();
   const token = localStorage.getItem("authToken");
+  console.log("ChatActions debug:", {
+  tokenExists: !!token,
+  shop,
+  shopId: shop?.id
+});
 
   if (!token || !shop?.id) return null;
 
