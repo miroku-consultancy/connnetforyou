@@ -1,7 +1,10 @@
 
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const ServiceCard = ({ service, image, icon, index }) => {
+    
+const navigate = useNavigate();
   const serviceName =
     service.title || service.name || "Service";
 
@@ -58,20 +61,19 @@ const ServiceCard = ({ service, image, icon, index }) => {
         )}
 
         <button
-          className="jp-book-button"
-          onClick={() => {
-            const phone =
-              service.phone ||
-              service.shop_phone ||
-              "";
-
-            if (phone) {
-              window.location.href = `tel:${phone}`;
-            }
-          }}
-        >
-          Book Now
-        </button>
+  type="button"
+  className="jp-book-button"
+  onClick={() =>
+    navigate("/service-booking", {
+      state: {
+        service,
+        image,
+      },
+    })
+  }
+>
+  Book Now
+</button>
       </div>
     </article>
   );

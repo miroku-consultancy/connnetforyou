@@ -45,7 +45,7 @@ import { TenantProvider } from "./context/TenantContext";
 import AddService from "./pages/AddService";
 import Services from "./pages/Services";
 import ServiceDetails from "./pages/ServiceDetails";
-
+import ServiceBooking from "./pages/ServiceBooking";
 //import Banner from './components/Banner';
 
 
@@ -119,7 +119,10 @@ const AppRoutes = () => (
   path="/:shopSlug/add-service"
   element={<AddService />}
 />
-
+<Route
+  path="/service-booking"
+  element={<ServiceBooking />}
+/>
 {/* Services under a shop's tenant website */}
 <Route
   path="/:shopSlug/services"
