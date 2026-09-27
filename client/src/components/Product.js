@@ -209,7 +209,7 @@ const shopId = tenant?.shopId;
           <span role="img" aria-label="user" className="user-icon">👤</span>
           <div className="user-info-container">
             <p>Welcome back, <strong>{user.name || user.email?.split('@')[0]}</strong></p>
-            <ChatActions />
+            <ChatActions shopId={shopId} />
             {addresses.length > 0 ? (
               <p className="user-address-banner">
                 <strong>Delivering to:</strong>{' '}
