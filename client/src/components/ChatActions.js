@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { useShop } from "./ShopContext";
 
-const CHAT_API = "https://chat-api.connectfree4u.com";
+const CHAT_API = "https://chat-api.jusping.com";
 
 const ChatActions = () => {
   const navigate = useNavigate();

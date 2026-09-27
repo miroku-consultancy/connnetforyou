@@ -12,7 +12,7 @@ import {
 import { toast } from "react-toastify";
 import { jwtDecode } from "jwt-decode";
 
-const API_BASE_URL = "https://chat-api.connectfree4u.com";
+const API_BASE_URL = "https://chat-api.jusping.com";
 
 const VendorInbox = () => {
   const [inbox, setInbox] = useState([]);

@@ -58,7 +58,7 @@ const HelpPage = () => {
               Can't find what you're looking for? Our dedicated support team is available 24/7
               to assist you with any questions, technical issues, or feedback.
             </p>
-            <p>Email us at: <a href="mailto:connectfree4u.com">connectfree4u.com</a></p>
+            <p>Email us at: <a href="mailto:jusping.com">jusping.com</a></p>
             <p>Live chat available Monday–Friday, 9 AM to 6 PM IST.</p>
             <button className="help-button">Chat with Us</button>
           </div>

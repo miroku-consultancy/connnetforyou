@@ -102,7 +102,7 @@ router.post("/notify/chat", async (req, res) => {
       // 5️⃣ Customer → use user name
       senderName = senderUser.name || "Customer";
     }
-const chatUrl = `https://www.connectfree4u.com/#/chat/${threadId}`;
+const chatUrl = `https://www.jusping.com/#/chat/${threadId}`;
 
     // 6️⃣ Build FCM message
 const message = {

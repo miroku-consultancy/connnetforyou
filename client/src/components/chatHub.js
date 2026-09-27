@@ -16,7 +16,7 @@ import SendIcon from "@mui/icons-material/Send";
 import { useShop } from "./ShopContext";
 
 
-const API_BASE_URL = "https://chat-api.connectfree4u.com";
+const API_BASE_URL = "https://chat-api.jusping.com";
 
 const ChatComponent = () => {
   //const { chatUserId } = useParams(); // other participant
