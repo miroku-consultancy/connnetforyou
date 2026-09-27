@@ -1186,7 +1186,132 @@
     row-gap: 25px;
   }
 }
+.jp-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f0f7ff, #ffffff, #eafbf4);
+  font-family: inherit;
+  text-align: center;
+}
 
+.jp-loader-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px;
+}
+
+.jp-loader-orbit {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #dbeafe;
+  border-top-color: #0871e7;
+  border-right-color: #16a085;
+  border-radius: 50%;
+  animation: jp-spin 2s linear infinite;
+}
+
+.jp-loading-logo {
+  width: 72px;
+  height: 72px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, #0871e7, #16a085);
+  color: white;
+  font-size: 44px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 25px rgba(8, 113, 231, 0.25);
+  animation: jp-pulse 1.5s ease-in-out infinite;
+}
+
+.jp-loader-dot {
+  position: absolute;
+  top: -9px;
+  right: 0;
+  font-size: 24px;
+  animation: jp-bounce 1s ease-in-out infinite;
+}
+
+.jp-loader-title {
+  margin: 25px 0 8px;
+  font-size: 30px;
+  font-weight: 800;
+  color: #172b4d;
+}
+
+.jp-loader-title span {
+  color: #0871e7;
+}
+
+.jp-loader-message {
+  margin: 8px 0 20px;
+  color: #475569;
+  font-size: 15px;
+  animation: jp-fade 1.5s ease-in-out infinite;
+}
+
+.jp-loader-progress {
+  width: 220px;
+  height: 6px;
+  background: #dbeafe;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.jp-loader-progress-fill {
+  width: 40%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #0871e7, #16a085);
+  animation: jp-progress 2s ease-in-out infinite;
+}
+
+.jp-loader-subtitle {
+  margin-top: 18px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+@keyframes jp-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes jp-pulse {
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes jp-bounce {
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes jp-fade {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes jp-progress {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(350%);
+  }
+}
 /* =========================
    MOBILE
 ========================= */

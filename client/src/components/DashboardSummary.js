@@ -459,13 +459,33 @@ useEffect(() => {
   // Loading
   // -----------------------------
   if (loading) {
-    return (
-      <div className="jp-loading">
-        <div className="jp-loading-logo">J</div>
-        <p>Discovering nearby stores...</p>
+  return (
+    <div className="jp-loading">
+      <div className="jp-loader-content">
+        <div className="jp-loader-orbit">
+          <div className="jp-loading-logo">J</div>
+          <span className="jp-loader-dot">📍</span>
+        </div>
+
+        <h2 className="jp-loader-title">
+          Jus<span>Ping</span>
+        </h2>
+
+        <p className="jp-loader-message">
+          Discovering nearby stores...
+        </p>
+
+        <div className="jp-loader-progress">
+          <div className="jp-loader-progress-fill" />
+        </div>
+
+        <small className="jp-loader-subtitle">
+          Connecting you to your local community
+        </small>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   return (
     <div className="jusping-dashboard">

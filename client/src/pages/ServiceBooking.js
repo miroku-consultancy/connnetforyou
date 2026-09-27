@@ -3,9 +3,53 @@ import React, { useState } from "react";
 import "../components/DashboardSummary.css";
 import "./ServiceBooking.css";
 
+const getNextSevenDays = () => {
+  const days = [];
+
+  for (let i = 0; i < 7; i++) {
+    const date = new Date();
+    date.setDate(date.getDate() + i);
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    days.push({
+      value: `${year}-${month}-${day}`,
+      day: date.toLocaleDateString("en-IN", {
+        weekday: "short",
+      }),
+      date: date.getDate(),
+      month: date.toLocaleDateString("en-IN", {
+        month: "short",
+      }),
+    });
+  }
+
+  return days;
+};
+
+const DEFAULT_TIME_SLOTS = [
+  "8:00 AM - 10:00 AM",
+  "10:00 AM - 12:00 PM",
+  "12:00 PM - 2:00 PM",
+  "2:00 PM - 4:00 PM",
+  "4:00 PM - 6:00 PM",
+  "6:00 PM - 8:00 PM",
+  "8:00 PM - 10:00 PM",
+];
+
 const ServiceBooking = ({ service, image, onBack }) => {
+  const days = getNextSevenDays();
+
+  // Use shop/service-specific slots when supplied by the API.
+  const timeSlots =
+    service?.available_time_slots ||
+    service?.time_slots ||
+    DEFAULT_TIME_SLOTS;
+
   const [booking, setBooking] = useState({
-    date: "",
+    date: days[0]?.value || "",
     time: "",
     address: "",
     requirements: "",
@@ -29,9 +73,10 @@ const ServiceBooking = ({ service, image, onBack }) => {
   const handleContinue = (event) => {
     event.preventDefault();
 
-    // Frontend validation only for now.
-    // We will connect the actual booking API
-    // after verifying the backend endpoint.
+    if (!booking.date || !booking.time) {
+      alert("Please select a date and time slot.");
+      return;
+    }
 
     alert(
       "Booking form is ready. Booking API integration is pending."
@@ -53,27 +98,18 @@ const ServiceBooking = ({ service, image, onBack }) => {
         </button>
 
         <header className="jp-booking-header">
-          <span className="jp-booking-eyebrow">
-            ✦ JusPing Services
-          </span>
-
-          <h1>
-            Book your service.
-            <br />
-            <span style={{ color: "#6366f1" }}>
-              We'll handle the rest.
-            </span>
-          </h1>
+          <h1>Book {serviceName}</h1>
 
           <p>
-            Tell us what you need, choose your
-            preferred schedule, and get started.
+            Choose your preferred date and time,
+            and tell us what you need.
           </p>
         </header>
 
         <div className="jp-booking-grid">
 
           {/* LEFT: Selected service */}
+
           <div>
             <article className="jp-booking-service-card">
 
@@ -122,80 +158,86 @@ const ServiceBooking = ({ service, image, onBack }) => {
                     )}
                   </div>
 
-                  <span style={{ fontSize: 32 }}>
-                    ✨
-                  </span>
+                  <span style={{ fontSize: 32 }}>✨</span>
                 </div>
               </div>
             </article>
-
-            <div className="jp-booking-trust">
-              <div className="jp-booking-trust-item">
-                <div className="jp-booking-trust-icon">
-                  📅
-                </div>
-                <div>
-                  <strong>Flexible scheduling</strong>
-                  <span>Choose your preferred time</span>
-                </div>
-              </div>
-
-              <div className="jp-booking-trust-item">
-                <div className="jp-booking-trust-icon">
-                  🛡️
-                </div>
-                <div>
-                  <strong>Booking details</strong>
-                  <span>Your requirements in one place</span>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* RIGHT: Booking form */}
+
           <form
             className="jp-booking-form-card"
             onSubmit={handleContinue}
           >
             <div className="jp-booking-form-header">
-              <h2>Let's get you booked</h2>
-              <p>
-                Fill in the details below to continue.
-              </p>
+              <h2>Choose your schedule</h2>
+              <p>Select a day within the next 7 days.</p>
             </div>
+
+            {/* DATE SELECTION */}
 
             <div className="jp-booking-field">
-              <label htmlFor="booking-date">
-                Preferred date
-              </label>
+              <label>Preferred date</label>
 
-              <input
-                id="booking-date"
-                className="jp-booking-input"
-                type="date"
-                name="date"
-                min={new Date().toLocaleDateString("en-CA")}
-                value={booking.date}
-                onChange={handleChange}
-                required
-              />
+              <div className="jp-date-options">
+                {days.map((day, index) => (
+                  <button
+                    key={day.value}
+                    type="button"
+                    className={`jp-date-option ${
+                      booking.date === day.value
+                        ? "active"
+                        : ""
+                    }`}
+                    onClick={() =>
+                      setBooking((prev) => ({
+                        ...prev,
+                        date: day.value,
+                      }))
+                    }
+                  >
+                    <span>
+                      {index === 0 ? "Today" : day.day}
+                    </span>
+
+                    <strong>{day.date}</strong>
+
+                    <small>{day.month}</small>
+                  </button>
+                ))}
+              </div>
             </div>
+
+            {/* TIME SLOT SELECTION */}
 
             <div className="jp-booking-field">
-              <label htmlFor="booking-time">
-                Preferred time
-              </label>
+              <label>Available time slots</label>
 
-              <input
-                id="booking-time"
-                className="jp-booking-input"
-                type="time"
-                name="time"
-                value={booking.time}
-                onChange={handleChange}
-                required
-              />
+              <div className="jp-time-options">
+                {timeSlots.map((slot) => (
+                  <button
+                    key={slot}
+                    type="button"
+                    className={`jp-time-option ${
+                      booking.time === slot
+                        ? "active"
+                        : ""
+                    }`}
+                    onClick={() =>
+                      setBooking((prev) => ({
+                        ...prev,
+                        time: slot,
+                      }))
+                    }
+                  >
+                    {slot}
+                  </button>
+                ))}
+              </div>
             </div>
+
+            {/* ADDRESS */}
 
             <div className="jp-booking-field">
               <label htmlFor="booking-address">
@@ -213,6 +255,8 @@ const ServiceBooking = ({ service, image, onBack }) => {
                 required
               />
             </div>
+
+            {/* REQUIREMENTS */}
 
             <div className="jp-booking-field">
               <label htmlFor="booking-requirements">
@@ -242,7 +286,6 @@ const ServiceBooking = ({ service, image, onBack }) => {
               available once the booking API is connected.
             </p>
           </form>
-
         </div>
       </div>
     </main>
