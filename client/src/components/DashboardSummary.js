@@ -368,6 +368,29 @@ useEffect(() => {
     window.location.href = `https://${slug}.jusping.com/products`;
   };
 
+  // Navigate to the specific service booking page
+const handleBookService = (service) => {
+  const serviceId =
+    service.id ??
+    service.service_id ??
+    service.serviceId;
+
+  if (!serviceId) {
+    console.error("Service ID is missing:", service);
+    return;
+  }
+
+  const shopId = service.shopId ?? service.shop_id ?? 25;
+
+  const bookingUrl = new URL(
+    "https://city-home-services.jusping.com/services"
+  );
+
+  bookingUrl.searchParams.set("shopId", shopId);
+  bookingUrl.searchParams.set("serviceId", serviceId);
+
+  window.location.href = bookingUrl.toString();
+};
   // -----------------------------
   // Shop image with existing fallback
   // -----------------------------
@@ -770,9 +793,14 @@ useEffect(() => {
         <section className="jp-section">
           <div className="jp-section-heading">
             <h2>Popular Services</h2>
-            <button onClick={() => goTo("/services")}>
-              View All <span>→</span>
-            </button>
+            <button
+  onClick={() =>
+    (window.location.href =
+      "https://city-home-services.jusping.com/services")
+  }
+>
+  View All <span>→</span>
+</button>
           </div>
 
           {servicesLoading ? (
@@ -834,7 +862,7 @@ useEffect(() => {
 
                       <button
   className="jp-book-button"
-  onClick={() => goTo("/services")}
+  onClick={() => handleBookService(service)}
 >
   Book Now
 </button>
