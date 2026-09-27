@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import "../components/DashboardSummary.css";
 import "./ServiceBooking.css";
-import { useCart } from "../context/CartContext";
+import { useCart } from "../components/CartContext";
 
 const getNextSevenDays = () => {
   const days = [];
