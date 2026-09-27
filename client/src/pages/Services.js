@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 //import "./Services.css";
 import "../components/DashboardSummary.css";
 import { secondaryApiUrl } from "../config/apiConfig";
+import ServiceCard from "../components/catalog/ServiceCard";
 
 const API_BASE_URL = "https://connnet4you-server.onrender.com";
 
@@ -307,98 +308,28 @@ const Services = () => {
         </div>
 
         {/* Same grid and cards as DashboardSummary */}
-        <div className="jp-card-grid">
-          {servicesData.map((service, index) => {
-            const serviceName =
-              service.title ||
-              service.name ||
-              "Service";
+        
+<div className="jp-card-grid">
+  {servicesData.map((service, index) => {
+    const serviceName =
+      service.title || service.name || "Service";
 
-            const servicePrice =
-              service.price ?? service.base_price;
+    const serviceId =
+      service.id ??
+      service.service_id ??
+      `${serviceName}-${index}`;
 
-            const serviceId =
-              service.id ??
-              service.service_id ??
-              `${serviceName}-${index}`;
-
-            const image = getServiceImage(service);
-            const icon = getServiceIcon(service);
-
-            return (
-              <article
-                className="jp-service-card"
-                key={serviceId}
-              >
-                <div className="jp-service-image">
-                  <img
-                    src={image}
-                    alt={serviceName}
-                    loading="lazy"
-                    onError={(event) => {
-                      event.currentTarget.onerror = null;
-                      event.currentTarget.src =
-                        staticServices[0].image;
-                    }}
-                  />
-
-                  <span
-                    className={`jp-service-badge badge-${
-                      index % 6
-                    }`}
-                  >
-                    {icon}
-                  </span>
-                </div>
-
-                <div className="jp-service-info">
-                  <h3>{serviceName}</h3>
-
-                  {service.description && (
-                    <p className="jp-service-description">
-                      {service.description}
-                    </p>
-                  )}
-
-                  <p className="jp-service-price">
-                    {service.pricing_type ===
-                    "starting_from"
-                      ? "From "
-                      : ""}
-
-                    <strong>
-                      {servicePrice != null
-                        ? `₹${Number(
-                            servicePrice
-                          ).toLocaleString("en-IN")}`
-                        : "Contact for price"}
-                    </strong>
-                  </p>
-
-                  {service.pricing_type ===
-                    "starting_from" && (
-                    <span className="jp-service-price-note">
-                      Price may vary based on requirements
-                    </span>
-                  )}
-
-                  <button
-                    className="jp-book-button"
-                    onClick={() => {
-                      window.location.href =
-                        "tel:" +
-                        (service.phone ||
-                          service.shop_phone ||
-                          "");
-                    }}
-                  >
-                    Book Now
-                  </button>
-                </div>
-              </article>
-            );
-          })}
-        </div>
+    return (
+      <ServiceCard
+        key={serviceId}
+        service={service}
+        image={getServiceImage(service)}
+        icon={getServiceIcon(service)}
+        index={index}
+      />
+    );
+  })}
+</div>
       </section>
     </main>
   );
