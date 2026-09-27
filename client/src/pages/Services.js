@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import "../components/DashboardSummary.css";
 import { secondaryApiUrl } from "../config/apiConfig";
 import ServiceCard from "../components/catalog/ServiceCard";
+import ServiceBooking from "./ServiceBooking";
 
 const API_BASE_URL = "https://connnet4you-server.onrender.com";
 
@@ -128,6 +129,7 @@ const getServiceIcon = (service) => {
 const Services = () => {
   const [servicesData, setServicesData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedService, setSelectedService] = useState(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -209,36 +211,68 @@ const Services = () => {
 
   // Loading UI
   if (loading) {
-    return (
-      <main className="jp-services-page">
-        <section className="jp-section">
+   
+return (
+  <main className="jp-services-page">
+    <section className="jp-section">
+
+      {selectedService ? (
+        <ServiceBooking
+          service={selectedService.service}
+          image={selectedService.image}
+          onBack={() => setSelectedService(null)}
+        />
+      ) : (
+        <>
           <div className="jp-section-heading">
-            <h2>Popular Services</h2>
+            <div>
+              <h2>Popular Services</h2>
+              <p className="jp-services-subtitle">
+                Explore services available at this shop.
+              </p>
+            </div>
+
+            <span className="jp-services-count">
+              {servicesData.length}{" "}
+              {servicesData.length === 1
+                ? "Service"
+                : "Services"}
+            </span>
           </div>
 
           <div className="jp-card-grid">
-            {[1, 2, 3].map((item) => (
-              <article
-                className="jp-service-card"
-                key={item}
-              >
-                <div className="jp-service-image">
-                  <img
-                    src={staticServices[0].image}
-                    alt="Loading service"
-                  />
-                </div>
+            {servicesData.map((service, index) => {
+              const serviceName =
+                service.title || service.name || "Service";
 
-                <div className="jp-service-info">
-                  <h3>Loading service...</h3>
-                  <p>Please wait...</p>
-                </div>
-              </article>
-            ))}
+              const serviceId =
+                service.id ??
+                service.service_id ??
+                `${serviceName}-${index}`;
+
+              return (
+                <ServiceCard
+                  key={serviceId}
+                  service={service}
+                  image={getServiceImage(service)}
+                  icon={getServiceIcon(service)}
+                  index={index}
+                  onBook={(service, image) =>
+                    setSelectedService({
+                      service,
+                      image,
+                    })
+                  }
+                />
+              );
+            })}
           </div>
-        </section>
-      </main>
-    );
+        </>
+      )}
+
+    </section>
+  </main>
+);
   }
 
   // Error UI

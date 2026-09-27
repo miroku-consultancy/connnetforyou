@@ -2,7 +2,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-const ServiceCard = ({ service, image, icon, index }) => {
+const ServiceCard = ({ service, image, icon, index ,onBook}) => {
     
 const navigate = useNavigate();
   const serviceName =
@@ -62,15 +62,7 @@ const navigate = useNavigate();
 
         <button
   type="button"
-  className="jp-book-button"
-  onClick={() =>
-    navigate("/service-booking", {
-      state: {
-        service,
-        image,
-      },
-    })
-  }
+  onClick={() => onBook(service, image)}
 >
   Book Now
 </button>
