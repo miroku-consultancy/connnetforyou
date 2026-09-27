@@ -1,0 +1,441 @@
+
+/* ServiceBooking.css */
+
+.jp-booking-page {
+  min-height: 100vh;
+  padding: 48px 24px 80px;
+  background:
+    radial-gradient(
+      circle at 10% 0%,
+      rgba(99, 102, 241, 0.09),
+      transparent 35%
+    ),
+    #f7f8fc;
+  color: #172033;
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+}
+
+.jp-booking-container {
+  max-width: 1160px;
+  margin: 0 auto;
+}
+
+/* Back navigation */
+
+.jp-booking-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 30px;
+  background: #fff;
+  padding: 11px 18px;
+  color: #475569;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.jp-booking-back:hover {
+  color: #4f46e5;
+  border-color: #a5b4fc;
+  transform: translateX(-3px);
+}
+
+/* Header */
+
+.jp-booking-header {
+  margin: 32px 0;
+}
+
+.jp-booking-eyebrow {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 30px;
+  background: #eef2ff;
+  color: #4f46e5;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.jp-booking-header h1 {
+  margin: 16px 0 10px;
+  font-size: clamp(30px, 4vw, 46px);
+  line-height: 1.12;
+  font-weight: 850;
+  letter-spacing: -1.5px;
+  color: #111827;
+}
+
+.jp-booking-header p {
+  max-width: 620px;
+  margin: 0;
+  color: #64748b;
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+/* Main two-column layout */
+
+.jp-booking-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 0.85fr);
+  gap: 28px;
+  align-items: start;
+}
+
+/* Service card */
+
+.jp-booking-service-card {
+  overflow: hidden;
+  border: 1px solid #e8eaf2;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.055);
+}
+
+.jp-booking-service-image-wrap {
+  position: relative;
+  height: 290px;
+  overflow: hidden;
+  background: #eef2ff;
+}
+
+.jp-booking-service-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease;
+}
+
+.jp-booking-service-card:hover
+.jp-booking-service-image {
+  transform: scale(1.04);
+}
+
+.jp-booking-image-overlay {
+  position: absolute;
+  inset: 40% 0 0;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(15, 23, 42, 0.62)
+  );
+  pointer-events: none;
+}
+
+.jp-booking-image-label {
+  position: absolute;
+  bottom: 20px;
+  left: 22px;
+  padding: 8px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.18);
+  color: white;
+  backdrop-filter: blur(12px);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.jp-booking-service-content {
+  padding: 28px;
+}
+
+.jp-booking-service-content h2 {
+  margin: 0 0 12px;
+  color: #111827;
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+}
+
+.jp-booking-service-description {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.jp-booking-price-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 26px;
+  padding: 20px;
+  border: 1px solid #e0e7ff;
+  border-radius: 18px;
+  background: linear-gradient(
+    135deg,
+    #f5f3ff,
+    #eef2ff
+  );
+}
+
+.jp-booking-price-label {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.jp-booking-price {
+  margin-top: 5px;
+  color: #4338ca;
+  font-size: 27px;
+  font-weight: 850;
+}
+
+.jp-booking-price-note {
+  margin-top: 6px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+/* Trust / information strip */
+
+.jp-booking-trust {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.jp-booking-trust-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #edf0f5;
+  border-radius: 16px;
+  background: #fafbff;
+}
+
+.jp-booking-trust-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  background: #eef2ff;
+  font-size: 20px;
+}
+
+.jp-booking-trust-item strong {
+  display: block;
+  color: #334155;
+  font-size: 12px;
+}
+
+.jp-booking-trust-item span {
+  display: block;
+  margin-top: 4px;
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+/* Booking form */
+
+.jp-booking-form-card {
+  position: sticky;
+  top: 24px;
+  padding: 30px;
+  border: 1px solid #e8eaf2;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 16px 50px rgba(15, 23, 42, 0.075);
+}
+
+.jp-booking-form-header {
+  margin-bottom: 26px;
+}
+
+.jp-booking-form-header h2 {
+  margin: 0 0 8px;
+  color: #111827;
+  font-size: 24px;
+  font-weight: 850;
+  letter-spacing: -0.7px;
+}
+
+.jp-booking-form-header p {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.jp-booking-field {
+  margin-bottom: 21px;
+}
+
+.jp-booking-field label {
+  display: block;
+  margin-bottom: 9px;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.jp-booking-input,
+.jp-booking-textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 15px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  outline: none;
+  background: #f8fafc;
+  color: #1e293b;
+  font: inherit;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.jp-booking-input {
+  min-height: 52px;
+}
+
+.jp-booking-textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.jp-booking-input:focus,
+.jp-booking-textarea:focus {
+  border-color: #818cf8;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+.jp-booking-input::placeholder,
+.jp-booking-textarea::placeholder {
+  color: #a0aec0;
+}
+
+/* Continue button */
+
+.jp-booking-submit {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 58px;
+  margin-top: 10px;
+  padding: 16px 22px;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(
+    135deg,
+    #4f46e5,
+    #7c3aed
+  );
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(79, 70, 229, 0.25);
+  transition: all 0.25s ease;
+}
+
+.jp-booking-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(79, 70, 229, 0.35);
+}
+
+.jp-booking-submit:active {
+  transform: translateY(0);
+}
+
+.jp-booking-submit:focus-visible {
+  outline: 3px solid #a5b4fc;
+  outline-offset: 4px;
+}
+
+.jp-booking-form-footnote {
+  margin: 16px 0 0;
+  color: #94a3b8;
+  font-size: 11px;
+  line-height: 1.7;
+  text-align: center;
+}
+
+/* Empty / no service */
+
+.jp-booking-empty {
+  max-width: 560px;
+  margin: 80px auto;
+  padding: 40px;
+  border: 1px solid #e8eaf2;
+  border-radius: 24px;
+  background: #fff;
+  text-align: center;
+}
+
+.jp-booking-empty h2 {
+  color: #111827;
+}
+
+.jp-booking-empty p {
+  color: #64748b;
+  line-height: 1.7;
+}
+
+/* Responsive */
+
+@media (max-width: 900px) {
+  .jp-booking-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .jp-booking-form-card {
+    position: static;
+  }
+
+  .jp-booking-service-image-wrap {
+    height: 320px;
+  }
+}
+
+@media (max-width: 600px) {
+  .jp-booking-page {
+    padding: 24px 14px 50px;
+  }
+
+  .jp-booking-header {
+    margin: 24px 0;
+  }
+
+  .jp-booking-header h1 {
+    font-size: 32px;
+    letter-spacing: -1px;
+  }
+
+  .jp-booking-grid {
+    gap: 20px;
+  }
+
+  .jp-booking-service-image-wrap {
+    height: 230px;
+  }
+
+  .jp-booking-service-content,
+  .jp-booking-form-card {
+    padding: 22px;
+    border-radius: 20px;
+  }
+
+  .jp-booking-trust {
+    grid-template-columns: 1fr;
+  }
+
+  .jp-booking-price {
+    font-size: 24px;
+  }
+}
