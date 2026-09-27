@@ -210,9 +210,84 @@ const Services = () => {
   }, []);
 
   // Loading UI
-  if (loading) {
-   
-return (
+if (loading) {
+  return (
+    <main className="jp-services-page">
+      <section className="jp-section">
+        <div className="jp-section-heading">
+          <h2>Popular Services</h2>
+        </div>
+
+        <div className="jp-card-grid">
+          {[1, 2, 3].map((item) => (
+            <article
+              className="jp-service-card"
+              key={item}
+            >
+              <div className="jp-service-image">
+                <img
+                  src={staticServices[0].image}
+                  alt="Loading service"
+                />
+              </div>
+
+              <div className="jp-service-info">
+                <h3>Loading service...</h3>
+                <p>Please wait...</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+    </main>
+  );
+}
+
+  // Error UI
+  if (error) {
+    return (
+      <main className="jp-services-page">
+        <section className="jp-section">
+          <div className="jp-section-heading">
+            <h2>Popular Services</h2>
+          </div>
+
+          <div className="jp-empty">
+            <h3>Unable to load services</h3>
+            <p>{error}</p>
+
+            <button
+              onClick={() => window.location.reload()}
+            >
+              Try Again
+            </button>
+          </div>
+        </section>
+      </main>
+    );
+  }
+// Empty UI
+if (servicesData.length === 0) {
+  return (
+    <main className="jp-services-page">
+      <section className="jp-section">
+        <div className="jp-section-heading">
+          <h2>Popular Services</h2>
+        </div>
+
+        <div className="jp-empty jp-services-empty">
+          <div className="jp-empty-icon">🔧</div>
+          <h3>No services available</h3>
+          <p>
+            Please check back later for available services.
+          </p>
+        </div>
+      </section>
+    </main>
+  );
+}
+ // Main Services / Dynamic Booking UI
+  return (
   <main className="jp-services-page">
     <section className="jp-section">
 
@@ -273,100 +348,6 @@ return (
     </section>
   </main>
 );
-  }
-
-  // Error UI
-  if (error) {
-    return (
-      <main className="jp-services-page">
-        <section className="jp-section">
-          <div className="jp-section-heading">
-            <h2>Popular Services</h2>
-          </div>
-
-          <div className="jp-empty">
-            <h3>Unable to load services</h3>
-            <p>{error}</p>
-
-            <button
-              onClick={() => window.location.reload()}
-            >
-              Try Again
-            </button>
-          </div>
-        </section>
-      </main>
-    );
-  }
-
-  // Empty UI
-  if (servicesData.length === 0) {
-    return (
-      <main className="jp-services-page">
-        <section className="jp-section">
-          <div className="jp-section-heading">
-            <h2>Popular Services</h2>
-          </div>
-
-          <div className="jp-empty jp-services-empty">
-            <div className="jp-empty-icon">🔧</div>
-            <h3>No services available</h3>
-            <p>
-              Please check back later for available services.
-            </p>
-          </div>
-        </section>
-      </main>
-    );
-  }
-
-  return (
-    <main className="jp-services-page">
-      <section className="jp-section">
-
-        {/* Dashboard-style heading */}
-        <div className="jp-section-heading">
-          <div>
-            <h2>Popular Services</h2>
-            <p className="jp-services-subtitle">
-              Explore services available at this shop.
-            </p>
-          </div>
-
-          <span className="jp-services-count">
-            {servicesData.length}{" "}
-            {servicesData.length === 1
-              ? "Service"
-              : "Services"}
-          </span>
-        </div>
-
-        {/* Same grid and cards as DashboardSummary */}
-        
-<div className="jp-card-grid">
-  {servicesData.map((service, index) => {
-    const serviceName =
-      service.title || service.name || "Service";
-
-    const serviceId =
-      service.id ??
-      service.service_id ??
-      `${serviceName}-${index}`;
-
-    return (
-      <ServiceCard
-        key={serviceId}
-        service={service}
-        image={getServiceImage(service)}
-        icon={getServiceIcon(service)}
-        index={index}
-      />
-    );
-  })}
-</div>
-      </section>
-    </main>
-  );
 };
 
 export default Services;

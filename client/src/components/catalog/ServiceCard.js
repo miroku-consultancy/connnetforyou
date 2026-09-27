@@ -62,7 +62,13 @@ const navigate = useNavigate();
 
         <button
   type="button"
-  onClick={() => onBook(service, image)}
+  onClick={() => {
+    if (typeof onBook === "function") {
+      onBook(service, image);
+    } else {
+      console.error("onBook callback missing");
+    }
+  }}
 >
   Book Now
 </button>
