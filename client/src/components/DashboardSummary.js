@@ -651,10 +651,10 @@ useEffect(() => {
         <section className="jp-categories">
           {categories.map((category) => (
             <button
-              className="jp-category"
-              key={category.name}
-              // onClick={() => goTo(category.path)}
-            >
+  className="jp-category"
+  key={category.name}
+  onClick={() => goTo(category.path)}
+>
               <span className={`jp-category-icon ${category.color}`}>
                 {category.icon}
               </span>
@@ -833,11 +833,11 @@ useEffect(() => {
                       </p>
 
                       <button
-                        // onClick={() => goTo("/services")}
-                        className="jp-book-button"
-                      >
-                        Book Now
-                      </button>
+  className="jp-book-button"
+  onClick={() => goTo("/services")}
+>
+  Book Now
+</button>
                     </div>
                   </article>
                 );

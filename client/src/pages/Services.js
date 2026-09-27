@@ -402,7 +402,7 @@ const Services = () => {
 
                 {isSelected && (
                   <div className="jp-service-selected-label">
-                    ✓ Selected
+                     Selected
                   </div>
                 )}
               </div>
