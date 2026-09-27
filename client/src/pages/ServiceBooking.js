@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import "../components/DashboardSummary.css";
 import "./ServiceBooking.css";
+import { useCart } from "../context/CartContext";
 
 const getNextSevenDays = () => {
   const days = [];
@@ -40,13 +41,32 @@ const DEFAULT_TIME_SLOTS = [
 ];
 
 const ServiceBooking = ({ service, image, onBack }) => {
+  const { addToCart, cart } = useCart();
+
   const days = getNextSevenDays();
 
-  // Use shop/service-specific slots when supplied by the API.
   const timeSlots =
     service?.available_time_slots ||
     service?.time_slots ||
     DEFAULT_TIME_SLOTS;
+
+  const serviceName =
+    service?.title ||
+    service?.name ||
+    "Service";
+
+  const serviceId =
+    service?.id ??
+    service?.service_id ??
+    service?.serviceId ??
+    serviceName;
+
+  const price =
+    service?.price ?? service?.base_price;
+
+  const serviceCartId = `service_${serviceId}`;
+
+  const existingCartItem = cart?.[serviceCartId];
 
   const [booking, setBooking] = useState({
     date: days[0]?.value || "",
@@ -54,12 +74,6 @@ const ServiceBooking = ({ service, image, onBack }) => {
     address: "",
     requirements: "",
   });
-
-  const serviceName =
-    service?.title || service?.name || "Service";
-
-  const price =
-    service?.price ?? service?.base_price;
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -78,9 +92,42 @@ const ServiceBooking = ({ service, image, onBack }) => {
       return;
     }
 
-    alert(
-      "Booking form is ready. Booking API integration is pending."
-    );
+    if (!booking.address.trim()) {
+      alert("Please enter your service address.");
+      return;
+    }
+
+    const serviceItem = {
+      id: serviceCartId,
+      name: serviceName,
+      price: Number(price || 0),
+      image: image || "",
+      quantity: 1,
+
+      // Service-specific information
+      cartType: "service",
+      serviceId,
+      serviceName,
+
+      appointmentDate: booking.date,
+      appointmentTime: booking.time,
+
+      serviceAddress: booking.address.trim(),
+      requirements: booking.requirements.trim(),
+
+      pricingType:
+        service?.pricing_type || "fixed",
+
+      shopId:
+        service?.shop_id ??
+        service?.shopId ??
+        null,
+    };
+
+    // Add service to the existing CartContext
+    addToCart(serviceItem, 1);
+
+    alert("Service added to cart!");
   };
 
   if (!service) return null;
@@ -89,6 +136,8 @@ const ServiceBooking = ({ service, image, onBack }) => {
     <main className="jp-booking-page">
       <div className="jp-booking-container">
 
+        {/* Back button */}
+
         <button
           type="button"
           className="jp-booking-back"
@@ -96,6 +145,8 @@ const ServiceBooking = ({ service, image, onBack }) => {
         >
           ← Back to Services
         </button>
+
+        {/* Booking heading */}
 
         <header className="jp-booking-header">
           <h1>Book {serviceName}</h1>
@@ -124,7 +175,7 @@ const ServiceBooking = ({ service, image, onBack }) => {
                   <div className="jp-booking-image-overlay" />
 
                   <span className="jp-booking-image-label">
-                     Selected Service
+                    Selected Service
                   </span>
                 </div>
               )}
@@ -158,8 +209,16 @@ const ServiceBooking = ({ service, image, onBack }) => {
                     )}
                   </div>
 
-                  <span style={{ fontSize: 32 }}>✨</span>
+                  <span style={{ fontSize: 32 }}>
+                    ✨
+                  </span>
                 </div>
+
+                {existingCartItem && (
+                  <div className="jp-service-cart-status">
+                    ✓ This service is already in your cart
+                  </div>
+                )}
               </div>
             </article>
           </div>
@@ -172,7 +231,10 @@ const ServiceBooking = ({ service, image, onBack }) => {
           >
             <div className="jp-booking-form-header">
               <h2>Choose your schedule</h2>
-              <p>Select a day within the next 7 days.</p>
+
+              <p>
+                Select a day within the next 7 days.
+              </p>
             </div>
 
             {/* DATE SELECTION */}
@@ -237,7 +299,7 @@ const ServiceBooking = ({ service, image, onBack }) => {
               </div>
             </div>
 
-            {/* ADDRESS */}
+            {/* SERVICE ADDRESS */}
 
             <div className="jp-booking-field">
               <label htmlFor="booking-address">
@@ -274,16 +336,19 @@ const ServiceBooking = ({ service, image, onBack }) => {
               />
             </div>
 
+            {/* ADD TO CART */}
+
             <button
               type="submit"
               className="jp-booking-submit"
             >
-              Continue <span>→</span>
+              Add to Cart
+              <span> →</span>
             </button>
 
             <p className="jp-booking-form-footnote">
-              Booking confirmation and payment will be
-              available once the booking API is connected.
+              Your selected service and appointment
+              details will be saved in your cart.
             </p>
           </form>
         </div>

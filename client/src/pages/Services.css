@@ -247,6 +247,71 @@
   cursor: pointer;
 }
 
+/* Selected booking panel at the top */
+
+.jp-services-booking-top {
+  width: 100%;
+  margin: 0 auto 28px;
+}
+
+.jp-services-booking-top .jp-booking-page {
+  padding: 0;
+}
+
+.jp-services-booking-top .jp-booking-container {
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+/* Service list below the booking panel */
+
+.jp-services-list-panel {
+  width: 100%;
+}
+
+.jp-services-list-grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(240px, 1fr)
+  );
+  gap: 20px;
+}
+
+/* Selected service card */
+
+.jp-service-select-card {
+  position: relative;
+}
+
+.jp-service-select-card.selected {
+  outline: 2px solid #16a34a;
+  outline-offset: 3px;
+  border-radius: 14px;
+}
+
+.jp-service-selected-label {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Mobile */
+
+@media (max-width: 768px) {
+  .jp-services-booking-top {
+    margin-bottom: 20px;
+  }
+
+  .jp-services-list-grid {
+    grid-template-columns: 1fr;
+  }
+}
 /* Mobile */
 @media (max-width: 600px) {
   #services .services-heading {
