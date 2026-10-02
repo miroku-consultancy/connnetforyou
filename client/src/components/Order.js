@@ -760,50 +760,18 @@ const Order = () => {
   // QUANTITY CHANGE
   // --------------------------------------------------
 
-  const handleQtyChange = (
-    item,
-    delta
-  ) => {
-    /*
-     * A service booking remains quantity 1.
-     *
-     * Minus removes the booking.
-     * Plus does nothing.
-     */
-    if (
-      item.cartType === 'service'
-    ) {
-      if (delta < 0) {
-        addToCart(
-          item,
-          -item.quantity
-        );
-      }
+const handleQtyChange = (item, delta) => {
+  const newQty = item.quantity + delta;
 
-      return;
-    }
+  if (newQty <= 0) {
+    addToCart(item, -item.quantity);
+    return;
+  }
 
-    // Existing product quantity logic
-    const newQty =
-      item.quantity + delta;
+  const diff = newQty - item.quantity;
 
-    if (newQty <= 0) {
-      addToCart(
-        item,
-        -item.quantity
-      );
-
-      return;
-    }
-
-    const diff =
-      newQty - item.quantity;
-
-    addToCart(
-      item,
-      diff
-    );
-  };
+  addToCart(item, diff);
+};
 
   // --------------------------------------------------
   // LOADING / EMPTY
@@ -961,8 +929,22 @@ const Order = () => {
                     )}
 
                     <div className="order-service-quantity">
-                      × {item.quantity}
-                    </div>
+  <div className="qty-controls">
+    <button
+      onClick={() => handleQtyChange(item, -1)}
+    >
+      −
+    </button>
+
+    <span>{item.quantity}</span>
+
+    <button
+      onClick={() => handleQtyChange(item, 1)}
+    >
+      +
+    </button>
+  </div>
+</div>
 
                   </div>
 
