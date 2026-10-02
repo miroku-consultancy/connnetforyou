@@ -59,6 +59,11 @@ const Order = () => {
   } = useCart();
 
   const items = Object.values(cart);
+const isServiceOrder =
+  items.length > 0 &&
+  items.every(
+    (item) => item.cartType === 'service'
+  );
 
   const navigate = useNavigate();
 
@@ -82,7 +87,21 @@ const Order = () => {
     items.every(
       (item) => item.cartType === 'service'
     );
+useEffect(() => {
+  if (items.length === 0) {
+    return;
+  }
 
+  sessionStorage.setItem(
+    'cartReturnType',
+    isServiceCart
+      ? 'service'
+      : 'product'
+  );
+}, [
+  items,
+  isServiceCart,
+]);
   const [
     initialAddressLoadComplete,
     setInitialAddressLoadComplete,
@@ -224,17 +243,25 @@ const Order = () => {
   // --------------------------------------------------
 
   useEffect(() => {
-    if (
-      cartLoaded &&
-      items.length === 0
-    ) {
-      navigate('/products');
-    }
-  }, [
-    cartLoaded,
-    items,
-    navigate,
-  ]);
+  if (!cartLoaded || items.length !== 0) {
+    return;
+  }
+
+  const returnType =
+    sessionStorage.getItem('cartReturnType');
+
+  sessionStorage.removeItem('cartReturnType');
+
+  navigate(
+    returnType === 'service'
+      ? '/services'
+      : '/products'
+  );
+}, [
+  cartLoaded,
+  items.length,
+  navigate,
+]);
 
   // --------------------------------------------------
   // PRODUCT MINIMUM ORDER LOGIC

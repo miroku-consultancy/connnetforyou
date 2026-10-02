@@ -132,10 +132,14 @@ const OrderSummary = () => {
   ]);
 
   const handleGoToProducts = () => {
-    clearCart();
+  clearCart();
 
-    navigate('/products');
-  };
+  navigate(
+    isServiceOrder
+      ? '/services'
+      : '/products'
+  );
+};
 
   const handlePrint = () => {
     if (!order) {
@@ -639,13 +643,13 @@ const OrderSummary = () => {
         */}
 
         <button
-          className="go-to-products-btn"
-          onClick={
-            handleGoToProducts
-          }
-        >
-          🛒 Go to Products
-        </button>
+  className="go-to-products-btn"
+  onClick={handleGoToProducts}
+>
+  {isServiceOrder
+    ? '🔧 Go to Services'
+    : '🛒 Go to Products'}
+</button>
 
       </div>
 
