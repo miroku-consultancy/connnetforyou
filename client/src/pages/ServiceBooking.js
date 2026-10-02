@@ -83,12 +83,10 @@ const cartTotal = cartItems.reduce(
 );
 
   const [booking, setBooking] = useState({
-    date: days[0]?.value || "",
-    time: "",
-    address: "",
-    requirements: "",
-  });
-
+  date: days[0]?.value || "",
+  time: "",
+  requirements: "",
+});
   const handleChange = (event) => {
     const { name, value } = event.target;
 
@@ -103,11 +101,6 @@ const cartTotal = cartItems.reduce(
 
     if (!booking.date || !booking.time) {
       alert("Please select a date and time slot.");
-      return;
-    }
-
-    if (!booking.address.trim()) {
-      alert("Please enter your service address.");
       return;
     }
 
@@ -126,7 +119,6 @@ const cartTotal = cartItems.reduce(
       appointmentDate: booking.date,
       appointmentTime: booking.time,
 
-      serviceAddress: booking.address.trim(),
       requirements: booking.requirements.trim(),
 
       pricingType:
@@ -313,24 +305,6 @@ const cartTotal = cartItems.reduce(
               </div>
             </div>
 
-            {/* SERVICE ADDRESS */}
-
-            <div className="jp-booking-field">
-              <label htmlFor="booking-address">
-                Service address
-              </label>
-
-              <textarea
-                id="booking-address"
-                className="jp-booking-textarea"
-                name="address"
-                placeholder="House no., street, area, city..."
-                value={booking.address}
-                onChange={handleChange}
-                rows={3}
-                required
-              />
-            </div>
 
             {/* REQUIREMENTS */}
 
@@ -424,10 +398,6 @@ const cartTotal = cartItems.reduce(
 
                       <span className="unit-label">
                         ⏰ {item.appointmentTime}
-                      </span>
-
-                      <span className="unit-label">
-                        📍 {item.serviceAddress}
                       </span>
                     </>
                   )}

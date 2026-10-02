@@ -388,13 +388,9 @@ const Order = () => {
      * service item as serviceAddress.
      */
     if (
-      !isServiceCart &&
-      !isTakeaway &&
-      (
-        addresses.length === 0 ||
-        !address
-      )
-    ) {
+  !isTakeaway &&
+  (addresses.length === 0 || !address)
+) {
       alert(
         'Please add your delivery address before placing the order.'
       );
@@ -462,9 +458,6 @@ const Order = () => {
         appointmentTime:
           i.appointmentTime ?? null,
 
-        serviceAddress:
-          i.serviceAddress ?? null,
-
         requirements:
           i.requirements ?? null,
 
@@ -478,14 +471,7 @@ const Order = () => {
        * Service order does not use the
        * product delivery address.
        */
-      address:
-        isServiceCart
-          ? null
-          : (
-              isTakeaway
-                ? null
-                : address
-            ),
+      address: isTakeaway ? null : address,
 
       paymentMethod,
 
