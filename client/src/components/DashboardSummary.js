@@ -676,7 +676,7 @@ const handleBookService = (service) => {
             <button
   className="jp-category"
   key={category.name}
-  onClick={() => goTo(category.path)}
+  // onClick={() => goTo(category.path)}
 >
               <span className={`jp-category-icon ${category.color}`}>
                 {category.icon}
