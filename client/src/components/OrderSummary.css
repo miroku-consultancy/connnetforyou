@@ -73,7 +73,7 @@
 }
 
 /* Item details */
-.order-summary-item div {
+.order-summary-item > div {
   font-size: 1rem;
   line-height: 1.4;
   color: #1a3d1a;
@@ -205,4 +205,84 @@
 
 .print-btn:hover {
   background-color: #1c66d1;
+}
+/* ------------------------------------------------ */
+/* SERVICE ORDER DETAILS                            */
+/* ------------------------------------------------ */
+
+.summary-service-details {
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  color: #475569;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.summary-service-details div {
+  margin-bottom: 5px;
+}
+
+.summary-service-details div:last-child {
+  margin-bottom: 0;
+}
+
+.summary-service-details strong {
+  color: #334155;
+  font-weight: 600;
+}
+
+/* Service booking box */
+
+.summary-service-address {
+  padding: 12px 14px;
+  margin-top: 10px;
+  background: #f8fafc;
+  border: 1px solid #dbeafe;
+  border-radius: 10px;
+}
+
+.summary-service-address > strong {
+  display: block;
+  margin-bottom: 8px;
+  color: #1b5e20;
+  font-size: 1.05rem;
+}
+
+.summary-service-address p {
+  margin: 6px 0;
+  line-height: 1.5;
+  color: #334155;
+}
+
+/* Service order item alignment */
+
+.order-summary-item:has(.summary-service-details) {
+  align-items: flex-start;
+}
+
+/* Mobile service details */
+
+@media (max-width: 480px) {
+
+  .summary-service-details {
+    margin-top: 10px;
+    padding: 10px 12px;
+    font-size: 0.85rem;
+  }
+
+  .summary-service-details div {
+    word-break: break-word;
+  }
+
+  .summary-service-address {
+    padding: 10px 12px;
+  }
+
+  .summary-service-address p {
+    font-size: 0.9rem;
+    word-break: break-word;
+  }
 }
