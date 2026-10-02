@@ -1,5 +1,6 @@
 
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../components/DashboardSummary.css";
 import "./ServiceBooking.css";
 import { useCart } from "../components/CartContext";
@@ -42,7 +43,8 @@ const DEFAULT_TIME_SLOTS = [
 
 const ServiceBooking = ({ service, image, onBack }) => {
   const { addToCart, cart } = useCart();
-
+  const navigate = useNavigate();
+  const [showCartPopup, setShowCartPopup] = useState(false);
   const days = getNextSevenDays();
 
   const timeSlots =
@@ -67,6 +69,18 @@ const ServiceBooking = ({ service, image, onBack }) => {
   const serviceCartId = `service_${serviceId}`;
 
   const existingCartItem = cart?.[serviceCartId];
+  const cartItems = Object.values(cart || {});
+
+const cartItemCount = cartItems.reduce(
+  (sum, item) => sum + Number(item.quantity || 0),
+  0
+);
+
+const cartTotal = cartItems.reduce(
+  (sum, item) =>
+    sum + Number(item.price || 0) * Number(item.quantity || 0),
+  0
+);
 
   const [booking, setBooking] = useState({
     date: days[0]?.value || "",
@@ -353,6 +367,96 @@ const ServiceBooking = ({ service, image, onBack }) => {
           </form>
         </div>
       </div>
+       {/* FLOATING CART */}
+    {cartItemCount > 0 && (
+      <div
+        className="floating-cart"
+        onClick={() => setShowCartPopup(true)}
+      >
+        🛒 {cartItemCount} item(s) | ₹
+        {cartTotal.toFixed(2)} → View Cart
+      </div>
+    )}
+
+    {/* CART POPUP */}
+    {showCartPopup && (
+      <div
+        className="cart-popup"
+        onClick={() => setShowCartPopup(false)}
+      >
+        <div
+          className="cart-popup-content"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            className="cart-close-btn"
+            onClick={() => setShowCartPopup(false)}
+          >
+            &times;
+          </button>
+
+          <h2>Your Cart</h2>
+
+          <ul>
+            {cartItems.map((item) => (
+              <li
+                key={item.id}
+                className="cart-item-list"
+              >
+                {item.image && (
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="cart-item-image"
+                  />
+                )}
+
+                <div className="cart-item-details">
+                  <span className="cart-item-name">
+                    {item.name}
+                  </span>
+
+                  {item.cartType === "service" && (
+                    <>
+                      <span className="unit-label">
+                        📅 {item.appointmentDate}
+                      </span>
+
+                      <span className="unit-label">
+                        ⏰ {item.appointmentTime}
+                      </span>
+
+                      <span className="unit-label">
+                        📍 {item.serviceAddress}
+                      </span>
+                    </>
+                  )}
+
+                  <span className="cart-item-quantity">
+                    × {item.quantity}
+                  </span>
+                </div>
+
+                <span className="cart-item-price">
+                  ₹
+                  {(
+                    Number(item.price || 0) *
+                    Number(item.quantity || 0)
+                  ).toFixed(2)}
+                </span>
+              </li>
+            ))}
+          </ul>
+
+          <button
+            onClick={() => navigate("/order")}
+            className="login-btn"
+          >
+            Proceed to Order
+          </button>
+        </div>
+      </div>
+    )}
     </main>
   );
 };
