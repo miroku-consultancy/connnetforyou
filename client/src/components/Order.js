@@ -1001,134 +1001,124 @@ const handleQtyChange = (item, delta) => {
       </div>
 
       {/* -------------------------------------------- */}
-      {/* PRODUCT DELIVERY ADDRESS                     */}
-      {/* -------------------------------------------- */}
+{/* ADDRESS                                      */}
+{/* -------------------------------------------- */}
 
-      {!isServiceCart &&
-      isTakeaway ? (
+{!isServiceCart && isTakeaway ? (
 
-        <div
-          className="takeaway-info"
-          style={{
-            marginBottom: '1em',
-            color: 'blue',
+  <div
+    className="takeaway-info"
+    style={{
+      marginBottom: '1em',
+      color: 'blue',
+    }}
+  >
+    <strong>
+      Your order total is less than ₹
+      {minOrderValue}
+    </strong>
+
+    {' — '}
+
+    please pick it up from the shop
+    and pay there.
+  </div>
+
+) : addresses.length > 0 ? (
+
+  <div className="address-list">
+
+    <h3>
+      {isServiceCart
+        ? 'Select Service Address'
+        : 'Select Delivery Address'}
+    </h3>
+
+    {addresses.map((addr) => (
+
+      <div
+        key={addr.id}
+        className="address-item-wrapper"
+      >
+
+        <label className="address-item">
+
+          <input
+            type="radio"
+            name="selectedAddress"
+            value={addr.id}
+            checked={
+              address?.id === addr.id
+            }
+            onChange={() =>
+              setAddress(addr)
+            }
+          />
+
+          <div>
+            {addr.name},{' '}
+            {addr.street},{' '}
+            {addr.city} -{' '}
+            {addr.zip}
+
+            <br />
+
+            Phone:{' '}
+            {addr.phone}
+          </div>
+
+        </label>
+
+        <button
+          className="edit-address-btn"
+          onClick={() => {
+            setTempAddress(addr);
+            setShowAddressPopup(true);
           }}
         >
-          <strong>
-            Your order total is less than ₹
-            {minOrderValue}
-          </strong>
+          Edit
+        </button>
 
-          {' — '}
+      </div>
 
-          please pick it up from the shop
-          and pay there.
+    ))}
 
-        </div>
+    <button
+      className="add-new-address-btn"
+      onClick={() => {
+        setTempAddress({
+          name: '',
+          street: '',
+          city: '',
+          zip: '',
+          phone: '',
+        });
 
-      ) : !isServiceCart &&
-        addresses.length > 0 ? (
+        setShowAddressPopup(true);
+      }}
+    >
+      ➕ Add New Address
+    </button>
 
-        <div className="address-list">
+  </div>
 
-          <h3>
-            Select Delivery Address
-          </h3>
+) : (
 
-          {addresses.map((addr) => (
+  initialAddressLoadComplete && (
 
-            <div
-              key={addr.id}
-              className="address-item-wrapper"
-            >
+    <button
+      onClick={() =>
+        setShowAddressPopup(true)
+      }
+    >
+      {isServiceCart
+        ? 'Add Service Address'
+        : 'Add Delivery Address'}
+    </button>
 
-              <label className="address-item">
+  )
 
-                <input
-                  type="radio"
-                  name="selectedAddress"
-                  value={addr.id}
-                  checked={
-                    address?.id ===
-                    addr.id
-                  }
-                  onChange={() =>
-                    setAddress(addr)
-                  }
-                />
-
-                <div>
-                  {addr.name},{' '}
-                  {addr.street},{' '}
-                  {addr.city} -{' '}
-                  {addr.zip}
-
-                  <br />
-
-                  Phone:{' '}
-                  {addr.phone}
-                </div>
-
-              </label>
-
-              <button
-                className="edit-address-btn"
-                onClick={() => {
-                  setTempAddress(
-                    addr
-                  );
-
-                  setShowAddressPopup(
-                    true
-                  );
-                }}
-              >
-                Edit
-              </button>
-
-            </div>
-
-          ))}
-
-          <button
-            className="add-new-address-btn"
-            onClick={() => {
-              setTempAddress({
-                name: '',
-                street: '',
-                city: '',
-                zip: '',
-                phone: '',
-              });
-
-              setShowAddressPopup(
-                true
-              );
-            }}
-          >
-            ➕ Add New Address
-          </button>
-
-        </div>
-
-      ) : (
-
-        !isServiceCart &&
-        initialAddressLoadComplete && (
-
-          <button
-            onClick={() =>
-              setShowAddressPopup(
-                true
-              )
-            }
-          >
-            Add Delivery Address
-          </button>
-
-        )
-
-      )}
+)}
 
       {/* -------------------------------------------- */}
       {/* MIN ORDER WARNING                            */}
