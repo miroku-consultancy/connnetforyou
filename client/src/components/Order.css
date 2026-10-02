@@ -355,3 +355,68 @@
   font-style: italic;
   margin-left: 6px;
 }
+/* =========================================
+   SERVICE ORDER DETAILS
+========================================= */
+
+.order-service-details {
+  margin-top: 10px;
+  padding: 12px 14px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+
+  color: #475569;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.order-service-details > div {
+  margin-bottom: 5px;
+}
+
+.order-service-details > div:last-child {
+  margin-bottom: 0;
+}
+
+.order-service-details strong {
+  color: #334155;
+  font-weight: 600;
+}
+
+.order-service-quantity {
+  margin-top: 8px;
+  color: #047857;
+  font-weight: 700;
+}
+
+
+/* =========================================
+   SERVICE ORDER ROW
+========================================= */
+
+.order-row:has(.order-service-details) {
+  align-items: flex-start;
+}
+
+.order-row:has(.order-service-details) .order-img {
+  margin-top: 4px;
+}
+
+
+/* =========================================
+   SERVICE CART MOBILE
+========================================= */
+
+@media (max-width: 500px) {
+
+  .order-service-details {
+    font-size: 0.82rem;
+    padding: 10px 12px;
+  }
+
+  .order-service-details > div {
+    word-break: break-word;
+  }
+
+}
