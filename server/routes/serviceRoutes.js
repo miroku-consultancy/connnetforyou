@@ -41,6 +41,17 @@ const upload = multer({
   }
 });
 
+router.get(
+  '/my-services',
+  authMiddleware,
+  (req, res, next) => {
+    console.log('🔥🔥🔥 MY-SERVICES AFTER AUTH 🔥🔥🔥');
+    console.log('USER:', req.user);
+    next();
+  },
+  serviceController.getMyServices
+);
+
 // Public marketplace
 router.get("/", (req, res, next) => {
     console.log("🔥 SERVICES ROUTER HIT");
