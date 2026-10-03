@@ -42,11 +42,6 @@ const MyBusiness = () => {
 
       console.log("[MyBusiness] Vendor shop:", data);
 
-      /*
-       * /api/shops/vendor may return either:
-       * - a shop object
-       * - an array of shops
-       */
       const currentShop = Array.isArray(data)
         ? data[0]
         : data;
@@ -81,6 +76,9 @@ const MyBusiness = () => {
 
   const getStatusLabel = (status) => {
     switch (status) {
+      case "draft":
+        return "Draft";
+
       case "pending":
         return "Under Review";
 
@@ -105,6 +103,68 @@ const MyBusiness = () => {
 
     navigate("/products");
   };
+
+  const handleCompleteStore = () => {
+    if (!shop) return;
+
+    if (shop.store_type === "service") {
+      navigate("/my-service-store");
+      return;
+    }
+
+    navigate("/products");
+  };
+
+  const handleSubmitForApproval = async () => {
+  if (!shop) return;
+
+  try {
+    const token = localStorage.getItem("authToken");
+
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    const response = await fetch(
+      `${secondaryApiUrl}/api/shops/submit-for-approval`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error ||
+          data.message ||
+          "Failed to submit store for approval"
+      );
+    }
+
+    alert(
+      "Your store has been submitted successfully for admin approval."
+    );
+
+    // Refresh store status
+    await loadMyBusiness();
+
+  } catch (err) {
+    console.error(
+      "Submit store for approval error:",
+      err
+    );
+
+    alert(
+      err.message ||
+        "Unable to submit store for approval."
+    );
+  }
+};
 
   if (loading) {
     return (
@@ -156,6 +216,7 @@ const MyBusiness = () => {
       {shop && (
         <div className="my-business-card">
 
+          {/* Store Header */}
           <div className="my-business-card-header">
 
             {shop.image_url && (
@@ -178,10 +239,12 @@ const MyBusiness = () => {
 
           </div>
 
+          {/* Store Details */}
           <div className="my-business-details">
 
             <div className="my-business-detail">
               <span>Store Name</span>
+
               <strong>
                 {shop.name}
               </strong>
@@ -189,6 +252,7 @@ const MyBusiness = () => {
 
             <div className="my-business-detail">
               <span>Store Type</span>
+
               <strong>
                 {getStoreTypeLabel(
                   shop.store_type
@@ -198,6 +262,7 @@ const MyBusiness = () => {
 
             <div className="my-business-detail">
               <span>Store Slug</span>
+
               <strong>
                 {shop.slug}
               </strong>
@@ -207,17 +272,63 @@ const MyBusiness = () => {
               <span>Status</span>
 
               <strong
-                className={`business-status ${shop.status}`}
+                className={`business-status ${
+                  shop.tenant_status || ""
+                }`}
               >
                 {getStatusLabel(
-                  shop.status
+                  shop.tenant_status
                 )}
               </strong>
             </div>
 
           </div>
 
-          {shop.status === "pending" && (
+
+          {/* =========================
+              DRAFT
+             ========================= */}
+          {shop.tenant_status === "draft" && (
+            <div className="business-review-message">
+
+              <h3>
+                Complete your store
+              </h3>
+
+              <p>
+                Your store is currently saved
+                as a draft. Add all your products
+                or services before submitting your
+                store for admin approval.
+              </p>
+
+              <div className="my-business-actions">
+
+                <button
+                  onClick={handleCompleteStore}
+                >
+                  {shop.store_type === "service"
+                    ? "Add Services"
+                    : "Add Products"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleSubmitForApproval}
+                >
+                  Submit Store for Approval
+                </button>
+
+              </div>
+
+            </div>
+          )}
+
+
+          {/* =========================
+              PENDING
+             ========================= */}
+          {shop.tenant_status === "pending" && (
             <div className="business-review-message">
 
               <h3>
@@ -226,15 +337,19 @@ const MyBusiness = () => {
 
               <p>
                 Your store has been submitted
-                successfully. JusPing admin will
-                review the store information before
-                it becomes active.
+                for admin approval. Once approved,
+                your JusPing store will become
+                active.
               </p>
 
             </div>
           )}
 
-          {shop.status === "rejected" && (
+
+          {/* =========================
+              REJECTED
+             ========================= */}
+          {shop.tenant_status === "rejected" && (
             <div className="business-review-message">
 
               <h3>
@@ -244,13 +359,27 @@ const MyBusiness = () => {
               <p>
                 Please update your store
                 information and submit it again
-                for review.
+                for admin approval.
               </p>
+
+              <div className="my-business-actions">
+
+                <button
+                  onClick={handleCompleteStore}
+                >
+                  Update Store
+                </button>
+
+              </div>
 
             </div>
           )}
 
-          {shop.status === "active" && (
+
+          {/* =========================
+              ACTIVE
+             ========================= */}
+          {shop.tenant_status === "active" && (
             <div className="my-business-actions">
 
               <button

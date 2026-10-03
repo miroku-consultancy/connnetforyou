@@ -5,16 +5,17 @@ import { secondaryApiUrl } from "../config/apiConfig";
 
 const CreateStore = () => {
   const navigate = useNavigate();
-  useEffect(() => {
-  const token = localStorage.getItem("authToken");
 
-  if (!token) {
-    navigate(
-      `/login?redirect=${encodeURIComponent("/create-store")}`,
-      { replace: true }
-    );
-  }
-}, [navigate]);
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+
+    if (!token) {
+      navigate(
+        `/login?redirect=${encodeURIComponent("/create-store")}`,
+        { replace: true }
+      );
+    }
+  }, [navigate]);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -41,70 +42,84 @@ const CreateStore = () => {
     }));
   };
 
+  const handleStoreTypeChange = (storeType) => {
+    setFormData((prev) => ({
+      ...prev,
+      storeType,
+    }));
+
+    setErrors((prev) => ({
+      ...prev,
+      storeType: "",
+    }));
+  };
+
   const handleSubmit = async (event) => {
-  event.preventDefault();
+    event.preventDefault();
 
-  const token = localStorage.getItem("authToken");
+    const token = localStorage.getItem("authToken");
 
-  if (!token) {
-    navigate(
-      `/login?redirect=${encodeURIComponent("/create-store")}`
-    );
-    return;
-  }
-
-  const newErrors = {};
-
-  if (!formData.name.trim()) {
-    newErrors.name = "Store name is required";
-  }
-
-  if (!formData.storeType) {
-    newErrors.storeType = "Please select your store type";
-  }
-
-  if (Object.keys(newErrors).length > 0) {
-    setErrors(newErrors);
-    return;
-  }
-
-  try {
-    const response = await fetch(
-      `${secondaryApiUrl}/api/shops/create`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(formData),
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      setErrors({
-        submit: data.error || "Failed to create store",
-      });
+    if (!token) {
+      navigate(
+        `/login?redirect=${encodeURIComponent("/create-store")}`
+      );
       return;
     }
 
-    alert("Store submitted successfully for review.");
-    navigate("/my-business");
-  } catch (error) {
-    console.error("Create store error:", error);
+    const newErrors = {};
 
-    setErrors({
-      submit: "Unable to create store. Please try again.",
-    });
-  }
-};
+    if (!formData.name.trim()) {
+      newErrors.name = "Store name is required";
+    }
+
+    if (!formData.storeType) {
+      newErrors.storeType = "Please select your store type";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${secondaryApiUrl}/api/shops/create`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setErrors({
+          submit: data.error || "Failed to create store",
+        });
+        return;
+      }
+
+      alert(
+        "Store created successfully. Now add your products or services."
+      );
+
+      navigate("/my-business");
+    } catch (error) {
+      console.error("Create store error:", error);
+
+      setErrors({
+        submit: "Unable to create store. Please try again.",
+      });
+    }
+  };
 
   return (
     <div className="jp-create-store-page">
       <div className="jp-create-store-card">
-        {/* HEADER */}
         <div className="jp-create-store-header">
           <button
             type="button"
@@ -121,7 +136,7 @@ const CreateStore = () => {
         </div>
 
         <form onSubmit={handleSubmit}>
-          {/* STORE NAME */}
+          {/* Store Name */}
           <div className="jp-form-group">
             <label>
               Store Name <span>*</span>
@@ -137,11 +152,13 @@ const CreateStore = () => {
             />
 
             {errors.name && (
-              <small className="jp-form-error">{errors.name}</small>
+              <small className="jp-form-error">
+                {errors.name}
+              </small>
             )}
           </div>
 
-          {/* STORE TYPE */}
+          {/* Store Type */}
           <div className="jp-form-group">
             <label>
               What do you want to offer? <span>*</span>
@@ -153,12 +170,7 @@ const CreateStore = () => {
                 className={`jp-store-type ${
                   formData.storeType === "product" ? "active" : ""
                 }`}
-                onClick={() =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    storeType: "product",
-                  }))
-                }
+                onClick={() => handleStoreTypeChange("product")}
               >
                 <div className="jp-store-type-icon product">
                   🛒
@@ -177,12 +189,7 @@ const CreateStore = () => {
                 className={`jp-store-type ${
                   formData.storeType === "service" ? "active" : ""
                 }`}
-                onClick={() =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    storeType: "service",
-                  }))
-                }
+                onClick={() => handleStoreTypeChange("service")}
               >
                 <div className="jp-store-type-icon service">
                   🔧
@@ -204,7 +211,7 @@ const CreateStore = () => {
             )}
           </div>
 
-          {/* ADDRESS */}
+          {/* Address */}
           <div className="jp-form-group">
             <label>Address</label>
 
@@ -217,7 +224,7 @@ const CreateStore = () => {
             />
           </div>
 
-          {/* PHONE */}
+          {/* Phone */}
           <div className="jp-form-group">
             <label>Phone</label>
 
@@ -231,7 +238,7 @@ const CreateStore = () => {
             />
           </div>
 
-          {/* TIMINGS */}
+          {/* Opening / Closing Time */}
           <div className="jp-time-grid">
             <div className="jp-form-group">
               <label>Opening Time</label>
@@ -256,25 +263,32 @@ const CreateStore = () => {
             </div>
           </div>
 
-          {/* INFO */}
+          {/* Draft Information */}
           <div className="jp-review-info">
             <div className="jp-review-icon">✓</div>
 
             <div>
-              <strong>Admin review required</strong>
+              <strong>Complete your store</strong>
 
               <p>
-                Your store will be submitted for review before it
-                becomes visible to customers.
+                Your store will be saved as a draft. Add your
+                products or services and submit the complete store
+                for admin approval when you're ready.
               </p>
             </div>
           </div>
-{errors.submit && (
-  <div className="jp-form-error" style={{ marginBottom: "15px" }}>
-    {errors.submit}
-  </div>
-)}
-          {/* ACTIONS */}
+
+          {/* Submit Error */}
+          {errors.submit && (
+            <div
+              className="jp-form-error"
+              style={{ marginBottom: "15px" }}
+            >
+              {errors.submit}
+            </div>
+          )}
+
+          {/* Actions */}
           <div className="jp-create-store-actions">
             <button
               type="button"
