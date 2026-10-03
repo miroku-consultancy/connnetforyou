@@ -33,13 +33,19 @@ const MyServiceStore = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || data.message || "Failed to load services");
+        throw new Error(
+          data.error ||
+            data.message ||
+            "Failed to load services"
+        );
       }
 
       setServices(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Load my services error:", err);
-      setError(err.message || "Failed to load services");
+      setError(
+        err.message || "Failed to load services"
+      );
     } finally {
       setLoading(false);
     }
@@ -100,7 +106,11 @@ const MyServiceStore = () => {
       {!error && services.length === 0 && (
         <div className="empty-services">
           <h3>No services yet</h3>
-          <p>Add your first service to submit it for review.</p>
+
+          <p>
+            Add your first service to submit it
+            for review.
+          </p>
 
           <button
             onClick={() => navigate("/add-service")}

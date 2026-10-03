@@ -1,13 +1,12 @@
-
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "./AddService.css";
 
-const API_BASE_URL = "https://connnet4you-server.onrender.com";
+const API_BASE_URL =
+  "https://connnet4you-server.onrender.com";
 
 const AddService = () => {
   const navigate = useNavigate();
-  const { shopSlug } = useParams();
 
   const [form, setForm] = useState({
     title: "",
@@ -32,15 +31,20 @@ const AddService = () => {
           `${API_BASE_URL}/api/categories`
         );
 
-        if (!response.ok) return;
+        if (!response.ok) {
+          return;
+        }
 
         const data = await response.json();
 
-        // Adjust this if your category API returns
-        // a different response structure.
-        setCategories(Array.isArray(data) ? data : []);
+        setCategories(
+          Array.isArray(data) ? data : []
+        );
       } catch (err) {
-        console.error("Failed to load categories:", err);
+        console.error(
+          "Failed to load categories:",
+          err
+        );
       }
     };
 
@@ -59,7 +63,9 @@ const AddService = () => {
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
 
-    if (!file) return;
+    if (!file) {
+      return;
+    }
 
     if (!file.type.startsWith("image/")) {
       setError("Please select a valid image.");
@@ -67,7 +73,9 @@ const AddService = () => {
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      setError("Image size must be less than 5 MB.");
+      setError(
+        "Image size must be less than 5 MB."
+      );
       return;
     }
 
@@ -81,31 +89,64 @@ const AddService = () => {
     setError("");
 
     if (!token) {
-      setError("Please log in to add a service.");
+      setError(
+        "Please log in to add a service."
+      );
+      return;
+    }
+
+    if (!form.title.trim()) {
+      setError(
+        "Please enter a service name."
+      );
       return;
     }
 
     if (
       form.pricing_type !== "quote" &&
-      (form.price === "" || Number(form.price) < 0)
+      (form.price === "" ||
+        Number(form.price) < 0)
     ) {
-      setError("Please enter a valid service price.");
+      setError(
+        "Please enter a valid service price."
+      );
       return;
     }
 
     const formData = new FormData();
 
-    formData.append("title", form.title.trim());
-    formData.append("description", form.description);
-    formData.append("category", form.category);
-    formData.append("pricing_type", form.pricing_type);
+    formData.append(
+      "title",
+      form.title.trim()
+    );
+
+    formData.append(
+      "description",
+      form.description
+    );
+
+    formData.append(
+      "category",
+      form.category
+    );
+
+    formData.append(
+      "pricing_type",
+      form.pricing_type
+    );
 
     if (form.pricing_type !== "quote") {
-      formData.append("price", form.price);
+      formData.append(
+        "price",
+        form.price
+      );
     }
 
     if (image) {
-      formData.append("image", image);
+      formData.append(
+        "image",
+        image
+      );
     }
 
     try {
@@ -126,22 +167,33 @@ const AddService = () => {
 
       if (!response.ok) {
         throw new Error(
-          data.message || "Failed to create service."
+          data.message ||
+            data.error ||
+            "Failed to create service."
         );
       }
 
-      alert(
-        "Service created successfully! It is currently saved as a draft."
+      console.log(
+        "Service created:",
+        data
       );
 
-      navigate(
-        shopSlug
-          ? `/${shopSlug}/services`
-          : "/services"
+      alert(
+        "Service submitted successfully for review."
       );
+
+      navigate("/my-service-store");
+
     } catch (err) {
-      console.error("Create service error:", err);
-      setError(err.message || "Something went wrong.");
+      console.error(
+        "Create service error:",
+        err
+      );
+
+      setError(
+        err.message ||
+          "Something went wrong."
+      );
     } finally {
       setLoading(false);
     }
@@ -149,12 +201,15 @@ const AddService = () => {
 
   return (
     <div className="service-form-page">
+
       <div className="service-form-card">
+
         <div className="service-form-heading">
           <h2>Add a Service</h2>
+
           <p>
-            Showcase your service on JusPing and reach
-            more customers.
+            Showcase your service on JusPing
+            and reach more customers.
           </p>
         </div>
 
@@ -165,8 +220,12 @@ const AddService = () => {
         )}
 
         <form onSubmit={handleSubmit}>
+
           <div className="service-form-group">
-            <label>Service Name *</label>
+            <label>
+              Service Name *
+            </label>
+
             <input
               type="text"
               name="title"
@@ -179,7 +238,10 @@ const AddService = () => {
           </div>
 
           <div className="service-form-group">
-            <label>Description</label>
+            <label>
+              Description
+            </label>
+
             <textarea
               name="description"
               value={form.description}
@@ -190,14 +252,19 @@ const AddService = () => {
           </div>
 
           <div className="service-form-group">
-            <label>Category</label>
+
+            <label>
+              Category
+            </label>
 
             <select
               name="category"
               value={form.category}
               onChange={handleChange}
             >
-              <option value="">Select category</option>
+              <option value="">
+                Select category
+              </option>
 
               {categories.map((category) => (
                 <option
@@ -209,33 +276,40 @@ const AddService = () => {
               ))}
             </select>
 
-            <small>
-              Categories depend on the response from
-              your existing categories API.
-            </small>
           </div>
 
           <div className="service-form-group">
-            <label>Pricing Type *</label>
+
+            <label>
+              Pricing Type *
+            </label>
 
             <select
               name="pricing_type"
               value={form.pricing_type}
               onChange={handleChange}
             >
-              <option value="fixed">Fixed Price</option>
+              <option value="fixed">
+                Fixed Price
+              </option>
+
               <option value="starting_from">
                 Starting From
               </option>
+
               <option value="quote">
                 Contact for Quote
               </option>
             </select>
+
           </div>
 
           {form.pricing_type !== "quote" && (
             <div className="service-form-group">
-              <label>Price (₹) *</label>
+
+              <label>
+                Price (₹) *
+              </label>
 
               <input
                 type="number"
@@ -247,11 +321,15 @@ const AddService = () => {
                 placeholder="Enter price"
                 required
               />
+
             </div>
           )}
 
           <div className="service-form-group">
-            <label>Service Image</label>
+
+            <label>
+              Service Image
+            </label>
 
             <input
               type="file"
@@ -261,15 +339,19 @@ const AddService = () => {
 
             {preview && (
               <div className="service-image-preview">
+
                 <img
                   src={preview}
                   alt="Service preview"
                 />
+
               </div>
             )}
+
           </div>
 
           <div className="service-form-actions">
+
             <button
               type="button"
               className="service-btn-secondary"
@@ -284,11 +366,17 @@ const AddService = () => {
               className="service-btn-primary"
               disabled={loading}
             >
-              {loading ? "Saving..." : "Add Service"}
+              {loading
+                ? "Submitting..."
+                : "Submit for Review"}
             </button>
+
           </div>
+
         </form>
+
       </div>
+
     </div>
   );
 };
