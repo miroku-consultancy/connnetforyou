@@ -14,11 +14,18 @@ export const TenantProvider = ({ children }) => {
     const domain = window.location.hostname.toLowerCase();
 
     // Root JusPing platform domain — not a tenant
-    if (domain === "jusping.com" || domain === "www.jusping.com") {
-      setTenant(null);
-      setLoading(false);
-      return;
-    }
+    // Root JusPing platform domain / local development — not a tenant
+if (
+  domain === "jusping.com" ||
+  domain === "www.jusping.com" ||
+  domain === "localhost" ||
+  domain === "127.0.0.1"
+) {
+  setTenant(null);
+  setError(null);
+  setLoading(false);
+  return;
+}
 
     try {
       setLoading(true);
