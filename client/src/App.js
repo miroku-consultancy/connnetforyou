@@ -48,6 +48,7 @@ import ServiceDetails from "./pages/ServiceDetails";
 import ServiceBooking from "./pages/ServiceBooking";
 import CreateStore from "./pages/CreateStore";
 import MyServiceStore from "./pages/MyServiceStore";
+import MyBusiness from "./pages/MyBusiness";
 //import Banner from './components/Banner';
 
 
@@ -159,6 +160,11 @@ const AppRoutes = () => (
 <Route
   path="/my-service-store"
   element={<MyServiceStore />}
+/>
+
+<Route
+  path="/my-business"
+  element={<MyBusiness />}
 />
         {/* <Route
     path="/chat/:recipientId/:recipientName"

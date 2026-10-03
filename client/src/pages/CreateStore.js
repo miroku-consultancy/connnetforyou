@@ -91,7 +91,7 @@ const CreateStore = () => {
     }
 
     alert("Store submitted successfully for review.");
-    navigate("/");
+    navigate("/my-business");
   } catch (error) {
     console.error("Create store error:", error);
 
