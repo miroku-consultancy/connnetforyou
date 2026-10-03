@@ -119,7 +119,15 @@ const AppRoutes = () => (
 
 {/* Add service under a shop's tenant website */}
 <Route
+  path="/add-service"
+  element={<AddService />}
+/>
+<Route
   path="/:shopSlug/add-service"
+  element={<AddService />}
+/>
+<Route
+  path="/add-service"
   element={<AddService />}
 />
 <Route
