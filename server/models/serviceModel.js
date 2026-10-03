@@ -1,6 +1,36 @@
 const pool = require("../db");
 
 const serviceModel = {
+
+  // Get all services belonging to one shop
+async getServicesByShop({ shopId }) {
+  const { rows } = await pool.query(
+    `
+    SELECT
+      s.id,
+      s.shop_id,
+      s.title,
+      s.description,
+      s.category,
+      s.price,
+      s.pricing_type,
+      s.image_url,
+      s.status,
+      s.created_at,
+      s.updated_at,
+      sh.name AS business_name,
+      sh.slug AS shop_slug
+    FROM services s
+    JOIN shops sh
+      ON sh.id = s.shop_id
+    WHERE s.shop_id = $1
+    ORDER BY s.created_at DESC
+    `,
+    [shopId]
+  );
+
+  return rows;
+},
   // Get published services for the public marketplace
   async getPublishedServices({ shopId, category, search } = {}) {
     const values = [];

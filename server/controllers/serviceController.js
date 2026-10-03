@@ -4,6 +4,32 @@ const getShopId = (req) => {
   return req.user?.shop_id;
 };
 
+// Vendor: get all services belonging to the active shop
+exports.getMyServices = async (req, res) => {
+  try {
+    const shopId = getShopId(req);
+
+    if (!shopId) {
+      return res.status(403).json({
+        message: "Your account is not linked to a shop"
+      });
+    }
+
+    const services = await serviceModel.getServicesByShop({
+      shopId: Number(shopId)
+    });
+
+    return res.status(200).json(services);
+
+  } catch (error) {
+    console.error("Get my services error:", error);
+
+    return res.status(500).json({
+      message: "Failed to fetch your services"
+    });
+  }
+};
+
 exports.getServices = async (req, res) => {
   try {
     const shopId = req.query.shopId || req.query.shop_id;
