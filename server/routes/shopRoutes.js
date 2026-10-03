@@ -45,7 +45,15 @@ router.get('/vendor', async (req, res) => {
       });
     }
 
-    const token = authHeader.split(' ')[1];
+    const parts = authHeader.split(' ');
+
+    if (parts.length !== 2 || parts[0] !== 'Bearer') {
+      return res.status(401).json({
+        error: 'Invalid authorization format'
+      });
+    }
+
+    const token = parts[1];
 
     const decoded = jwt.verify(
       token,
@@ -54,40 +62,76 @@ router.get('/vendor', async (req, res) => {
 
     console.log('Decoded JWT:', decoded);
 
-    if (decoded.role !== 'vendor') {
-      return res.status(403).json({
-        error: 'Unauthorized vendor access'
+    const userId = decoded.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        error: 'Invalid user information in token'
       });
     }
 
-    const shopId = decoded.shop_id;
+    /*
+     * Find the vendor store for this user.
+     *
+     * If the JWT already points to a vendor shop,
+     * prefer that shop.
+     *
+     * Otherwise, find the user's vendor shop from
+     * user_shop_roles.
+     */
+    let result;
 
-    if (!shopId) {
-      return res.status(400).json({
-        error: 'No shop selected'
-      });
+    if (decoded.shop_id) {
+      result = await pool.query(
+        `
+        SELECT
+          s.*,
+          t.status AS tenant_status,
+          usr.role
+        FROM shops s
+        INNER JOIN user_shop_roles usr
+          ON usr.shop_id = s.id
+         AND usr.user_id = $1
+        LEFT JOIN tenants t
+          ON t.shop_id = s.id
+        WHERE s.id = $2
+          AND usr.role = 'vendor'
+        LIMIT 1
+        `,
+        [userId, decoded.shop_id]
+      );
     }
 
-    console.log('Fetching shop for shopId:', shopId);
+    /*
+     * Root/customer JWT or selected shop is not a vendor.
+     * Find the user's vendor store.
+     */
+    if (!result || result.rows.length === 0) {
+      result = await pool.query(
+        `
+        SELECT
+          s.*,
+          t.status AS tenant_status,
+          usr.role
+        FROM shops s
+        INNER JOIN user_shop_roles usr
+          ON usr.shop_id = s.id
+         AND usr.user_id = $1
+         AND usr.role = 'vendor'
+        LEFT JOIN tenants t
+          ON t.shop_id = s.id
+        ORDER BY usr.id ASC
+        LIMIT 1
+        `,
+        [userId]
+      );
+    }
 
-    const result = await pool.query(
-      `
-      SELECT
-        s.*,
-        t.status AS tenant_status
-      FROM shops s
-      LEFT JOIN tenants t
-        ON t.shop_id = s.id
-      WHERE s.id = $1
-      `,
-      [shopId]
-    );
-
-    console.log('DB result rows:', result.rows);
+    console.log('Vendor DB result:', result.rows);
 
     if (result.rows.length === 0) {
       return res.status(404).json({
-        error: 'Shop not found'
+        error: 'No vendor store found for this user'
       });
     }
 
@@ -96,7 +140,19 @@ router.get('/vendor', async (req, res) => {
   } catch (err) {
     console.error('🛑 Vendor fetch error:', err);
 
-    res.status(500).json({
+    if (err.name === 'TokenExpiredError') {
+      return res.status(403).json({
+        error: 'Token expired'
+      });
+    }
+
+    if (err.name === 'JsonWebTokenError') {
+      return res.status(403).json({
+        error: 'Invalid token'
+      });
+    }
+
+    return res.status(500).json({
       error: 'Server error',
       message: err.message
     });
