@@ -123,6 +123,10 @@ const AppRoutes = () => (
   path="/service-booking"
   element={<ServiceBooking />}
 />
+<Route
+  path="/admin/add-service"
+  element={<AddService />}
+/>
 {/* Services under a shop's tenant website */}
 <Route
   path="/:shopSlug/services"

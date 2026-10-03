@@ -1,67 +1,375 @@
+/* ==========================================
+   JusPing MenuBar
+========================================== */
+
+.jp-menu {
+  width: 100%;
+  position: relative;
+  z-index: 1000;
+}
+
 .nav-list {
   list-style: none;
-  display: flex;
-  gap: 16px;
-  padding: 10px 20px;
   margin: 0;
-  /* background: #1e1e2f; */
-  border-radius: 8px;
+  padding: 8px 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-wrap: wrap;
-  z-index: 100;
+
+  gap: 4px;
 }
 
 .nav-item {
   position: relative;
 }
 
-.nav-link-wrapper {
-  position: relative;
-  display: inline-block;
-}
+/* ==========================================
+   Main navigation
+========================================== */
 
-.nav-link {
-  color: #ffffff;
+.menu-main-button,
+.menu-main-link {
+  min-height: 42px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  padding: 9px 14px;
+
+  border: 0;
+  border-radius: 10px;
+
+  background: transparent;
+
+  color: inherit;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+
   text-decoration: none;
-  padding: 8px 12px;
-  border-radius: 6px;
-  transition: all 0.2s ease;
+
   cursor: pointer;
-  display: inline-block;
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
 }
 
-.nav-link:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+.menu-main-button:hover,
+.menu-main-button.active,
+.menu-main-link:hover {
+  background: rgba(0, 0, 0, 0.06);
 }
 
-.dropdown {
+.menu-main-button:focus-visible,
+.menu-main-link:focus-visible,
+.menu-dropdown-item:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.35);
+  outline-offset: 2px;
+}
+
+/* ==========================================
+   Icons
+========================================== */
+
+.menu-main-icon {
+  width: 18px;
+  height: 18px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+}
+
+.menu-chevron {
+  width: 10px;
+  height: 10px;
+
+  transition: transform 0.2s ease;
+}
+
+.menu-chevron.rotated {
+  transform: rotate(180deg);
+}
+
+/* ==========================================
+   User avatar
+========================================== */
+
+.menu-avatar {
+  width: 28px;
+  height: 28px;
+
+  border-radius: 50%;
+
+  object-fit: cover;
+
+  border: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+/* ==========================================
+   Dropdown
+========================================== */
+
+.menu-dropdown {
   position: absolute;
-  top: 40px;
+
+  top: calc(100% + 6px);
   left: 0;
-  background: white;
-  color: #333;
-  padding: 8px 0;
-  border-radius: 8px;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-  min-width: 180px;
-  z-index: 999;
+
+  min-width: 220px;
+
+  padding: 7px;
+
+  background: #ffffff;
+
+  border: 1px solid rgba(0, 0, 0, 0.08);
+
+  border-radius: 14px;
+
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.12),
+    0 3px 8px rgba(0, 0, 0, 0.06);
+
+  animation: menuDropdownIn 0.16s ease-out;
+
+  transform-origin: top left;
 }
 
-.dropdown-item {
-  padding: 8px 16px;
-  cursor: pointer;
+@keyframes menuDropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ==========================================
+   Dropdown items
+========================================== */
+
+.menu-dropdown-item,
+.menu-dropdown-description {
+  width: 100%;
+  min-height: 42px;
+
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+
+  gap: 11px;
+
+  padding: 9px 11px;
+
+  border-radius: 9px;
+
+  color: #202124;
+
+  font-size: 14px;
+  font-weight: 500;
+
   text-decoration: none;
-  color: #333;
-  display: block;
+
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease;
 }
 
-.dropdown-item:hover {
-  background-color: #f5f5f5;
+.menu-dropdown-item:hover {
+  background: #f3f6fa;
+  color: #111827;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
+.menu-dropdown-description {
+  cursor: default;
+  color: #5f6368;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.menu-dropdown-icon {
+  width: 18px;
+
+  display: inline-flex;
+  justify-content: center;
+
+  color: #6b7280;
+
+  flex-shrink: 0;
+}
+
+.menu-dropdown-label {
+  flex: 1;
+}
+
+/* ==========================================
+   Divider
+========================================== */
+
+.menu-dropdown-divider {
+  height: 1px;
+
+  margin: 6px 4px;
+
+  background: #e5e7eb;
+}
+
+/* ==========================================
+   Logout
+========================================== */
+
+.menu-logout {
+  width: 100%;
+}
+
+.menu-logout button {
+  width: 100%;
+
+  min-height: 42px;
+
+  display: flex;
+  align-items: center;
+
+  padding: 9px 11px;
+
+  border: 0;
+  border-radius: 9px;
+
+  background: transparent;
+
+  color: #202124;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.menu-logout button:hover {
+  background: #fef2f2;
+}
+
+/* ==========================================
+   Vendor menu
+========================================== */
+
+.vendor-menu-item
+  .menu-main-button {
+  font-weight: 650;
+}
+
+/* ==========================================
+   Tablet
+========================================== */
+
+@media (max-width: 900px) {
   .nav-list {
+    justify-content: flex-start;
+    padding: 8px 10px;
+  }
+
+  .menu-main-button,
+  .menu-main-link {
+    padding: 9px 11px;
+    font-size: 13px;
+  }
+}
+
+/* ==========================================
+   Mobile
+========================================== */
+
+@media (max-width: 640px) {
+  .nav-list {
+    width: 100%;
+
+    display: flex;
     flex-direction: column;
-    gap: 10px;
+    align-items: stretch;
+
+    gap: 3px;
+
+    padding: 8px;
+  }
+
+  .nav-item {
+    width: 100%;
+  }
+
+  .menu-main-button,
+  .menu-main-link {
+    width: 100%;
+
+    min-height: 46px;
+
+    justify-content: flex-start;
+
+    padding: 11px 13px;
+
+    border-radius: 10px;
+  }
+
+  .menu-chevron {
+    margin-left: auto;
+  }
+
+  .menu-dropdown {
+    position: static;
+
+    width: 100%;
+    min-width: 0;
+
+    margin-top: 3px;
+
+    box-sizing: border-box;
+
+    border-radius: 10px;
+
+    box-shadow: none;
+
+    background: rgba(0, 0, 0, 0.025);
+
+    border: 1px solid rgba(0, 0, 0, 0.06);
+
+    animation: none;
+  }
+
+  .menu-dropdown-item,
+  .menu-dropdown-description {
+    min-height: 44px;
+  }
+}
+
+/* ==========================================
+   Reduced motion
+========================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-main-button,
+  .menu-main-link,
+  .menu-dropdown-item,
+  .menu-chevron {
+    transition: none;
+  }
+
+  .menu-dropdown {
+    animation: none;
   }
 }
