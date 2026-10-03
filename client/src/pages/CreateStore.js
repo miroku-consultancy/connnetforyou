@@ -1,10 +1,20 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./CreateStore.css";
 import { secondaryApiUrl } from "../config/apiConfig";
 
 const CreateStore = () => {
   const navigate = useNavigate();
+  useEffect(() => {
+  const token = localStorage.getItem("authToken");
+
+  if (!token) {
+    navigate(
+      `/login?redirect=${encodeURIComponent("/create-store")}`,
+      { replace: true }
+    );
+  }
+}, [navigate]);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -32,38 +42,64 @@ const CreateStore = () => {
   };
 
   const handleSubmit = async (event) => {
-    event.preventDefault();
+  event.preventDefault();
 
-    const newErrors = {};
+  const token = localStorage.getItem("authToken");
 
-    if (!formData.name.trim()) {
-      newErrors.name = "Store name is required";
-    }
+  if (!token) {
+    navigate(
+      `/login?redirect=${encodeURIComponent("/create-store")}`
+    );
+    return;
+  }
 
-    if (!formData.storeType) {
-      newErrors.storeType = "Please select your store type";
-    }
+  const newErrors = {};
 
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+  if (!formData.name.trim()) {
+    newErrors.name = "Store name is required";
+  }
+
+  if (!formData.storeType) {
+    newErrors.storeType = "Please select your store type";
+  }
+
+  if (Object.keys(newErrors).length > 0) {
+    setErrors(newErrors);
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `${secondaryApiUrl}/api/shops/create`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      setErrors({
+        submit: data.error || "Failed to create store",
+      });
       return;
     }
 
-    // Backend integration will be added next.
-    const token = localStorage.getItem("authToken");
+    alert("Store submitted successfully for review.");
+    navigate("/");
+  } catch (error) {
+    console.error("Create store error:", error);
 
-const response = await fetch(
-  `${secondaryApiUrl}/api/shops/create`,
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(formData),
+    setErrors({
+      submit: "Unable to create store. Please try again.",
+    });
   }
-);
-  };
+};
 
   return (
     <div className="jp-create-store-page">
@@ -233,7 +269,11 @@ const response = await fetch(
               </p>
             </div>
           </div>
-
+{errors.submit && (
+  <div className="jp-form-error" style={{ marginBottom: "15px" }}>
+    {errors.submit}
+  </div>
+)}
           {/* ACTIONS */}
           <div className="jp-create-store-actions">
             <button
