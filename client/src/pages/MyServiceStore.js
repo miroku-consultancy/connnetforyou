@@ -104,21 +104,11 @@ const MyServiceStore = () => {
       )}
 
       {!error && services.length === 0 && (
-        <div className="empty-services">
-          <h3>No services yet</h3>
-
-          <p>
-            Add your first service to submit it
-            for review.
-          </p>
-
-          <button
-            onClick={() => navigate("/add-service")}
-          >
-            + Add Service
-          </button>
-        </div>
-      )}
+  <div className="empty-services">
+    <h3>No services yet</h3>
+    <p>Add your first service to complete your store.</p>
+  </div>
+)}
 
       {services.length > 0 && (
         <div className="service-list">
