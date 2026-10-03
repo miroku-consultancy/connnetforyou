@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import "./Services.css";
+import "./AddService.css";
 
 const API_BASE_URL = "https://connnet4you-server.onrender.com";
 

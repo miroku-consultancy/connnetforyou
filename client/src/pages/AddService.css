@@ -1,0 +1,330 @@
+/* =========================================
+   ADD SERVICE
+========================================= */
+
+.service-form-page {
+  min-height: calc(100vh - 160px);
+
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+
+  padding: 40px 20px 60px;
+
+  background: #f7f9fc;
+}
+
+.service-form-card {
+  width: 100%;
+  max-width: 760px;
+
+  background: #ffffff;
+
+  border: 1px solid #e8edf3;
+  border-radius: 18px;
+
+  padding: 32px;
+
+  box-shadow:
+    0 12px 35px rgba(15, 23, 42, 0.08);
+}
+
+.service-form-heading {
+  margin-bottom: 28px;
+}
+
+.service-form-heading h2 {
+  margin: 0 0 8px;
+
+  color: #172033;
+
+  font-size: 28px;
+  font-weight: 700;
+
+  line-height: 1.25;
+}
+
+.service-form-heading p {
+  margin: 0;
+
+  color: #6b7280;
+
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* =========================================
+   ERROR
+========================================= */
+
+.service-error {
+  margin-bottom: 20px;
+
+  padding: 12px 14px;
+
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+
+  background: #fef2f2;
+
+  color: #b91c1c;
+
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* =========================================
+   FORM
+========================================= */
+
+.service-form-group {
+  margin-bottom: 22px;
+}
+
+.service-form-group label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #263244;
+
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.service-form-group input,
+.service-form-group textarea,
+.service-form-group select {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  padding: 12px 14px;
+
+  border: 1px solid #d7dee8;
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  color: #1f2937;
+
+  font-family: inherit;
+  font-size: 14px;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.service-form-group input,
+.service-form-group select {
+  min-height: 46px;
+}
+
+.service-form-group textarea {
+  min-height: 120px;
+
+  resize: vertical;
+
+  line-height: 1.5;
+}
+
+.service-form-group input:focus,
+.service-form-group textarea:focus,
+.service-form-group select:focus {
+  border-color: #1677c8;
+
+  box-shadow:
+    0 0 0 3px rgba(22, 119, 200, 0.12);
+}
+
+.service-form-group input::placeholder,
+.service-form-group textarea::placeholder {
+  color: #9ca3af;
+}
+
+/* =========================================
+   CATEGORY HELP TEXT
+========================================= */
+
+.service-form-group small {
+  display: block;
+
+  margin-top: 7px;
+
+  color: #7b8494;
+
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* =========================================
+   FILE UPLOAD
+========================================= */
+
+.service-form-group input[type="file"] {
+  padding: 9px;
+
+  background: #f9fafb;
+
+  cursor: pointer;
+}
+
+.service-form-group input[type="file"]::file-selector-button {
+  margin-right: 12px;
+
+  padding: 8px 12px;
+
+  border: 0;
+  border-radius: 8px;
+
+  background: #eef4fa;
+
+  color: #1769aa;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+/* =========================================
+   IMAGE PREVIEW
+========================================= */
+
+.service-image-preview {
+  width: 180px;
+  height: 140px;
+
+  margin-top: 14px;
+
+  overflow: hidden;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+
+  background: #f8fafc;
+}
+
+.service-image-preview img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  display: block;
+}
+
+/* =========================================
+   ACTIONS
+========================================= */
+
+.service-form-actions {
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 12px;
+
+  margin-top: 30px;
+
+  padding-top: 22px;
+
+  border-top: 1px solid #edf0f4;
+}
+
+.service-btn-primary,
+.service-btn-secondary {
+  min-height: 44px;
+
+  padding: 10px 20px;
+
+  border-radius: 10px;
+
+  font-family: inherit;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
+}
+
+.service-btn-primary {
+  border: 1px solid #1769aa;
+
+  background: #1769aa;
+
+  color: #ffffff;
+}
+
+.service-btn-primary:hover:not(:disabled) {
+  background: #12598f;
+
+  box-shadow:
+    0 5px 14px rgba(23, 105, 170, 0.22);
+
+  transform: translateY(-1px);
+}
+
+.service-btn-secondary {
+  border: 1px solid #d7dee8;
+
+  background: #ffffff;
+
+  color: #475569;
+}
+
+.service-btn-secondary:hover:not(:disabled) {
+  background: #f8fafc;
+
+  border-color: #cbd5e1;
+}
+
+.service-btn-primary:disabled,
+.service-btn-secondary:disabled {
+  opacity: 0.6;
+
+  cursor: not-allowed;
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 640px) {
+  .service-form-page {
+    padding: 20px 12px 40px;
+  }
+
+  .service-form-card {
+    padding: 22px 18px;
+
+    border-radius: 14px;
+  }
+
+  .service-form-heading h2 {
+    font-size: 24px;
+  }
+
+  .service-form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .service-btn-primary,
+  .service-btn-secondary {
+    width: 100%;
+  }
+
+  .service-image-preview {
+    width: 150px;
+    height: 120px;
+  }
+}
