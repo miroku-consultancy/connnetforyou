@@ -249,6 +249,101 @@ transactionStarted = true;
     client.release();
   }
 });
+
+// ✅ SWITCH ACTIVE SHOP
+router.post('/switch-shop', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { shop_id } = req.body;
+
+    if (!shop_id) {
+      return res.status(400).json({
+        error: 'shop_id is required'
+      });
+    }
+
+    // ------------------------------------------------
+    // Verify that this user actually belongs to shop
+    // ------------------------------------------------
+    const roleResult = await pool.query(
+      `
+      SELECT
+        usr.user_id,
+        usr.shop_id,
+        usr.role,
+        s.name,
+        s.slug,
+        s.store_type,
+        t.status AS tenant_status
+      FROM user_shop_roles usr
+      INNER JOIN shops s
+        ON s.id = usr.shop_id
+      LEFT JOIN tenants t
+        ON t.shop_id = s.id
+      WHERE usr.user_id = $1
+        AND usr.shop_id = $2
+      LIMIT 1
+      `,
+      [userId, shop_id]
+    );
+
+    if (roleResult.rows.length === 0) {
+      return res.status(403).json({
+        error: 'You do not have access to this shop'
+      });
+    }
+
+    const shop = roleResult.rows[0];
+
+    // ------------------------------------------------
+    // For now, only vendor switching is supported
+    // ------------------------------------------------
+    if (shop.role !== 'vendor') {
+      return res.status(403).json({
+        error: 'You are not a vendor for this shop'
+      });
+    }
+
+    // ------------------------------------------------
+    // Create new JWT with selected shop context
+    // ------------------------------------------------
+    const tokenPayload = {
+      id: userId,
+      email: req.user.email,
+      shop_id: shop.shop_id,
+      role: shop.role
+    };
+
+    const token = jwt.sign(
+      tokenPayload,
+      process.env.JWT_SECRET,
+      {
+        expiresIn: '180d'
+      }
+    );
+
+    return res.json({
+      message: 'Shop switched successfully',
+      token,
+      shop: {
+        id: shop.shop_id,
+        name: shop.name,
+        slug: shop.slug,
+        store_type: shop.store_type,
+        role: shop.role,
+        tenant_status: shop.tenant_status
+      }
+    });
+
+  } catch (err) {
+    console.error('🛑 Switch shop error:', err);
+
+    return res.status(500).json({
+      error: 'Failed to switch shop',
+      message: err.message
+    });
+  }
+});
 // Existing: GET shop by slug
 router.get('/:slug', async (req, res) => {
   const { slug } = req.params;
