@@ -7,6 +7,7 @@ const getShopId = (req) => {
 // Vendor: get all services belonging to the active shop
 exports.getMyServices = async (req, res) => {
   try {
+    console.log('[getMyServices] HIT');
     console.log('[getMyServices] req.user:', req.user);
 
     const shopId = getShopId(req);
@@ -15,7 +16,7 @@ exports.getMyServices = async (req, res) => {
 
     if (!shopId) {
       return res.status(403).json({
-        message: "Your account is not linked to a shop"
+        message: 'Your account is not linked to a shop'
       });
     }
 
@@ -31,7 +32,7 @@ exports.getMyServices = async (req, res) => {
     console.error('[getMyServices] ERROR:', error);
 
     return res.status(500).json({
-      message: "Failed to fetch your services"
+      message: 'Failed to fetch your services'
     });
   }
 };
