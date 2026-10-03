@@ -689,29 +689,28 @@ const handleBookService = (service) => {
         </section>
 
         {/* DISCOVER SHOPS */}
-        <section className="jp-discover">
-          <div className="jp-discover-art">
-            <div className="jp-store-illustration">
-              <span>🏪</span>
-              <b>📍</b>
-            </div>
-          </div>
+        {/* START YOUR BUSINESS */}
+<section className="jp-business-banner">
+  <div className="jp-business-icon">
+    🚀
+  </div>
 
-          <div className="jp-discover-text">
-            <h2>Discover Amazing Shops Around You</h2>
-            <p>
-              Food, groceries, medical, fashion and more – all at your
-              fingertips.
-            </p>
-          </div>
+  <div className="jp-business-content">
+    <h2>Start Your Business on JusPing</h2>
+    <p>
+      Create your own Product or Service store and reach customers
+      in your local community.
+    </p>
+  </div>
 
-          <button
-            className="jp-primary-button"
-            onClick={() => goTo("/shops")}
-          >
-            Find Nearby Shops <span>→</span>
-          </button>
-        </section>
+  <button
+    className="jp-business-button"
+    onClick={() => goTo("/create-store")}
+  >
+    Create Your Store
+    <span>→</span>
+  </button>
+</section>
 
         {/* NEARBY SHOPS - LIVE API OR STATIC FALLBACK */}
         <section className="jp-section">
