@@ -704,12 +704,23 @@ const handleBookService = (service) => {
   </div>
 
   <button
-    className="jp-business-button"
-    onClick={() => goTo("/create-store")}
-  >
-    Create Your Store
-    <span>→</span>
-  </button>
+  className="jp-business-button"
+  onClick={() => {
+    const token = localStorage.getItem("authToken");
+
+    if (!token) {
+      navigate(
+        `/login?redirect=${encodeURIComponent("/create-store")}`
+      );
+      return;
+    }
+
+    navigate("/create-store");
+  }}
+>
+  Create Your Store
+  <span>→</span>
+</button>
 </section>
 
         {/* NEARBY SHOPS - LIVE API OR STATIC FALLBACK */}

@@ -46,6 +46,7 @@ import AddService from "./pages/AddService";
 import Services from "./pages/Services";
 import ServiceDetails from "./pages/ServiceDetails";
 import ServiceBooking from "./pages/ServiceBooking";
+import CreateStore from "./pages/CreateStore";
 //import Banner from './components/Banner';
 
 
@@ -148,7 +149,12 @@ const AppRoutes = () => (
     </ProtectedRoute>
   }
 />
-
+<Route
+  path="/create-store"
+  element={
+      <CreateStore />
+  }
+/>
 
         {/* <Route
     path="/chat/:recipientId/:recipientName"
