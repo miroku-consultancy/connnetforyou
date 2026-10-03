@@ -1,6 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const pool = require('../db');
+const authMiddleware = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
@@ -59,6 +60,195 @@ router.get('/vendor', async (req, res) => {
   }
 });
 
+// ✅ CREATE NEW STORE
+// User must be logged in.
+// Creates:
+// 1. shops row
+// 2. tenants row with pending status
+// 3. user_shop_roles row with vendor role
+router.post('/create', authMiddleware, async (req, res) => {
+  const client = await pool.connect();
+let transactionStarted = false;
+
+try {
+    const userId = req.user.id;
+
+    const {
+      name,
+      storeType,
+      address,
+      phone,
+      openTime,
+      closeTime
+    } = req.body;
+
+    // -----------------------------
+    // Validation
+    // -----------------------------
+    if (!name || !name.trim()) {
+      return res.status(400).json({
+        error: 'Store name is required'
+      });
+    }
+
+    if (!['product', 'service'].includes(storeType)) {
+      return res.status(400).json({
+        error: 'Store type must be product or service'
+      });
+    }
+
+    // -----------------------------
+    // Generate slug
+    // -----------------------------
+    const baseSlug = name
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+    if (!baseSlug) {
+      return res.status(400).json({
+        error: 'Invalid store name'
+      });
+    }
+
+    await client.query('BEGIN');
+transactionStarted = true;
+
+    // -----------------------------
+    // Make slug unique
+    // -----------------------------
+    let slug = baseSlug;
+    let counter = 1;
+
+    while (true) {
+      const slugCheck = await client.query(
+        'SELECT id FROM shops WHERE LOWER(slug) = LOWER($1) LIMIT 1',
+        [slug]
+      );
+
+      if (slugCheck.rows.length === 0) {
+        break;
+      }
+
+      counter++;
+      slug = `${baseSlug}-${counter}`;
+    }
+
+    // -----------------------------
+    // Create shop
+    // -----------------------------
+    const shopResult = await client.query(
+      `
+      INSERT INTO shops (
+        name,
+        slug,
+        address,
+        phone,
+        open_time,
+        close_time,
+        store_type,
+        created_at
+      )
+      VALUES (
+        $1,
+        $2,
+        $3,
+        $4,
+        $5,
+        $6,
+        $7,
+        NOW()
+      )
+      RETURNING *
+      `,
+      [
+        name.trim(),
+        slug,
+        address || null,
+        phone || null,
+        openTime || null,
+        closeTime || null,
+        storeType
+      ]
+    );
+
+    const shop = shopResult.rows[0];
+
+    // -----------------------------
+    // Create tenant
+    // -----------------------------
+    const tenantResult = await client.query(
+      `
+      INSERT INTO tenants (
+        shop_id,
+        slug,
+        status,
+        created_at,
+        updated_at
+      )
+      VALUES (
+        $1,
+        $2,
+        'pending',
+        NOW(),
+        NOW()
+      )
+      RETURNING *
+      `,
+      [
+        shop.id,
+        slug
+      ]
+    );
+
+    const tenant = tenantResult.rows[0];
+
+    // -----------------------------
+    // Link user to new shop
+    // -----------------------------
+    await client.query(
+      `
+      INSERT INTO user_shop_roles (
+        user_id,
+        shop_id,
+        role
+      )
+      VALUES ($1, $2, 'vendor')
+      `,
+      [
+        userId,
+        shop.id
+      ]
+    );
+
+    await client.query('COMMIT');
+
+    console.log(
+      `🏪 Store created: ${shop.id} | ${shop.name} | ${storeType} | user ${userId}`
+    );
+
+    return res.status(201).json({
+      message: 'Store submitted successfully for review',
+      shop,
+      tenant
+    });
+
+  } catch (err) {
+  if (transactionStarted) {
+    await client.query('ROLLBACK');
+  }
+
+  console.error('🛑 Store creation error:', err);
+
+  return res.status(500).json({
+    error: 'Failed to create store',
+    message: err.message
+  });
+} finally {
+    client.release();
+  }
+});
 // Existing: GET shop by slug
 router.get('/:slug', async (req, res) => {
   const { slug } = req.params;

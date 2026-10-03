@@ -17,25 +17,32 @@ const EmailTokenLogin = () => {
   const navigate = useNavigate();
   const { refreshUser } = useUser();
   const { tenant } = useTenant();
-const shopSlug = tenant?.shopSlug;
+
+  // Existing tenant/shop context
+  const tenantShopSlug = tenant?.shopSlug;
+
+  // Root JusPing domain has no tenant.
+  // Use the existing JusPing shop as the login context.
+  const shopSlug = tenantShopSlug || 'JusPing';
+
+  // True when login is started from the main JusPing platform.
+  const isPlatformLogin = !tenantShopSlug;
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
+
     if (token) {
       try {
         const decoded = jwtDecode(token);
+
         if (decoded.exp * 1000 > Date.now()) {
-          // Inside your EmailTokenLogin.js after login success:
           const params = new URLSearchParams(window.location.search);
 
-const redirectPath =
-  params.get('redirect') ||
-  (shopSlug === 'JusPing'
-    ? '/'
-    : '/products');
+          const redirectPath =
+            params.get('redirect') ||
+            (isPlatformLogin ? '/' : '/products');
 
-navigate(redirectPath);
-
+          navigate(redirectPath);
         } else {
           localStorage.removeItem('authToken');
           localStorage.removeItem('userId');
@@ -45,17 +52,28 @@ navigate(redirectPath);
         localStorage.removeItem('userId');
       }
     }
-  }, [navigate, shopSlug]);
+  }, [navigate, isPlatformLogin]);
 
   const sendOtp = async () => {
     setLoading(true);
+
     try {
-      const res = await fetch('https://connnet4you-server.onrender.com/api/auth/send-token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, shop_slug: shopSlug }),
-      });
+      const res = await fetch(
+        'https://connnet4you-server.onrender.com/api/auth/send-token',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email,
+            shop_slug: shopSlug,
+          }),
+        }
+      );
+
       const data = await res.json();
+
       if (res.ok) {
         toast.success('✅ OTP sent to your email!');
         setStep(2);
@@ -65,57 +83,84 @@ navigate(redirectPath);
     } catch {
       toast.error('Network error');
     }
+
     setLoading(false);
   };
 
   const verifyOtp = async () => {
     setLoading(true);
-    try {
-      const res = await fetch('https://connnet4you-server.onrender.com/api/auth/login-with-token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, token: otp, shop_slug: shopSlug }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        localStorage.setItem('authToken', data.token);          // access token
-        localStorage.setItem('refreshToken', data.refreshToken); // refresh token ✅
-        localStorage.setItem('userId', data.user.id);
-        refreshUser();
-        toast.success('🎉 Login successful!');
-        const searchParams = new URLSearchParams(window.location.search);
-        const redirectPath =
-  searchParams.get('redirect') ||
-  (shopSlug === 'JusPing'
-  ? '/'
-  : '/order');
 
-navigate(redirectPath);
+    try {
+      const res = await fetch(
+        'https://connnet4you-server.onrender.com/api/auth/login-with-token',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email,
+            token: otp,
+            shop_slug: shopSlug,
+          }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (res.ok) {
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('refreshToken', data.refreshToken);
+        localStorage.setItem('userId', data.user.id);
+
+        refreshUser();
+
+        toast.success('🎉 Login successful!');
+
+        const searchParams = new URLSearchParams(
+          window.location.search
+        );
+
+        const redirectPath =
+          searchParams.get('redirect') ||
+          (isPlatformLogin ? '/' : '/order');
+
+        navigate(redirectPath);
       } else {
         toast.error(data.error || 'Invalid OTP');
       }
     } catch {
       toast.error('Network error');
     }
+
     setLoading(false);
   };
 
   return (
     <div className="email-login-container">
       <div className="email-login-box">
-        <h2>{step === 1 ? '🔐 Secure Login' : '📩 Verify OTP'}</h2>
+        <h2>
+          {step === 1
+            ? '🔐 Secure Login'
+            : '📩 Verify OTP'}
+        </h2>
 
         {step === 1 ? (
           <>
             <input
               type="email"
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email"
               required
               className="login-input"
             />
-            <button onClick={sendOtp} disabled={loading || !email} className="login-btn">
+
+            <button
+              onClick={sendOtp}
+              disabled={loading || !email}
+              className="login-btn"
+            >
               {loading ? 'Sending...' : 'Send OTP'}
             </button>
           </>
@@ -124,18 +169,27 @@ navigate(redirectPath);
             <input
               type="text"
               value={otp}
-              onChange={e => setOtp(e.target.value)}
+              onChange={(e) => setOtp(e.target.value)}
               placeholder="Enter OTP"
               required
               className="login-input"
             />
-            <button onClick={verifyOtp} disabled={loading || !otp} className="login-btn">
+
+            <button
+              onClick={verifyOtp}
+              disabled={loading || !otp}
+              className="login-btn"
+            >
               {loading ? 'Verifying...' : 'Login'}
             </button>
 
             <p className="resend-text">
               Didn't get OTP?{' '}
-              <button className="resend-link" onClick={() => setStep(1)} disabled={loading}>
+              <button
+                className="resend-link"
+                onClick={() => setStep(1)}
+                disabled={loading}
+              >
                 Resend
               </button>
             </p>
