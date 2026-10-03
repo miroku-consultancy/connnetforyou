@@ -135,17 +135,17 @@ exports.createService = async (req, res) => {
     }
 
     const service = await serviceModel.createService({
-      shop_id: shopId,
-      title: title.trim(),
-      description,
-      category,
-      price: servicePrice,
-      pricing_type: pricingType,
-      image_url: req.file
-        ? `/images/services/${req.file.filename}`
-        : null,
-      status: "draft"
-    });
+  shop_id: shopId,
+  title: title.trim(),
+  description,
+  category,
+  price: servicePrice,
+  pricing_type: pricingType,
+  image_url: req.file
+    ? `/images/services/${req.file.filename}`
+    : null,
+  status: "pending_review"
+});
 
     res.status(201).json({
       message: "Service created successfully",
