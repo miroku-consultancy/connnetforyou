@@ -1,22 +1,73 @@
 const serviceModel = require("../models/serviceModel");
+const pool = require("../db");
 
-const getShopId = (req) => {
-  return req.user?.shop_id;
+// ---------------------------------------------------------
+// Resolve the vendor's shop from user_shop_roles
+// ---------------------------------------------------------
+const getVendorShopId = async (req) => {
+  const userId = req.user?.id;
+
+  if (!userId) {
+    return null;
+  }
+
+  // If JWT already represents a vendor shop,
+  // verify that the user actually owns that shop.
+  if (req.user?.shop_id && req.user?.role === "vendor") {
+    const selectedResult = await pool.query(
+      `
+      SELECT shop_id
+      FROM user_shop_roles
+      WHERE user_id = $1
+        AND shop_id = $2
+        AND role = 'vendor'
+      LIMIT 1
+      `,
+      [userId, req.user.shop_id]
+    );
+
+    if (selectedResult.rows.length > 0) {
+      return selectedResult.rows[0].shop_id;
+    }
+  }
+
+  // Root login may have:
+  // role = customer
+  // shop_id = 1
+  //
+  // So fall back to the vendor shop linked
+  // through user_shop_roles.
+  const vendorResult = await pool.query(
+    `
+    SELECT shop_id
+    FROM user_shop_roles
+    WHERE user_id = $1
+      AND role = 'vendor'
+    ORDER BY id ASC
+    LIMIT 1
+    `,
+    [userId]
+  );
+
+  return vendorResult.rows[0]?.shop_id || null;
 };
 
-// Vendor: get all services belonging to the active shop
+
+// ---------------------------------------------------------
+// Vendor: get all services belonging to vendor's shop
+// ---------------------------------------------------------
 exports.getMyServices = async (req, res) => {
   try {
-    console.log('[getMyServices] HIT');
-    console.log('[getMyServices] req.user:', req.user);
+    console.log("[getMyServices] HIT");
+    console.log("[getMyServices] req.user:", req.user);
 
-    const shopId = getShopId(req);
+    const shopId = await getVendorShopId(req);
 
-    console.log('[getMyServices] shopId:', shopId);
+    console.log("[getMyServices] vendor shopId:", shopId);
 
     if (!shopId) {
       return res.status(403).json({
-        message: 'Your account is not linked to a shop'
+        message: "Your account is not linked to a vendor shop"
       });
     }
 
@@ -24,19 +75,23 @@ exports.getMyServices = async (req, res) => {
       shopId: Number(shopId)
     });
 
-    console.log('[getMyServices] services:', services);
+    console.log("[getMyServices] services:", services);
 
     return res.status(200).json(services);
 
   } catch (error) {
-    console.error('[getMyServices] ERROR:', error);
+    console.error("[getMyServices] ERROR:", error);
 
     return res.status(500).json({
-      message: 'Failed to fetch your services'
+      message: "Failed to fetch your services"
     });
   }
 };
 
+
+// ---------------------------------------------------------
+// Public: get published services
+// ---------------------------------------------------------
 exports.getServices = async (req, res) => {
   try {
     const shopId = req.query.shopId || req.query.shop_id;
@@ -64,40 +119,62 @@ exports.getServices = async (req, res) => {
   }
 };
 
+
+// ---------------------------------------------------------
 // Public details: only published services
+// ---------------------------------------------------------
 exports.getService = async (req, res) => {
   try {
     const id = Number(req.params.id);
 
     if (!Number.isInteger(id) || id <= 0) {
-      return res.status(400).json({ message: "Invalid service ID" });
+      return res.status(400).json({
+        message: "Invalid service ID"
+      });
     }
 
     const service = await serviceModel.getServiceById(id);
 
     if (!service || service.status !== "published") {
-      return res.status(404).json({ message: "Service not found" });
-    }
-
-    res.json(service);
-  } catch (error) {
-    console.error("Get service error:", error);
-    res.status(500).json({ message: "Failed to fetch service" });
-  }
-};
-
-// Authenticated provider creates service
-exports.createService = async (req, res) => {
-  try {
-    const shopId = getShopId(req);
-
-    if (!shopId) {
-      return res.status(403).json({
-        message: "Your account is not linked to a shop"
+      return res.status(404).json({
+        message: "Service not found"
       });
     }
 
-    const { title, description, category, price, pricing_type } = req.body;
+    res.json(service);
+
+  } catch (error) {
+    console.error("Get service error:", error);
+
+    res.status(500).json({
+      message: "Failed to fetch service"
+    });
+  }
+};
+
+
+// ---------------------------------------------------------
+// Authenticated provider creates service
+// ---------------------------------------------------------
+exports.createService = async (req, res) => {
+  try {
+    const shopId = await getVendorShopId(req);
+
+    console.log("[createService] vendor shopId:", shopId);
+
+    if (!shopId) {
+      return res.status(403).json({
+        message: "Your account is not linked to a vendor shop"
+      });
+    }
+
+    const {
+      title,
+      description,
+      category,
+      price,
+      pricing_type
+    } = req.body;
 
     if (!title || !title.trim()) {
       return res.status(400).json({
@@ -105,7 +182,12 @@ exports.createService = async (req, res) => {
       });
     }
 
-    const validPricingTypes = ["fixed", "starting_from", "quote"];
+    const validPricingTypes = [
+      "fixed",
+      "starting_from",
+      "quote"
+    ];
+
     const pricingType = pricing_type || "fixed";
 
     if (!validPricingTypes.includes(pricingType)) {
@@ -135,46 +217,64 @@ exports.createService = async (req, res) => {
     }
 
     const service = await serviceModel.createService({
-  shop_id: shopId,
-  title: title.trim(),
-  description,
-  category,
-  price: servicePrice,
-  pricing_type: pricingType,
-  image_url: req.file
-    ? `/images/services/${req.file.filename}`
-    : null,
-  status: "pending_review"
-});
+      shop_id: Number(shopId),
+      title: title.trim(),
+      description,
+      category,
+      price: servicePrice,
+      pricing_type: pricingType,
+      image_url: req.file
+        ? `/images/services/${req.file.filename}`
+        : null,
 
-    res.status(201).json({
+      // Store-level approval architecture:
+      // service is initially part of the draft store.
+      status: "draft"
+    });
+
+    return res.status(201).json({
       message: "Service created successfully",
       service
     });
+
   } catch (error) {
     console.error("Create service error:", error);
-    res.status(500).json({ message: "Failed to create service" });
+
+    return res.status(500).json({
+      message: "Failed to create service"
+    });
   }
 };
 
+
+// ---------------------------------------------------------
 // Authenticated provider updates own service
+// ---------------------------------------------------------
 exports.updateService = async (req, res) => {
   try {
-    const shopId = getShopId(req);
+    const shopId = await getVendorShopId(req);
 
     if (!shopId) {
       return res.status(403).json({
-        message: "Your account is not linked to a shop"
+        message: "Your account is not linked to a vendor shop"
       });
     }
 
     const id = Number(req.params.id);
 
     if (!Number.isInteger(id) || id <= 0) {
-      return res.status(400).json({ message: "Invalid service ID" });
+      return res.status(400).json({
+        message: "Invalid service ID"
+      });
     }
 
-    const { title, description, category, price, pricing_type } = req.body;
+    const {
+      title,
+      description,
+      category,
+      price,
+      pricing_type
+    } = req.body;
 
     if (!title || !title.trim()) {
       return res.status(400).json({
@@ -184,7 +284,11 @@ exports.updateService = async (req, res) => {
 
     const pricingType = pricing_type || "fixed";
 
-    if (!["fixed", "starting_from", "quote"].includes(pricingType)) {
+    if (![
+      "fixed",
+      "starting_from",
+      "quote"
+    ].includes(pricingType)) {
       return res.status(400).json({
         message: "Invalid pricing type"
       });
@@ -195,71 +299,102 @@ exports.updateService = async (req, res) => {
     if (pricingType !== "quote") {
       servicePrice = Number(price);
 
-      if (price === "" || price === undefined ||
-          !Number.isFinite(servicePrice) || servicePrice < 0) {
+      if (
+        price === "" ||
+        price === undefined ||
+        !Number.isFinite(servicePrice) ||
+        servicePrice < 0
+      ) {
         return res.status(400).json({
           message: "A valid non-negative price is required"
         });
       }
     }
 
-    const service = await serviceModel.updateService(id, shopId, {
-      title: title.trim(),
-      description,
-      category,
-      price: servicePrice,
-      pricing_type: pricingType,
-      image_url: req.file
-        ? `/images/services/${req.file.filename}`
-        : null,
-      status: req.body.status === "inactive"
-        ? "inactive"
-        : "draft"
-    });
+    const service = await serviceModel.updateService(
+      id,
+      Number(shopId),
+      {
+        title: title.trim(),
+        description,
+        category,
+        price: servicePrice,
+        pricing_type: pricingType,
+        image_url: req.file
+          ? `/images/services/${req.file.filename}`
+          : null,
+
+        status:
+          req.body.status === "inactive"
+            ? "inactive"
+            : "draft"
+      }
+    );
 
     if (!service) {
       return res.status(404).json({
-        message: "Service not found or you do not own this service"
+        message:
+          "Service not found or you do not own this service"
       });
     }
 
-    res.json({
+    return res.json({
       message: "Service updated successfully",
       service
     });
+
   } catch (error) {
     console.error("Update service error:", error);
-    res.status(500).json({ message: "Failed to update service" });
+
+    return res.status(500).json({
+      message: "Failed to update service"
+    });
   }
 };
 
+
+// ---------------------------------------------------------
+// Authenticated provider deletes own service
+// ---------------------------------------------------------
 exports.deleteService = async (req, res) => {
   try {
-    const shopId = getShopId(req);
+    const shopId = await getVendorShopId(req);
 
     if (!shopId) {
       return res.status(403).json({
-        message: "Your account is not linked to a shop"
+        message: "Your account is not linked to a vendor shop"
       });
     }
 
     const id = Number(req.params.id);
 
     if (!Number.isInteger(id) || id <= 0) {
-      return res.status(400).json({ message: "Invalid service ID" });
-    }
-
-    const deleted = await serviceModel.deleteService(id, shopId);
-
-    if (!deleted) {
-      return res.status(404).json({
-        message: "Service not found or you do not own this service"
+      return res.status(400).json({
+        message: "Invalid service ID"
       });
     }
 
-    res.json({ message: "Service deleted successfully" });
+    const deleted = await serviceModel.deleteService(
+      id,
+      Number(shopId)
+    );
+
+    if (!deleted) {
+      return res.status(404).json({
+        message:
+          "Service not found or you do not own this service"
+      });
+    }
+
+    return res.json({
+      message: "Service deleted successfully"
+    });
+
   } catch (error) {
     console.error("Delete service error:", error);
-    res.status(500).json({ message: "Failed to delete service" });
+
+    return res.status(500).json({
+      message: "Failed to delete service"
+    });
   }
 };
