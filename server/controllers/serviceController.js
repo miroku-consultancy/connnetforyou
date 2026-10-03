@@ -7,7 +7,11 @@ const getShopId = (req) => {
 // Vendor: get all services belonging to the active shop
 exports.getMyServices = async (req, res) => {
   try {
+    console.log('[getMyServices] req.user:', req.user);
+
     const shopId = getShopId(req);
+
+    console.log('[getMyServices] shopId:', shopId);
 
     if (!shopId) {
       return res.status(403).json({
@@ -19,10 +23,12 @@ exports.getMyServices = async (req, res) => {
       shopId: Number(shopId)
     });
 
+    console.log('[getMyServices] services:', services);
+
     return res.status(200).json(services);
 
   } catch (error) {
-    console.error("Get my services error:", error);
+    console.error('[getMyServices] ERROR:', error);
 
     return res.status(500).json({
       message: "Failed to fetch your services"
