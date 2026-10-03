@@ -387,100 +387,130 @@ router.post(
   authMiddleware,
   async (req, res) => {
     try {
-      const userId = req.user.id;
-      const shopId = req.user.shop_id;
+      const userId = req.user?.id;
 
-      if (!shopId) {
-        return res.status(400).json({
-          error: 'No shop selected'
+      if (!userId) {
+        return res.status(401).json({
+          error: 'Authentication required'
         });
       }
 
-      // ------------------------------------------------
-      // Verify that the user owns this shop
-      // ------------------------------------------------
-      const roleResult = await pool.query(
+      console.log(
+        '[submit-for-approval] userId:',
+        userId
+      );
+
+      // ---------------------------------------------------
+      // Resolve vendor shop from user_shop_roles
+      // Do NOT rely on JWT shop_id/role because root login
+      // can have shop_id=1 and role=customer.
+      // ---------------------------------------------------
+      const vendorResult = await pool.query(
         `
         SELECT
           usr.shop_id,
           usr.role,
+          s.name,
+          s.slug,
+          s.store_type,
           t.status AS tenant_status
         FROM user_shop_roles usr
+        INNER JOIN shops s
+          ON s.id = usr.shop_id
         LEFT JOIN tenants t
           ON t.shop_id = usr.shop_id
         WHERE usr.user_id = $1
-          AND usr.shop_id = $2
+          AND usr.role = 'vendor'
+        ORDER BY usr.id ASC
         LIMIT 1
         `,
-        [userId, shopId]
+        [userId]
       );
 
-      if (roleResult.rows.length === 0) {
+      if (vendorResult.rows.length === 0) {
         return res.status(403).json({
-          error: 'You do not have access to this store'
+          error: 'You do not have access to a vendor store'
         });
       }
 
-      const shop = roleResult.rows[0];
+      const shop = vendorResult.rows[0];
 
-      if (shop.role !== 'vendor') {
-        return res.status(403).json({
-          error: 'Only the store owner can submit the store'
+      console.log(
+        '[submit-for-approval] Vendor shop:',
+        shop
+      );
+
+      // ---------------------------------------------------
+      // Make sure tenant exists
+      // ---------------------------------------------------
+      if (!shop.tenant_status) {
+        return res.status(404).json({
+          error: 'Store tenant not found'
         });
       }
 
-      // ------------------------------------------------
-      // Store must currently be in draft state
-      // ------------------------------------------------
+      // ---------------------------------------------------
+      // Only draft stores can be submitted
+      // ---------------------------------------------------
       if (shop.tenant_status !== 'draft') {
         return res.status(400).json({
-          error: `Store cannot be submitted from ${shop.tenant_status || 'unknown'} status`
+          error: `Store cannot be submitted from '${shop.tenant_status}' status`
         });
       }
 
-      // ------------------------------------------------
-      // Update tenant status
-      // draft → pending
-      // ------------------------------------------------
-      const result = await pool.query(
+      // ---------------------------------------------------
+      // Submit store for approval
+      // ---------------------------------------------------
+      const updateResult = await pool.query(
         `
         UPDATE tenants
         SET
           status = 'pending',
-          updated_at = NOW()
+          updated_at = CURRENT_TIMESTAMP
         WHERE shop_id = $1
           AND status = 'draft'
-        RETURNING *
+        RETURNING
+          id,
+          shop_id,
+          slug,
+          status,
+          updated_at
         `,
-        [shopId]
+        [shop.shop_id]
       );
 
-      if (result.rows.length === 0) {
+      if (updateResult.rows.length === 0) {
         return res.status(400).json({
           error: 'Store could not be submitted for approval'
         });
       }
 
-      const tenant = result.rows[0];
+      const tenant = updateResult.rows[0];
 
       console.log(
-        `📨 Store submitted for approval: shop ${shopId} | user ${userId}`
+        '[submit-for-approval] Store submitted:',
+        tenant
       );
 
       return res.status(200).json({
-        message: 'Store submitted successfully for approval',
-        tenant
+        message: 'Store submitted for approval successfully',
+        store: {
+          id: shop.shop_id,
+          name: shop.name,
+          slug: shop.slug,
+          store_type: shop.store_type,
+          tenant_status: tenant.status
+        }
       });
 
-    } catch (err) {
+    } catch (error) {
       console.error(
-        '🛑 Submit store for approval error:',
-        err
+        '[submit-for-approval] ERROR:',
+        error
       );
 
       return res.status(500).json({
-        error: 'Failed to submit store for approval',
-        message: err.message
+        error: 'Failed to submit store for approval'
       });
     }
   }
