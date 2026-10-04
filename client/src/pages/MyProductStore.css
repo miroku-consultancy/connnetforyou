@@ -5,7 +5,9 @@
   color: #1f2937;
 }
 
-/* HEADER */
+/* =========================================================
+   HEADER
+   ========================================================= */
 
 .my-product-store-header {
   display: flex;
@@ -37,7 +39,6 @@
 }
 
 .my-product-store-add-btn,
-.my-product-store-small-add,
 .my-product-store-empty button {
   border: 0;
   border-radius: 10px;
@@ -49,18 +50,20 @@
 }
 
 .my-product-store-add-btn:hover,
-.my-product-store-small-add:hover,
 .my-product-store-empty button:hover {
   opacity: 0.9;
 }
 
-/* SUMMARY */
+
+/* =========================================================
+   SUMMARY
+   ========================================================= */
 
 .my-product-store-summary {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 240px));
+  grid-template-columns: repeat(3, minmax(0, 240px));
   gap: 16px;
-  margin-bottom: 30px;
+  margin-bottom: 28px;
 }
 
 .my-product-store-stat {
@@ -90,6 +93,7 @@
 
 .my-product-store-stat strong {
   font-size: 20px;
+  font-weight: 800;
 }
 
 .my-product-store-stat span:last-child {
@@ -98,7 +102,224 @@
   font-size: 13px;
 }
 
-/* SECTION */
+
+/* =========================================================
+   STORE STATUS CARD
+   ========================================================= */
+
+.my-product-status-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  margin-bottom: 30px;
+  padding: 22px;
+  border: 1px solid;
+  border-radius: 16px;
+  background: white;
+}
+
+.my-product-status-icon {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  font-size: 23px;
+}
+
+.my-product-status-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.my-product-status-label {
+  display: inline-block;
+  margin-bottom: 5px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.my-product-status-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.my-product-status-heading h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.my-product-status-content > p {
+  margin: 8px 0 0;
+  max-width: 760px;
+  color: #6b7280;
+  line-height: 1.55;
+  font-size: 14px;
+}
+
+
+/* =========================================================
+   STATUS BADGE
+   ========================================================= */
+
+.my-product-status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 6px 11px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   DRAFT
+   ========================================================= */
+
+.status-card-draft {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.status-card-draft .my-product-status-icon {
+  background: #fef3c7;
+}
+
+.status-card-draft .my-product-status-label {
+  color: #b45309;
+}
+
+.status-draft {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+
+/* =========================================================
+   PENDING
+   ========================================================= */
+
+.status-card-pending {
+  border-color: #fed7aa;
+  background: #fff7ed;
+}
+
+.status-card-pending .my-product-status-icon {
+  background: #ffedd5;
+}
+
+.status-card-pending .my-product-status-label {
+  color: #c2410c;
+}
+
+.status-pending {
+  background: #ffedd5;
+  color: #9a3412;
+}
+
+
+/* =========================================================
+   ACTIVE
+   ========================================================= */
+
+.status-card-active {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
+.status-card-active .my-product-status-icon {
+  background: #dcfce7;
+}
+
+.status-card-active .my-product-status-label {
+  color: #15803d;
+}
+
+.status-active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+
+/* =========================================================
+   REJECTED
+   ========================================================= */
+
+.status-card-rejected {
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.status-card-rejected .my-product-status-icon {
+  background: #fee2e2;
+}
+
+.status-card-rejected .my-product-status-label {
+  color: #b91c1c;
+}
+
+.status-rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+
+/* =========================================================
+   STATUS ACTIONS
+   ========================================================= */
+
+.my-product-status-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.my-product-status-primary,
+.my-product-status-secondary {
+  border-radius: 9px;
+  padding: 10px 15px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.my-product-status-primary {
+  border: 0;
+  background: #2563eb;
+  color: white;
+}
+
+.my-product-status-primary:hover {
+  opacity: 0.9;
+}
+
+.my-product-status-primary span {
+  margin-left: 8px;
+}
+
+.my-product-status-secondary {
+  border: 1px solid #d1d5db;
+  background: white;
+  color: #374151;
+}
+
+.my-product-status-secondary:hover {
+  background: #f9fafb;
+}
+
+
+/* =========================================================
+   PRODUCTS SECTION
+   ========================================================= */
 
 .my-product-store-section {
   background: white;
@@ -126,7 +347,10 @@
   font-size: 14px;
 }
 
-/* EMPTY */
+
+/* =========================================================
+   EMPTY
+   ========================================================= */
 
 .my-product-store-empty {
   text-align: center;
@@ -150,7 +374,10 @@
   margin-bottom: 20px;
 }
 
-/* PRODUCT GRID */
+
+/* =========================================================
+   PRODUCT GRID
+   ========================================================= */
 
 .my-product-store-grid {
   display: grid;
@@ -163,6 +390,14 @@
   border: 1px solid #e5e7eb;
   border-radius: 14px;
   background: white;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.my-product-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.07);
 }
 
 .my-product-card-image {
@@ -228,7 +463,10 @@
   background: #f8fafc;
 }
 
-/* ERROR */
+
+/* =========================================================
+   ERROR
+   ========================================================= */
 
 .my-product-store-error {
   margin-bottom: 20px;
@@ -238,7 +476,10 @@
   color: #b91c1c;
 }
 
-/* LOADING */
+
+/* =========================================================
+   LOADING
+   ========================================================= */
 
 .my-product-store-loading {
   min-height: 60vh;
@@ -250,15 +491,34 @@
   color: #6b7280;
 }
 
-/* RESPONSIVE */
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
 
 @media (max-width: 1100px) {
+
   .my-product-store-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+
+}
+
+@media (max-width: 900px) {
+
+  .my-product-store-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .my-product-status-heading {
+    flex-direction: column;
+    gap: 10px;
+  }
+
 }
 
 @media (max-width: 800px) {
+
   .my-product-store-page {
     padding: 20px;
   }
@@ -267,16 +527,50 @@
     flex-direction: column;
   }
 
-  .my-product-store-summary {
-    grid-template-columns: 1fr;
+  .my-product-store-add-btn {
+    width: 100%;
   }
 
   .my-product-store-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .my-product-status-card {
+    padding: 18px;
+  }
+
+}
+
+@media (max-width: 600px) {
+
+  .my-product-store-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .my-product-status-card {
+    flex-direction: column;
+  }
+
+  .my-product-status-icon {
+    width: 44px;
+    height: 44px;
+    flex-basis: 44px;
+  }
+
+  .my-product-status-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .my-product-status-primary,
+  .my-product-status-secondary {
+    width: 100%;
+  }
+
 }
 
 @media (max-width: 520px) {
+
   .my-product-store-section {
     padding: 16px;
   }
@@ -289,4 +583,5 @@
     align-items: flex-start;
     flex-direction: column;
   }
+
 }

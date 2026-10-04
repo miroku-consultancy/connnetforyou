@@ -54,19 +54,24 @@ const MyProductStore = () => {
         throw new Error("No business store found");
       }
 
+      console.log(
+        "[MyProductStore] Vendor shop:",
+        currentShop
+      );
+
       setShop(currentShop);
 
       // ------------------------------------
       // Get vendor's products
       // ------------------------------------
       const productResponse = await fetch(
-  `${secondaryApiUrl}/api/products?shopId=${currentShop.id}`,
-  {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  }
-);
+        `${secondaryApiUrl}/api/products?shopId=${currentShop.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       const productData = await productResponse.json();
 
@@ -112,10 +117,306 @@ const MyProductStore = () => {
   };
 
   // ------------------------------------
+  // Edit Product
+  // ------------------------------------
+  const handleEditProduct = (productId) => {
+    navigate(`/my-product-store/edit/${productId}`);
+  };
+
+  // ------------------------------------
   // Back to My Business
   // ------------------------------------
   const handleBack = () => {
     navigate("/my-business");
+  };
+
+  // ------------------------------------
+  // Store status helpers
+  // ------------------------------------
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case "draft":
+        return "Draft";
+
+      case "pending":
+        return "Under Review";
+
+      case "active":
+        return "Active";
+
+      case "rejected":
+        return "Needs Changes";
+
+      default:
+        return status || "Unknown";
+    }
+  };
+
+  const getStatusClass = (status) => {
+    switch (status) {
+      case "draft":
+        return "status-draft";
+
+      case "pending":
+        return "status-pending";
+
+      case "active":
+        return "status-active";
+
+      case "rejected":
+        return "status-rejected";
+
+      default:
+        return "status-unknown";
+    }
+  };
+
+  // ------------------------------------
+  // Store status content
+  // ------------------------------------
+  const renderStoreStatus = () => {
+    const status = String(
+      shop?.tenant_status || "draft"
+    ).toLowerCase();
+
+    // ================================
+    // DRAFT
+    // ================================
+    if (status === "draft") {
+      return (
+        <section className="my-product-status-card status-card-draft">
+
+          <div className="my-product-status-icon">
+            🚀
+          </div>
+
+          <div className="my-product-status-content">
+
+            <div className="my-product-status-heading">
+
+              <div>
+                <span className="my-product-status-label">
+                  NEXT STEP
+                </span>
+
+                <h3>
+                  Complete your product store
+                </h3>
+              </div>
+
+              <span
+                className={`my-product-status-badge ${getStatusClass(
+                  status
+                )}`}
+              >
+                {getStatusLabel(status)}
+              </span>
+
+            </div>
+
+            <p>
+              Add your products and complete your
+              business information before submitting
+              your store for admin approval.
+            </p>
+
+            <div className="my-product-status-actions">
+
+              <button
+                type="button"
+                className="my-product-status-primary"
+                onClick={handleAddProduct}
+              >
+                Add Products
+                <span>→</span>
+              </button>
+
+              <button
+                type="button"
+                className="my-product-status-secondary"
+                onClick={() =>
+                  navigate("/my-business")
+                }
+              >
+                Submit for Approval
+              </button>
+
+            </div>
+
+          </div>
+
+        </section>
+      );
+    }
+
+    // ================================
+    // PENDING
+    // ================================
+    if (status === "pending") {
+      return (
+        <section className="my-product-status-card status-card-pending">
+
+          <div className="my-product-status-icon">
+            ⏳
+          </div>
+
+          <div className="my-product-status-content">
+
+            <span className="my-product-status-label">
+              UNDER REVIEW
+            </span>
+
+            <div className="my-product-status-heading">
+
+              <h3>
+                Your product store is being reviewed
+              </h3>
+
+              <span
+                className={`my-product-status-badge ${getStatusClass(
+                  status
+                )}`}
+              >
+                {getStatusLabel(status)}
+              </span>
+
+            </div>
+
+            <p>
+              Your business has been submitted for
+              admin approval. Once approved, your
+              JusPing product store can become
+              available to customers.
+            </p>
+
+          </div>
+
+        </section>
+      );
+    }
+
+    // ================================
+    // ACTIVE
+    // ================================
+    if (status === "active") {
+      return (
+        <section className="my-product-status-card status-card-active">
+
+          <div className="my-product-status-icon">
+            ✓
+          </div>
+
+          <div className="my-product-status-content">
+
+            <div className="my-product-status-heading">
+
+              <div>
+                <span className="my-product-status-label">
+                  STORE STATUS
+                </span>
+
+                <h3>
+                  Your product store is live
+                </h3>
+              </div>
+
+              <span
+                className={`my-product-status-badge ${getStatusClass(
+                  status
+                )}`}
+              >
+                {getStatusLabel(status)}
+              </span>
+
+            </div>
+
+            <p>
+              Your store is active and your products
+              can be managed from this page.
+            </p>
+
+            <div className="my-product-status-actions">
+
+              <button
+                type="button"
+                className="my-product-status-primary"
+                onClick={handleAddProduct}
+              >
+                Add Product
+                <span>→</span>
+              </button>
+
+            </div>
+
+          </div>
+
+        </section>
+      );
+    }
+
+    // ================================
+    // REJECTED
+    // ================================
+    if (status === "rejected") {
+      return (
+        <section className="my-product-status-card status-card-rejected">
+
+          <div className="my-product-status-icon">
+            ⚠️
+          </div>
+
+          <div className="my-product-status-content">
+
+            <div className="my-product-status-heading">
+
+              <div>
+                <span className="my-product-status-label">
+                  ACTION REQUIRED
+                </span>
+
+                <h3>
+                  Your store needs some changes
+                </h3>
+              </div>
+
+              <span
+                className={`my-product-status-badge ${getStatusClass(
+                  status
+                )}`}
+              >
+                {getStatusLabel(status)}
+              </span>
+
+            </div>
+
+            <p>
+              Please update the required business
+              information before submitting your
+              store again for approval.
+            </p>
+
+            <div className="my-product-status-actions">
+
+              <button
+                type="button"
+                className="my-product-status-primary"
+                onClick={() =>
+                  navigate("/my-business")
+                }
+              >
+                Update Store
+                <span>→</span>
+              </button>
+
+            </div>
+
+          </div>
+
+        </section>
+      );
+    }
+
+    return null;
   };
 
   // ------------------------------------
@@ -134,9 +435,9 @@ const MyProductStore = () => {
   return (
     <div className="my-product-store-page">
 
-      {/* -------------------------------- */}
-      {/* Header */}
-      {/* -------------------------------- */}
+      {/* ================================= */}
+      {/* HEADER */}
+      {/* ================================= */}
       <div className="my-product-store-header">
 
         <div>
@@ -157,6 +458,7 @@ const MyProductStore = () => {
           </p>
         </div>
 
+        {/* ONLY ADD PRODUCT BUTTON */}
         <button
           type="button"
           className="my-product-store-add-btn"
@@ -167,18 +469,18 @@ const MyProductStore = () => {
 
       </div>
 
-      {/* -------------------------------- */}
-      {/* Error */}
-      {/* -------------------------------- */}
+      {/* ================================= */}
+      {/* ERROR */}
+      {/* ================================= */}
       {error && (
         <div className="my-product-store-error">
           {error}
         </div>
       )}
 
-      {/* -------------------------------- */}
-      {/* Store Summary */}
-      {/* -------------------------------- */}
+      {/* ================================= */}
+      {/* STORE SUMMARY */}
+      {/* ================================= */}
       <div className="my-product-store-summary">
 
         <div className="my-product-store-stat">
@@ -207,11 +509,42 @@ const MyProductStore = () => {
 
         </div>
 
+        <div className="my-product-store-stat">
+
+          <span className="my-product-store-stat-icon">
+            {shop?.tenant_status === "active"
+              ? "🟢"
+              : shop?.tenant_status === "pending"
+              ? "🟠"
+              : shop?.tenant_status === "rejected"
+              ? "🔴"
+              : "🟡"}
+          </span>
+
+          <div>
+            <strong>
+              {getStatusLabel(
+                shop?.tenant_status
+              )}
+            </strong>
+
+            <span>
+              Store Status
+            </span>
+          </div>
+
+        </div>
+
       </div>
 
-      {/* -------------------------------- */}
-      {/* Products Section */}
-      {/* -------------------------------- */}
+      {/* ================================= */}
+      {/* STORE STATUS */}
+      {/* ================================= */}
+      {renderStoreStatus()}
+
+      {/* ================================= */}
+      {/* PRODUCTS */}
+      {/* ================================= */}
       <section className="my-product-store-section">
 
         <div className="my-product-store-section-header">
@@ -225,21 +558,13 @@ const MyProductStore = () => {
             </p>
           </div>
 
-          {products.length > 0 && (
-            <button
-              type="button"
-              className="my-product-store-small-add"
-              onClick={handleAddProduct}
-            >
-              ＋ Add Product
-            </button>
-          )}
+          {/* Removed duplicate Add Product button */}
 
         </div>
 
-        {/* -------------------------------- */}
-        {/* No Products */}
-        {/* -------------------------------- */}
+        {/* ================================= */}
+        {/* NO PRODUCTS */}
+        {/* ================================= */}
         {products.length === 0 ? (
 
           <div className="my-product-store-empty">
@@ -248,7 +573,9 @@ const MyProductStore = () => {
               📦
             </div>
 
-            <h3>No products yet</h3>
+            <h3>
+              No products yet
+            </h3>
 
             <p>
               Start adding products to your store.
@@ -265,9 +592,9 @@ const MyProductStore = () => {
 
         ) : (
 
-          /* -------------------------------- */
-          /* Product Grid */
-          /* -------------------------------- */
+          /* ================================= */
+          /* PRODUCT GRID */
+          /* ================================= */
           <div className="my-product-store-grid">
 
             {products.map((product) => {
@@ -322,7 +649,9 @@ const MyProductStore = () => {
                   {/* Product Information */}
                   <div className="my-product-card-content">
 
-                    <h3>{productName}</h3>
+                    <h3>
+                      {productName}
+                    </h3>
 
                     {product.category_name && (
                       <span className="my-product-card-category">
@@ -345,11 +674,9 @@ const MyProductStore = () => {
                     <button
                       type="button"
                       className="my-product-card-edit"
-                      onClick={() => {
-                        alert(
-                          "Product editing will be added next."
-                        );
-                      }}
+                      onClick={() =>
+                        handleEditProduct(productId)
+                      }
                     >
                       Edit Product
                     </button>
