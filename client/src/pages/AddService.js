@@ -20,7 +20,7 @@ const AddService = () => {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
 
-  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [loadingCategories, setLoadingCategories] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const [error, setError] = useState("");
@@ -38,47 +38,47 @@ const AddService = () => {
   // ---------------------------------------------------------
   // Load categories
   // ---------------------------------------------------------
-  useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        setLoadingCategories(true);
+  // useEffect(() => {
+  //   const loadCategories = async () => {
+  //     try {
+  //       setLoadingCategories(true);
 
-        const token = getAuthToken();
+  //       const token = getAuthToken();
 
-        const response = await fetch(
-          `${secondaryApiUrl}/api/categories`,
-          {
-            headers: token
-              ? {
-                  Authorization: `Bearer ${token}`,
-                }
-              : {},
-          }
-        );
+  //       const response = await fetch(
+  //         `${secondaryApiUrl}/api/categories`,
+  //         {
+  //           headers: token
+  //             ? {
+  //                 Authorization: `Bearer ${token}`,
+  //               }
+  //             : {},
+  //         }
+  //       );
 
-        if (!response.ok) {
-          throw new Error("Failed to load categories");
-        }
+  //       if (!response.ok) {
+  //         throw new Error("Failed to load categories");
+  //       }
 
-        const data = await response.json();
+  //       const data = await response.json();
 
-        if (Array.isArray(data)) {
-          setCategories(data);
-        } else if (Array.isArray(data.categories)) {
-          setCategories(data.categories);
-        } else {
-          setCategories([]);
-        }
-      } catch (err) {
-        console.error("Load categories error:", err);
-        setError("Unable to load service categories.");
-      } finally {
-        setLoadingCategories(false);
-      }
-    };
+  //       if (Array.isArray(data)) {
+  //         setCategories(data);
+  //       } else if (Array.isArray(data.categories)) {
+  //         setCategories(data.categories);
+  //       } else {
+  //         setCategories([]);
+  //       }
+  //     } catch (err) {
+  //       console.error("Load categories error:", err);
+  //       setError("Unable to load service categories.");
+  //     } finally {
+  //       setLoadingCategories(false);
+  //     }
+  //   };
 
-    loadCategories();
-  }, []);
+  //   loadCategories();
+  // }, []);
 
   // ---------------------------------------------------------
   // Image selection
