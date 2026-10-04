@@ -1,446 +1,739 @@
 /* =========================================================
+   JUSPING SERVICE BOOKING
+   ========================================================= */
+
+.jp-booking-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(
+      circle at 10% 0%,
+      rgba(99, 91, 255, 0.07),
+      transparent 28%
+    ),
+    #f8f9fc;
+  color: #172033;
+  padding: 30px 18px 110px;
+  box-sizing: border-box;
+}
+
+.jp-booking-container {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+
+/* =========================================================
+   BACK BUTTON
+   ========================================================= */
+
+.jp-booking-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 20px;
+  padding: 9px 13px;
+  border: 1px solid #e4e7ec;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #475467;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.jp-booking-back:hover {
+  border-color: #c7c2ff;
+  color: #635bff;
+  transform: translateX(-2px);
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.jp-booking-header {
+  margin-bottom: 28px;
+}
+
+.jp-booking-header h1 {
+  margin: 0;
+  color: #101828;
+  font-size: 34px;
+  line-height: 1.15;
+  letter-spacing: -0.9px;
+}
+
+.jp-booking-header p {
+  max-width: 650px;
+  margin: 9px 0 0;
+  color: #667085;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+
+/* =========================================================
+   MAIN GRID
+   ========================================================= */
+
+.jp-booking-grid {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 0.9fr)
+    minmax(0, 1.1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+
+/* =========================================================
+   SERVICE CARD
+   ========================================================= */
+
+.jp-booking-service-card {
+  overflow: hidden;
+  border: 1px solid #e7e9ef;
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow:
+    0 10px 35px rgba(16, 24, 40, 0.06);
+}
+
+.jp-booking-service-image-wrap {
+  position: relative;
+  height: 330px;
+  overflow: hidden;
+  background: #eef0f4;
+}
+
+.jp-booking-service-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.jp-booking-image-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.42),
+      transparent 50%
+    );
+}
+
+.jp-booking-image-label {
+  position: absolute;
+  left: 18px;
+  bottom: 18px;
+  padding: 7px 11px;
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 999px;
+  background: rgba(17, 24, 39, 0.72);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  backdrop-filter: blur(8px);
+}
+
+
+/* =========================================================
+   SERVICE CONTENT
+   ========================================================= */
+
+.jp-booking-service-content {
+  padding: 23px;
+}
+
+.jp-booking-service-content h2 {
+  margin: 0;
+  color: #101828;
+  font-size: 23px;
+  line-height: 1.25;
+  letter-spacing: -0.4px;
+}
+
+.jp-booking-service-description {
+  margin: 10px 0 20px;
+  color: #667085;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+
+/* =========================================================
+   PRICE BOX
+   ========================================================= */
+
+.jp-booking-price-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 16px;
+  border: 1px solid #ebe9ff;
+  border-radius: 15px;
+  background:
+    linear-gradient(
+      135deg,
+      #f8f7ff,
+      #ffffff
+    );
+}
+
+.jp-booking-price-label {
+  margin-bottom: 4px;
+  color: #667085;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.jp-booking-price {
+  color: #101828;
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.jp-booking-price-note {
+  margin-top: 4px;
+  color: #98a2b3;
+  font-size: 10px;
+}
+
+.jp-booking-price-box > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 47px;
+  height: 47px;
+  border-radius: 14px;
+  background: #eeecff;
+}
+
+
+/* =========================================================
+   CART STATUS
+   ========================================================= */
+
+.jp-service-cart-status {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid #abefc6;
+  border-radius: 10px;
+  background: #ecfdf3;
+  color: #067647;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   BOOKING FORM CARD
+   ========================================================= */
+
+.jp-booking-form-card {
+  padding: 25px;
+  border: 1px solid #e7e9ef;
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow:
+    0 10px 35px rgba(16, 24, 40, 0.06);
+}
+
+.jp-booking-form-header {
+  margin-bottom: 25px;
+}
+
+.jp-booking-form-header h2 {
+  margin: 0;
+  color: #101828;
+  font-size: 20px;
+  letter-spacing: -0.3px;
+}
+
+.jp-booking-form-header p {
+  margin: 6px 0 0;
+  color: #667085;
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   FORM FIELD
+   ========================================================= */
+
+.jp-booking-field {
+  margin-bottom: 25px;
+}
+
+.jp-booking-field > label {
+  display: block;
+  margin-bottom: 10px;
+  color: #344054;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+
+/* =========================================================
+   DATE OPTIONS
+   ========================================================= */
+
+.jp-date-options {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.jp-date-option {
+  min-width: 0;
+  padding: 10px 4px;
+  border: 1px solid #e4e7ec;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #667085;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.jp-date-option:hover {
+  border-color: #c7c2ff;
+  background: #faf9ff;
+}
+
+.jp-date-option span {
+  display: block;
+  overflow: hidden;
+  margin-bottom: 5px;
+  font-size: 9px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.jp-date-option strong {
+  display: block;
+  color: #101828;
+  font-size: 18px;
+  line-height: 1.1;
+}
+
+.jp-date-option small {
+  display: block;
+  margin-top: 4px;
+  font-size: 9px;
+  color: #98a2b3;
+}
+
+.jp-date-option.active {
+  border-color: #635bff;
+  background: #635bff;
+  box-shadow:
+    0 6px 15px rgba(99, 91, 255, 0.22);
+}
+
+.jp-date-option.active span,
+.jp-date-option.active strong,
+.jp-date-option.active small {
+  color: #ffffff;
+}
+
+
+/* =========================================================
+   TIME OPTIONS
+   ========================================================= */
+
+.jp-time-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.jp-time-option {
+  min-height: 47px;
+  padding: 0 12px;
+  border: 1px solid #e4e7ec;
+  border-radius: 11px;
+  background: #ffffff;
+  color: #475467;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.jp-time-option:hover {
+  border-color: #c7c2ff;
+  background: #faf9ff;
+}
+
+.jp-time-option.active {
+  border-color: #635bff;
+  background: #f5f3ff;
+  color: #5147d9;
+  box-shadow:
+    inset 0 0 0 1px rgba(99, 91, 255, 0.15);
+}
+
+
+/* =========================================================
+   REQUIREMENTS TEXTAREA
+   ========================================================= */
+
+.jp-booking-textarea {
+  width: 100%;
+  min-height: 105px;
+  box-sizing: border-box;
+  padding: 13px 14px;
+  border: 1px solid #d0d5dd;
+  border-radius: 12px;
+  outline: none;
+  background: #ffffff;
+  color: #101828;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.55;
+  resize: vertical;
+  transition: all 0.16s ease;
+}
+
+.jp-booking-textarea::placeholder {
+  color: #98a2b3;
+}
+
+.jp-booking-textarea:focus {
+  border-color: #635bff;
+  box-shadow:
+    0 0 0 3px rgba(99, 91, 255, 0.1);
+}
+
+
+/* =========================================================
+   SUBMIT BUTTON
+   ========================================================= */
+
+.jp-booking-submit {
+  width: 100%;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 0;
+  border-radius: 13px;
+  background: #171717;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 750;
+  cursor: pointer;
+  box-shadow:
+    0 7px 18px rgba(16, 24, 40, 0.14);
+  transition: all 0.18s ease;
+}
+
+.jp-booking-submit:hover {
+  background: #000000;
+  transform: translateY(-1px);
+  box-shadow:
+    0 10px 23px rgba(16, 24, 40, 0.18);
+}
+
+.jp-booking-submit span {
+  font-size: 19px;
+}
+
+.jp-booking-form-footnote {
+  margin: 11px 0 0;
+  color: #98a2b3;
+  font-size: 10px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+
+/* =========================================================
    FLOATING CART
    ========================================================= */
 
 .floating-cart {
   position: fixed;
-
   right: 22px;
   bottom: 22px;
-
-  z-index: 900;
-
+  z-index: 100;
   display: flex;
   align-items: center;
-  justify-content: center;
-
   gap: 7px;
-
   min-height: 48px;
-
   padding: 0 17px;
-
-  border: 1px solid rgba(255, 255, 255, 0.15);
-
+  border: 1px solid rgba(255,255,255,0.15);
   border-radius: 999px;
-
   background: #171717;
-
   color: #ffffff;
-
   font-size: 12px;
   font-weight: 750;
-
   cursor: pointer;
-
   box-shadow:
-    0 10px 30px rgba(0, 0, 0, 0.22);
-
-  transition:
-    transform 0.18s ease,
-    box-shadow 0.18s ease;
+    0 10px 30px rgba(0,0,0,0.22);
+  transition: all 0.18s ease;
 }
 
 .floating-cart:hover {
   transform: translateY(-2px);
-
   box-shadow:
-    0 14px 35px rgba(0, 0, 0, 0.26);
+    0 14px 35px rgba(0,0,0,0.26);
 }
 
 
 /* =========================================================
-   JUSPING CART POPUP OVERLAY
+   CART POPUP
    ========================================================= */
 
-.jp-cart-popup {
-  position: fixed !important;
-
-  top: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  left: 0 !important;
-
-  width: 100vw !important;
-  height: 100vh !important;
-
-  margin: 0 !important;
-  padding: 20px !important;
-
-  box-sizing: border-box;
-
-  z-index: 99999 !important;
-
-  display: flex !important;
-
-  align-items: center !important;
-  justify-content: center !important;
-
-  background: rgba(16, 24, 40, 0.48) !important;
-
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-
-  overflow: hidden;
-}
-
-
-/* =========================================================
-   CART POPUP CONTENT
-   ========================================================= */
-
-.jp-cart-popup-content {
-  position: relative;
-
-  width: min(480px, 100%);
-
-  max-width: 480px;
-
-  max-height: 80vh;
-
-  margin: 0;
-
-  padding: 25px;
-
-  box-sizing: border-box;
-
-  overflow-y: auto;
-
-  border-radius: 22px;
-
-  background: #ffffff !important;
-
-  color: #101828 !important;
-
-  box-shadow:
-    0 25px 70px rgba(0, 0, 0, 0.20);
-
-  animation:
-    jpCartPopupIn 0.18s ease-out;
-}
-
-
-/* =========================================================
-   POPUP ANIMATION
-   ========================================================= */
-
-@keyframes jpCartPopupIn {
-
-  from {
-    opacity: 0;
-
-    transform:
-      translateY(10px)
-      scale(0.98);
-  }
-
-  to {
-    opacity: 1;
-
-    transform:
-      translateY(0)
-      scale(1);
-  }
-
-}
-
-
-/* =========================================================
-   CART TITLE
-   ========================================================= */
-
-.jp-cart-popup-content h2 {
-  margin: 0 0 20px;
-
-  padding-right: 40px;
-
-  color: #101828 !important;
-
-  font-size: 21px;
-
-  line-height: 1.25;
-}
-
-
-/* =========================================================
-   CLOSE BUTTON
-   ========================================================= */
-
-.jp-cart-close-btn {
-  position: absolute;
-
-  top: 16px;
-  right: 16px;
-
-  width: 32px;
-  height: 32px;
-
+.cart-popup {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
   display: flex;
-
   align-items: center;
   justify-content: center;
+  padding: 20px;
+  background: rgba(16, 24, 40, 0.48);
+  backdrop-filter: blur(5px);
+}
 
-  margin: 0;
-  padding: 0;
+.cart-popup-content {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 25px;
+  box-sizing: border-box;
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow:
+    0 25px 70px rgba(0,0,0,0.2);
+}
 
-  border: 1px solid #eaecf0;
-
-  border-radius: 50%;
-
-  background: #ffffff !important;
-
-  color: #667085 !important;
-
-  font-family: inherit;
-
+.cart-popup-content h2 {
+  margin: 0 0 20px;
+  color: #101828;
   font-size: 21px;
+}
 
+.cart-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #eaecf0;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #667085;
+  font-size: 21px;
   line-height: 1;
-
   cursor: pointer;
-
-  z-index: 2;
 }
 
-.jp-cart-close-btn:hover {
-  background: #f9fafb !important;
-
-  color: #101828 !important;
-}
-
-
-/* =========================================================
-   CART LIST
-   ========================================================= */
-
-.jp-cart-popup-content ul {
+.cart-popup-content ul {
   display: flex;
-
   flex-direction: column;
-
   gap: 11px;
-
   margin: 0;
-
   padding: 0;
-
   list-style: none;
 }
 
-
-/* =========================================================
-   CART ITEM
-   ========================================================= */
-
-.jp-cart-item-list {
+.cart-item-list {
   display: flex;
-
   align-items: center;
-
   gap: 11px;
-
-  width: 100%;
-
-  box-sizing: border-box;
-
   padding: 11px;
-
   border: 1px solid #eaecf0;
-
   border-radius: 13px;
-
-  background: #ffffff !important;
 }
 
-
-/* =========================================================
-   ITEM IMAGE
-   ========================================================= */
-
-.jp-cart-item-image {
+.cart-item-image {
   width: 52px;
   height: 52px;
-
   flex: 0 0 52px;
-
-  display: block;
-
   border-radius: 9px;
-
   object-fit: cover;
-
   background: #f2f4f7;
 }
 
-
-/* =========================================================
-   ITEM DETAILS
-   ========================================================= */
-
-.jp-cart-item-details {
+.cart-item-details {
   min-width: 0;
-
   flex: 1;
-
   display: flex;
-
   flex-direction: column;
-
   gap: 3px;
 }
 
-
-/* =========================================================
-   ITEM NAME
-   ========================================================= */
-
-.jp-cart-item-name {
+.cart-item-name {
   overflow: hidden;
-
-  color: #344054 !important;
-
+  color: #344054;
   font-size: 12px;
-
   font-weight: 750;
-
   text-overflow: ellipsis;
-
   white-space: nowrap;
 }
 
-
-/* =========================================================
-   SERVICE DATE / TIME
-   ========================================================= */
-
-.jp-unit-label {
-  color: #667085 !important;
-
-  font-size: 10px;
-
-  line-height: 1.4;
-}
-
-
-/* =========================================================
-   QUANTITY
-   ========================================================= */
-
-.jp-cart-item-quantity {
-  color: #98a2b3 !important;
-
+.unit-label {
+  color: #667085;
   font-size: 10px;
 }
 
+.cart-item-quantity {
+  color: #98a2b3;
+  font-size: 10px;
+}
 
-/* =========================================================
-   PRICE
-   ========================================================= */
-
-.jp-cart-item-price {
-  flex: 0 0 auto;
-
-  color: #101828 !important;
-
+.cart-item-price {
+  color: #101828;
   font-size: 12px;
-
   font-weight: 800;
-
-  white-space: nowrap;
 }
 
-
-/* =========================================================
-   PROCEED TO ORDER
-   ========================================================= */
-
-.jp-cart-proceed-btn {
+.cart-popup-content .login-btn {
   width: 100%;
-
   min-height: 46px;
-
   margin-top: 18px;
-
-  padding: 0 15px;
-
   border: 0;
-
   border-radius: 11px;
-
-  background: #171717 !important;
-
-  color: #ffffff !important;
-
+  background: #171717;
+  color: #ffffff;
   font-family: inherit;
-
   font-size: 13px;
-
   font-weight: 750;
-
   cursor: pointer;
-
-  transition:
-    background 0.18s ease,
-    transform 0.18s ease;
-}
-
-.jp-cart-proceed-btn:hover {
-  background: #000000 !important;
-
-  transform: translateY(-1px);
 }
 
 
 /* =========================================================
-   TABLET / MOBILE
+   TABLET
    ========================================================= */
 
 @media (max-width: 850px) {
 
-  .floating-cart {
-    z-index: 900;
+  .jp-booking-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .jp-booking-service-image-wrap {
+    height: 300px;
   }
 
 }
 
 
 /* =========================================================
-   MOBILE CART
+   MOBILE
    ========================================================= */
 
 @media (max-width: 600px) {
 
-  .floating-cart {
-    right: 11px;
+  .jp-booking-page {
+    padding: 18px 11px 95px;
+  }
 
-    bottom: 11px;
+  .jp-booking-header h1 {
+    font-size: 27px;
+  }
 
-    left: 11px;
+  .jp-booking-header p {
+    font-size: 12px;
+  }
 
-    justify-content: center;
+  .jp-booking-grid {
+    gap: 14px;
+  }
 
+  .jp-booking-service-card,
+  .jp-booking-form-card {
+    border-radius: 18px;
+  }
+
+  .jp-booking-service-image-wrap {
+    height: 230px;
+  }
+
+  .jp-booking-service-content {
+    padding: 18px;
+  }
+
+  .jp-booking-service-content h2 {
+    font-size: 20px;
+  }
+
+  .jp-booking-form-card {
+    padding: 18px;
+  }
+
+  .jp-booking-form-header h2 {
+    font-size: 18px;
+  }
+
+  /*
+     Date selector becomes horizontally
+     scrollable instead of squeezing 7
+     buttons into a tiny screen.
+  */
+
+  .jp-date-options {
+    display: flex;
+    overflow-x: auto;
+    gap: 8px;
+    padding-bottom: 5px;
+    scrollbar-width: none;
+  }
+
+  .jp-date-options::-webkit-scrollbar {
+    display: none;
+  }
+
+  .jp-date-option {
+    min-width: 63px;
+    flex: 0 0 63px;
+  }
+
+  .jp-time-options {
+    grid-template-columns: 1fr;
+  }
+
+  .jp-time-option {
     min-height: 48px;
   }
 
-
-  .jp-cart-popup {
-    align-items: flex-end !important;
-
-    justify-content: center !important;
-
-    padding: 0 !important;
+  .floating-cart {
+    right: 11px;
+    bottom: 11px;
+    left: 11px;
+    justify-content: center;
+    min-height: 48px;
   }
 
+  .cart-popup {
+    align-items: flex-end;
+    padding: 0;
+  }
 
-  .jp-cart-popup-content {
-    width: 100% !important;
-
-    max-width: none !important;
-
+  .cart-popup-content {
     max-height: 82vh;
-
+    max-width: none;
     border-radius: 22px 22px 0 0;
-
     padding: 22px 16px 25px;
   }
 
@@ -453,15 +746,18 @@
 
 @media (max-width: 380px) {
 
-  .jp-cart-popup-content {
-    padding: 20px 13px 22px;
+  .jp-booking-header h1 {
+    font-size: 24px;
   }
 
-  .jp-cart-item-image {
-    width: 46px;
-    height: 46px;
+  .jp-booking-price {
+    font-size: 22px;
+  }
 
-    flex-basis: 46px;
+  .jp-booking-price-box > span {
+    width: 40px;
+    height: 40px;
+    font-size: 25px !important;
   }
 
 }
