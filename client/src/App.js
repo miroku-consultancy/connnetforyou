@@ -50,6 +50,7 @@ import CreateStore from "./pages/CreateStore";
 import MyServiceStore from "./pages/MyServiceStore";
 import MyBusiness from "./pages/MyBusiness";
 import EditService from "./pages/EditService";
+import MyProductStore from "./MyProductStore";
 //import Banner from './components/Banner';
 
 
@@ -96,7 +97,7 @@ const AppRoutes = () => (
         <Route path="/order-summary" element={<ProtectedRoute><OrderSummary /></ProtectedRoute>} />
         <Route path="/order-history" element={<OrderHistory />} />
         <Route path="/address" element={<AddressPopup />} />
-        <Route path="/admin/add-product" element={<AddProduct />} />
+        {/* <Route path="/admin/add-product" element={<AddProduct />} /> */}
         <Route path="/admin/dashboard" element={<ProtectedRoute><ShopDashboard /></ProtectedRoute>} />
         <Route path="/vendor/dashboard" element={<VendorDashboard />} />
         <Route path="/shop-orders" element={<ProtectedRoute><ShopOrderHistory /></ProtectedRoute>} />
@@ -178,6 +179,16 @@ const AppRoutes = () => (
 <Route
   path="/edit-service/:id"
   element={<EditService />}
+/>
+
+<Route
+  path="/my-product-store"
+  element={<MyProductStore />}
+/>
+
+<Route
+  path="/my-product-store/add"
+  element={<AddProduct />}
 />
         {/* <Route
     path="/chat/:recipientId/:recipientName"

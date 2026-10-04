@@ -114,27 +114,27 @@ const MyBusiness = () => {
     }
   };
 
-  const handleManageStore = () => {
-    if (!shop) return;
+const handleManageStore = () => {
+  if (!shop) return;
 
-    if (shop.store_type === "service") {
-      navigate("/my-service-store");
-      return;
-    }
+  if (shop.store_type === "service") {
+    navigate("/my-service-store");
+    return;
+  }
 
-    navigate("/products");
-  };
+  navigate("/my-product-store");
+};
 
-  const handleCompleteStore = () => {
-    if (!shop) return;
+const handleCompleteStore = () => {
+  if (!shop) return;
 
-    if (shop.store_type === "service") {
-      navigate("/my-service-store");
-      return;
-    }
+  if (shop.store_type === "service") {
+    navigate("/my-service-store");
+    return;
+  }
 
-    navigate("/products");
-  };
+  navigate("/my-product-store");
+};
 
   const handleSubmitForApproval = async () => {
     if (!shop || submitting) return;
