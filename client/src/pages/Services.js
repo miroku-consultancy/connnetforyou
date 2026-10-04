@@ -1,6 +1,8 @@
 
 import React, { useEffect, useState } from "react";
+
 import "../components/DashboardSummary.css";
+import "./Services.css";
 import { secondaryApiUrl } from "../config/apiConfig";
 import ServiceCard from "../components/catalog/ServiceCard";
 import ServiceBooking from "./ServiceBooking";

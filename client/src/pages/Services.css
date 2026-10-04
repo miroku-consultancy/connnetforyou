@@ -1,52 +1,45 @@
 /* =========================================================
-   JUSPING SERVICES LIST
-   Product-card style layout
+   JUSPING SERVICES PAGE
    ========================================================= */
 
 .jp-services-page {
   width: 100%;
-  min-height: 100%;
+  min-height: 100vh;
+  padding: 24px;
   box-sizing: border-box;
+  background: #f8fafc;
+  color: #172033;
 }
 
 
 /* =========================================================
-   SELECTED BOOKING - ALWAYS ON TOP
+   SELECTED BOOKING - TOP
    ========================================================= */
 
 .jp-services-booking-top {
-  position: relative;
-
   width: 100%;
-
-  margin: 0 0 32px;
-
-  padding: 0;
-
-  box-sizing: border-box;
-
-  background: transparent;
-
-  z-index: 1;
+  margin: 0 auto 28px;
+  max-width: 1500px;
 }
 
 
 /* =========================================================
-   SERVICES LIST PANEL
+   AVAILABLE SERVICES PANEL
    ========================================================= */
 
 .jp-services-list-panel {
-  position: relative;
-
   width: 100%;
-
-  margin: 0;
-
-  padding: 0;
-
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 26px;
   box-sizing: border-box;
 
-  background: transparent;
+  background: #ffffff;
+  border: 1px solid #e4e7ec;
+  border-radius: 18px;
+
+  box-shadow:
+    0 4px 14px rgba(16, 24, 40, 0.05);
 }
 
 
@@ -54,151 +47,121 @@
    SECTION HEADER
    ========================================================= */
 
-.jp-services-list-panel .jp-section-heading {
+.jp-section-heading {
   display: flex;
-
-  align-items: flex-end;
-
+  align-items: flex-start;
   justify-content: space-between;
-
   gap: 20px;
+  margin-bottom: 24px;
+}
 
-  width: 100%;
+.jp-section-heading h2 {
+  margin: 0;
+  padding-left: 14px;
 
-  margin-bottom: 20px;
+  border-left: 4px solid #ff7a00;
+
+  color: #172033;
+  font-size: 25px;
+  font-weight: 800;
+  line-height: 1.2;
 }
 
 .jp-services-subtitle {
-  margin: 5px 0 0;
+  margin: 9px 0 0;
+  padding-left: 18px;
 
   color: #667085;
-
-  font-size: 13px;
-
+  font-size: 14px;
   line-height: 1.5;
 }
 
 .jp-services-count {
-  flex: 0 0 auto;
+  flex-shrink: 0;
 
-  padding: 7px 11px;
-
-  border: 1px solid #e4e7ec;
-
-  border-radius: 999px;
-
-  background: #ffffff;
-
-  color: #667085;
-
-  font-size: 11px;
-
+  color: #344054;
+  font-size: 14px;
   font-weight: 700;
+
+  padding-top: 5px;
 }
 
 
 /* =========================================================
-   SERVICE GRID
+   SERVICES GRID
+   5 CARDS ON LARGE DESKTOP
    ========================================================= */
 
 .jp-services-list-grid {
   display: grid;
 
-  grid-template-columns:
-    repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
 
   gap: 18px;
 
   width: 100%;
-
-  margin: 0;
-
-  padding: 0;
-
-  box-sizing: border-box;
-
-  align-items: stretch;
 }
 
 
 /* =========================================================
-   SERVICE CARD WRAPPER
+   SERVICE SELECT WRAPPER
    ========================================================= */
 
 .jp-service-select-card {
   position: relative;
-
-  width: 100%;
-
   min-width: 0;
-
-  box-sizing: border-box;
 
   overflow: hidden;
 
-  border: 1px solid #e7e9ef;
-
-  border-radius: 16px;
-
   background: #ffffff;
 
-  box-shadow:
-    0 5px 18px rgba(16, 24, 40, 0.05);
+  border: 1px solid #e4e7ec;
+  border-radius: 15px;
 
   transition:
-    transform 0.18s ease,
-    box-shadow 0.18s ease,
-    border-color 0.18s ease;
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+
+  box-shadow:
+    0 2px 8px rgba(16, 24, 40, 0.04);
 }
-
-
-/* Hover */
 
 .jp-service-select-card:hover {
   transform: translateY(-3px);
 
-  border-color: #d9d6ff;
+  border-color: #cfd5df;
 
   box-shadow:
-    0 12px 28px rgba(16, 24, 40, 0.10);
-}
-
-
-/* Selected service */
-
-.jp-service-select-card.selected {
-  border-color: #635bff;
-
-  box-shadow:
-    0 0 0 2px rgba(99, 91, 255, 0.10),
-    0 12px 28px rgba(16, 24, 40, 0.10);
+    0 10px 24px rgba(16, 24, 40, 0.10);
 }
 
 
 /* =========================================================
-   ACTUAL SERVICE CARD
+   SELECTED SERVICE
+   ========================================================= */
+
+.jp-service-select-card.selected {
+  border: 2px solid #ff7a00;
+
+  box-shadow:
+    0 0 0 3px rgba(255, 122, 0, 0.10),
+    0 10px 24px rgba(16, 24, 40, 0.10);
+}
+
+
+/* =========================================================
+   SERVICE CARD
    ========================================================= */
 
 .jp-service-select-card .jp-service-card {
   width: 100%;
-
   height: 100%;
 
-  min-width: 0;
-
   display: flex;
-
   flex-direction: column;
 
-  border: 0;
-
-  border-radius: 0;
-
   background: #ffffff;
-
-  box-shadow: none;
-
-  overflow: hidden;
 }
 
 
@@ -210,10 +173,7 @@
   position: relative;
 
   width: 100%;
-
   height: 155px;
-
-  flex: 0 0 155px;
 
   overflow: hidden;
 
@@ -221,16 +181,14 @@
 }
 
 .jp-service-select-card .jp-service-image img {
-  display: block;
-
   width: 100%;
-
   height: 100%;
+
+  display: block;
 
   object-fit: cover;
 
-  transition:
-    transform 0.25s ease;
+  transition: transform 0.3s ease;
 }
 
 .jp-service-select-card:hover .jp-service-image img {
@@ -245,126 +203,111 @@
 .jp-service-select-card .jp-service-badge {
   position: absolute;
 
-  top: 10px;
-
-  left: 10px;
+  left: 12px;
+  bottom: -15px;
 
   width: 34px;
-
   height: 34px;
 
   display: flex;
-
   align-items: center;
-
   justify-content: center;
 
+  border: 3px solid #ffffff;
   border-radius: 50%;
 
-  background: rgba(255, 255, 255, 0.94);
+  background: #ffffff;
+
+  font-size: 15px;
 
   box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.12);
+    0 3px 8px rgba(16, 24, 40, 0.12);
 
-  font-size: 17px;
+  z-index: 2;
 }
 
 
 /* =========================================================
-   SERVICE INFO
+   SERVICE INFORMATION
    ========================================================= */
 
 .jp-service-select-card .jp-service-info {
-  display: flex;
-
   flex: 1;
 
+  display: flex;
   flex-direction: column;
 
-  min-width: 0;
-
-  padding: 14px;
+  padding: 20px 14px 15px;
 }
 
 
 /* TITLE */
 
 .jp-service-select-card .jp-service-info h3 {
-  margin: 0;
+  margin: 0 0 8px;
 
-  color: #101828;
+  color: #172033;
 
   font-size: 15px;
+  font-weight: 800;
 
-  line-height: 1.3;
-
-  font-weight: 750;
-
-  overflow: hidden;
-
-  text-overflow: ellipsis;
+  line-height: 1.35;
 
   display: -webkit-box;
-
   -webkit-line-clamp: 2;
-
   -webkit-box-orient: vertical;
+
+  overflow: hidden;
 }
 
 
 /* DESCRIPTION */
 
-.jp-service-select-card
-.jp-service-description {
-  margin: 7px 0 0;
+.jp-service-select-card .jp-service-description {
+  margin: 0 0 12px;
 
   color: #667085;
 
-  font-size: 11px;
-
-  line-height: 1.45;
+  font-size: 12px;
+  line-height: 1.5;
 
   display: -webkit-box;
-
-  -webkit-line-clamp: 2;
-
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
 
   overflow: hidden;
 }
 
 
-/* PRICE */
+/* =========================================================
+   PRICE
+   ========================================================= */
 
 .jp-service-select-card .jp-service-price {
-  margin: 10px 0 0;
+  margin: auto 0 3px;
 
-  color: #667085;
+  color: #344054;
 
-  font-size: 11px;
+  font-size: 12px;
+  line-height: 1.4;
 }
 
 .jp-service-select-card .jp-service-price strong {
   color: #101828;
 
-  font-size: 15px;
-
+  font-size: 17px;
   font-weight: 800;
 }
 
-
-/* PRICE NOTE */
-
-.jp-service-select-card .jp-service-price-note {
+.jp-service-price-note {
   display: block;
 
   margin-top: 3px;
 
   color: #98a2b3;
 
-  font-size: 9px;
-
-  line-height: 1.35;
+  font-size: 10px;
+  line-height: 1.4;
 }
 
 
@@ -377,35 +320,40 @@
 
   min-height: 38px;
 
-  margin-top: auto;
+  margin-top: 13px;
 
-  padding: 0 12px;
+  padding: 8px 12px;
 
   border: 0;
-
   border-radius: 9px;
 
-  background: #171717;
-
+  background: #17172b;
   color: #ffffff;
 
   font-family: inherit;
 
-  font-size: 11px;
-
-  font-weight: 750;
+  font-size: 12px;
+  font-weight: 700;
 
   cursor: pointer;
 
   transition:
-    background 0.18s ease,
-    transform 0.18s ease;
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .jp-service-select-card .jp-service-info button:hover {
-  background: #000000;
+  background: #282844;
 
   transform: translateY(-1px);
+
+  box-shadow:
+    0 5px 12px rgba(23, 23, 43, 0.18);
+}
+
+.jp-service-select-card .jp-service-info button:active {
+  transform: translateY(0);
 }
 
 
@@ -417,43 +365,50 @@
   position: absolute;
 
   top: 10px;
-
   right: 10px;
 
-  z-index: 20;
+  z-index: 5;
 
-  padding: 6px 9px;
+  padding: 5px 9px;
 
   border-radius: 999px;
 
-  background: #635bff;
-
+  background: #ff7a00;
   color: #ffffff;
 
-  font-size: 9px;
-
+  font-size: 10px;
   font-weight: 800;
 
-  line-height: 1;
-
   box-shadow:
-    0 4px 12px rgba(99, 91, 255, 0.28);
+    0 3px 8px rgba(255, 122, 0, 0.25);
 }
 
 
 /* =========================================================
-   DESKTOP / LAPTOP
+   EMPTY / ERROR STATES
    ========================================================= */
 
-@media (max-width: 1250px) {
+.jp-empty {
+  padding: 45px 20px;
 
-  .jp-services-list-grid {
-    grid-template-columns:
-      repeat(4, minmax(0, 1fr));
+  text-align: center;
 
-    gap: 16px;
-  }
+  background: #ffffff;
 
+  border: 1px dashed #d0d5dd;
+  border-radius: 15px;
+}
+
+.jp-empty h3 {
+  margin: 0 0 8px;
+
+  color: #172033;
+}
+
+.jp-empty p {
+  margin: 0;
+
+  color: #667085;
 }
 
 
@@ -461,49 +416,31 @@
    TABLET
    ========================================================= */
 
-@media (max-width: 900px) {
+@media (max-width: 1250px) {
 
   .jp-services-list-grid {
-    grid-template-columns:
-      repeat(3, minmax(0, 1fr));
-
-    gap: 15px;
-  }
-
-  .jp-service-select-card .jp-service-image {
-    height: 145px;
-
-    flex-basis: 145px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
 }
 
 
 /* =========================================================
-   SMALL TABLET / LARGE MOBILE
+   SMALL TABLET
    ========================================================= */
 
-@media (max-width: 700px) {
+@media (max-width: 1000px) {
+
+  .jp-services-page {
+    padding: 18px;
+  }
+
+  .jp-services-list-panel {
+    padding: 20px;
+  }
 
   .jp-services-list-grid {
-    grid-template-columns:
-      repeat(2, minmax(0, 1fr));
-
-    gap: 14px;
-  }
-
-  .jp-service-select-card .jp-service-image {
-    height: 150px;
-
-    flex-basis: 150px;
-  }
-
-  .jp-services-list-panel .jp-section-heading {
-    align-items: flex-start;
-
-    flex-direction: column;
-
-    gap: 8px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
 }
@@ -513,40 +450,78 @@
    MOBILE
    ========================================================= */
 
-@media (max-width: 480px) {
+@media (max-width: 700px) {
+
+  .jp-services-page {
+    padding: 12px;
+  }
+
+  .jp-services-list-panel {
+    padding: 15px;
+    border-radius: 14px;
+  }
+
+  .jp-section-heading {
+    align-items: flex-start;
+    margin-bottom: 18px;
+  }
+
+  .jp-section-heading h2 {
+    font-size: 21px;
+  }
+
+  .jp-services-subtitle {
+    font-size: 13px;
+  }
+
+  .jp-services-count {
+    font-size: 12px;
+  }
 
   .jp-services-list-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-
-    gap: 10px;
-  }
-
-  .jp-service-select-card {
-    border-radius: 13px;
+    gap: 12px;
   }
 
   .jp-service-select-card .jp-service-image {
-    height: 125px;
-
-    flex-basis: 125px;
+    height: 135px;
   }
 
   .jp-service-select-card .jp-service-info {
-    padding: 11px;
+    padding: 18px 11px 12px;
   }
 
   .jp-service-select-card .jp-service-info h3 {
-    font-size: 13px;
+    font-size: 14px;
+  }
+
+  .jp-service-select-card .jp-service-description {
+    font-size: 11px;
   }
 
   .jp-service-select-card .jp-service-price strong {
-    font-size: 13px;
+    font-size: 15px;
   }
 
-  .jp-service-select-card .jp-service-info button {
-    min-height: 36px;
+}
 
-    font-size: 10px;
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 480px) {
+
+  .jp-services-list-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .jp-service-select-card .jp-service-image {
+    height: 190px;
+  }
+
+  .jp-service-select-card .jp-service-info {
+    padding: 18px 14px 14px;
   }
 
 }
@@ -558,8 +533,20 @@
 
 @media (max-width: 360px) {
 
-  .jp-services-list-grid {
-    grid-template-columns: 1fr;
+  .jp-services-page {
+    padding: 8px;
+  }
+
+  .jp-services-list-panel {
+    padding: 12px;
+  }
+
+  .jp-section-heading {
+    flex-direction: column;
+  }
+
+  .jp-services-count {
+    padding-top: 0;
   }
 
 }
