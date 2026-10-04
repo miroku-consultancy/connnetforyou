@@ -1,397 +1,345 @@
-
-/* =========================================
-   SERVICE BOOKING PAGE
-========================================= */
+/* =========================================================
+   JUSPING SERVICE BOOKING
+   ========================================================= */
 
 .jp-booking-page {
-  width: 100%;
-  padding: 24px;
+  min-height: 100vh;
+  background:
+    radial-gradient(
+      circle at 10% 0%,
+      rgba(99, 91, 255, 0.07),
+      transparent 28%
+    ),
+    #f8f9fc;
+  color: #172033;
+  padding: 30px 18px 110px;
   box-sizing: border-box;
-  background: #f8fafc;
-  border-radius: 18px;
 }
 
 .jp-booking-container {
   width: 100%;
-  max-width: 1400px;
+  max-width: 1180px;
   margin: 0 auto;
 }
 
-/* =========================================
+
+/* =========================================================
    BACK BUTTON
-========================================= */
+   ========================================================= */
 
 .jp-booking-back {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
+  gap: 7px;
   margin-bottom: 20px;
-
-  border: 1px solid #e2e8f0;
+  padding: 9px 13px;
+  border: 1px solid #e4e7ec;
   border-radius: 10px;
-
   background: #ffffff;
-  color: #334155;
-
-  font-size: 14px;
-  font-weight: 600;
-
+  color: #475467;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.18s ease;
 }
 
 .jp-booking-back:hover {
-  background: #f1f5f9;
-  border-color: #cbd5e1;
+  border-color: #c7c2ff;
+  color: #635bff;
   transform: translateX(-2px);
 }
 
-/* =========================================
-   BOOKING HEADER
-========================================= */
+
+/* =========================================================
+   HEADER
+   ========================================================= */
 
 .jp-booking-header {
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .jp-booking-header h1 {
-  margin: 0 0 8px;
-
-  color: #0f172a;
-
-  font-size: 28px;
-  font-weight: 750;
-  line-height: 1.3;
+  margin: 0;
+  color: #101828;
+  font-size: 34px;
+  line-height: 1.15;
+  letter-spacing: -0.9px;
 }
 
 .jp-booking-header p {
-  margin: 0;
-
-  color: #64748b;
-
-  font-size: 15px;
-  line-height: 1.6;
+  max-width: 650px;
+  margin: 9px 0 0;
+  color: #667085;
+  font-size: 14px;
+  line-height: 1.55;
 }
 
-/* =========================================
+
+/* =========================================================
    MAIN GRID
-========================================= */
+   ========================================================= */
 
 .jp-booking-grid {
   display: grid;
-
   grid-template-columns:
-    minmax(280px, 0.85fr)
-    minmax(0, 1.5fr);
-
-  gap: 24px;
-
+    minmax(0, 0.9fr)
+    minmax(0, 1.1fr);
+  gap: 22px;
   align-items: start;
 }
 
-/* =========================================
-   SELECTED SERVICE CARD
-========================================= */
+
+/* =========================================================
+   SERVICE CARD
+   ========================================================= */
 
 .jp-booking-service-card {
   overflow: hidden;
-
+  border: 1px solid #e7e9ef;
+  border-radius: 24px;
   background: #ffffff;
-
-  border: 1px solid #e2e8f0;
-  border-radius: 18px;
-
-  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.04);
+  box-shadow:
+    0 10px 35px rgba(16, 24, 40, 0.06);
 }
-
-/* Service image */
 
 .jp-booking-service-image-wrap {
   position: relative;
-
-  width: 100%;
-  height: 240px;
-
+  height: 330px;
   overflow: hidden;
-  background: #e2e8f0;
+  background: #eef0f4;
 }
 
 .jp-booking-service-image {
+  display: block;
   width: 100%;
   height: 100%;
-
-  display: block;
-
   object-fit: cover;
-
-  transition: transform 0.4s ease;
-}
-
-.jp-booking-service-card:hover
-.jp-booking-service-image {
-  transform: scale(1.04);
 }
 
 .jp-booking-image-overlay {
   position: absolute;
   inset: 0;
-
-  background: linear-gradient(
-    to top,
-    rgba(15, 23, 42, 0.65),
-    transparent 60%
-  );
+  background:
+    linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.42),
+      transparent 50%
+    );
 }
 
 .jp-booking-image-label {
   position: absolute;
-
-  left: 16px;
-  bottom: 16px;
-
-  display: inline-flex;
-  align-items: center;
-
-  padding: 8px 14px;
-
-  border-radius: 30px;
-
-  background: rgba(255, 255, 255, 0.95);
-  color: #166534;
-
-  font-size: 12px;
+  left: 18px;
+  bottom: 18px;
+  padding: 7px 11px;
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 999px;
+  background: rgba(17, 24, 39, 0.72);
+  color: #ffffff;
+  font-size: 10px;
   font-weight: 700;
-
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(8px);
 }
 
-/* Service content */
+
+/* =========================================================
+   SERVICE CONTENT
+   ========================================================= */
 
 .jp-booking-service-content {
-  padding: 24px;
+  padding: 23px;
 }
 
 .jp-booking-service-content h2 {
-  margin: 0 0 12px;
-
-  color: #0f172a;
-
+  margin: 0;
+  color: #101828;
   font-size: 23px;
-  font-weight: 750;
-  line-height: 1.4;
+  line-height: 1.25;
+  letter-spacing: -0.4px;
 }
 
 .jp-booking-service-description {
-  margin: 0 0 22px;
-
-  color: #64748b;
-
-  font-size: 14px;
-  line-height: 1.7;
+  margin: 10px 0 20px;
+  color: #667085;
+  font-size: 13px;
+  line-height: 1.65;
 }
 
-/* =========================================
+
+/* =========================================================
    PRICE BOX
-========================================= */
+   ========================================================= */
 
 .jp-booking-price-box {
   display: flex;
   align-items: center;
   justify-content: space-between;
-
-  gap: 16px;
-
-  padding: 20px;
-
-  border: 1px solid #d1fae5;
-  border-radius: 14px;
-
-  background: linear-gradient(
-    135deg,
-    #ecfdf5,
-    #f0fdf4
-  );
+  gap: 15px;
+  padding: 16px;
+  border: 1px solid #ebe9ff;
+  border-radius: 15px;
+  background:
+    linear-gradient(
+      135deg,
+      #f8f7ff,
+      #ffffff
+    );
 }
 
 .jp-booking-price-label {
-  margin-bottom: 6px;
-
-  color: #64748b;
-
-  font-size: 13px;
-  font-weight: 600;
+  margin-bottom: 4px;
+  color: #667085;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
 }
 
 .jp-booking-price {
-  color: #047857;
-
-  font-size: 28px;
+  color: #101828;
+  font-size: 25px;
   font-weight: 800;
-  line-height: 1.3;
+  letter-spacing: -0.5px;
 }
 
 .jp-booking-price-note {
-  margin-top: 8px;
-
-  color: #64748b;
-
-  font-size: 12px;
-  line-height: 1.5;
+  margin-top: 4px;
+  color: #98a2b3;
+  font-size: 10px;
 }
 
-/* Already in cart */
+.jp-booking-price-box > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 47px;
+  height: 47px;
+  border-radius: 14px;
+  background: #eeecff;
+}
+
+
+/* =========================================================
+   CART STATUS
+   ========================================================= */
 
 .jp-service-cart-status {
-  margin-top: 16px;
-  padding: 12px 14px;
-
-  border: 1px solid #bbf7d0;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid #abefc6;
   border-radius: 10px;
-
-  background: #f0fdf4;
-  color: #166534;
-
-  font-size: 13px;
-  font-weight: 600;
+  background: #ecfdf3;
+  color: #067647;
+  font-size: 11px;
+  font-weight: 700;
 }
 
-/* =========================================
-   BOOKING FORM
-========================================= */
+
+/* =========================================================
+   BOOKING FORM CARD
+   ========================================================= */
 
 .jp-booking-form-card {
-  min-width: 0;
-
-  padding: 28px;
-
+  padding: 25px;
+  border: 1px solid #e7e9ef;
+  border-radius: 24px;
   background: #ffffff;
-
-  border: 1px solid #e2e8f0;
-  border-radius: 18px;
-
-  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.04);
+  box-shadow:
+    0 10px 35px rgba(16, 24, 40, 0.06);
 }
 
 .jp-booking-form-header {
-  margin-bottom: 26px;
-  padding-bottom: 20px;
-
-  border-bottom: 1px solid #f1f5f9;
+  margin-bottom: 25px;
 }
 
 .jp-booking-form-header h2 {
-  margin: 0 0 8px;
-
-  color: #0f172a;
-
-  font-size: 22px;
-  font-weight: 750;
+  margin: 0;
+  color: #101828;
+  font-size: 20px;
+  letter-spacing: -0.3px;
 }
 
 .jp-booking-form-header p {
-  margin: 0;
-
-  color: #64748b;
-
-  font-size: 14px;
-  line-height: 1.6;
+  margin: 6px 0 0;
+  color: #667085;
+  font-size: 12px;
 }
 
-/* =========================================
-   FORM FIELDS
-========================================= */
+
+/* =========================================================
+   FORM FIELD
+   ========================================================= */
 
 .jp-booking-field {
-  margin-bottom: 26px;
+  margin-bottom: 25px;
 }
 
 .jp-booking-field > label {
   display: block;
-
-  margin-bottom: 12px;
-
-  color: #334155;
-
-  font-size: 14px;
-  font-weight: 700;
+  margin-bottom: 10px;
+  color: #344054;
+  font-size: 12px;
+  font-weight: 750;
 }
 
-/* =========================================
-   DATE SELECTION
-========================================= */
+
+/* =========================================================
+   DATE OPTIONS
+   ========================================================= */
 
 .jp-date-options {
   display: grid;
-
   grid-template-columns: repeat(7, minmax(0, 1fr));
-
-  gap: 8px;
+  gap: 7px;
 }
 
 .jp-date-option {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-
   min-width: 0;
-  min-height: 92px;
-
-  padding: 12px 4px;
-
-  border: 1px solid #e2e8f0;
+  padding: 10px 4px;
+  border: 1px solid #e4e7ec;
   border-radius: 12px;
-
   background: #ffffff;
-  color: #64748b;
-
+  color: #667085;
+  font-family: inherit;
   cursor: pointer;
-
-  transition:
-    background 0.2s ease,
-    border-color 0.2s ease,
-    color 0.2s ease,
-    transform 0.2s ease;
+  transition: all 0.16s ease;
 }
 
 .jp-date-option:hover {
-  border-color: #10b981;
-  background: #f0fdf4;
-
-  transform: translateY(-2px);
+  border-color: #c7c2ff;
+  background: #faf9ff;
 }
 
 .jp-date-option span {
-  margin-bottom: 8px;
-
-  font-size: 11px;
-  font-weight: 600;
+  display: block;
+  overflow: hidden;
+  margin-bottom: 5px;
+  font-size: 9px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .jp-date-option strong {
-  color: #0f172a;
-
-  font-size: 21px;
-  font-weight: 800;
-  line-height: 1.2;
+  display: block;
+  color: #101828;
+  font-size: 18px;
+  line-height: 1.1;
 }
 
 .jp-date-option small {
-  margin-top: 5px;
-
-  font-size: 11px;
-  font-weight: 500;
+  display: block;
+  margin-top: 4px;
+  font-size: 9px;
+  color: #98a2b3;
 }
 
-/* Selected date */
-
 .jp-date-option.active {
-  border-color: #059669;
-  background: #059669;
-  color: #ffffff;
-
-  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+  border-color: #635bff;
+  background: #635bff;
+  box-shadow:
+    0 6px 15px rgba(99, 91, 255, 0.22);
 }
 
 .jp-date-option.active span,
@@ -400,256 +348,365 @@
   color: #ffffff;
 }
 
-/* =========================================
-   TIME SLOT SELECTION
-========================================= */
+
+/* =========================================================
+   TIME OPTIONS
+   ========================================================= */
 
 .jp-time-options {
   display: grid;
-
   grid-template-columns: repeat(2, minmax(0, 1fr));
-
-  gap: 12px;
+  gap: 9px;
 }
 
 .jp-time-option {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  min-height: 48px;
-
-  padding: 12px 14px;
-
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-
+  min-height: 47px;
+  padding: 0 12px;
+  border: 1px solid #e4e7ec;
+  border-radius: 11px;
   background: #ffffff;
-  color: #475569;
-
-  font-size: 13px;
-  font-weight: 600;
-  text-align: center;
-  line-height: 1.5;
-
+  color: #475467;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 650;
   cursor: pointer;
-
-  transition: all 0.2s ease;
+  transition: all 0.16s ease;
 }
 
 .jp-time-option:hover {
-  border-color: #10b981;
-  background: #f0fdf4;
-  color: #047857;
+  border-color: #c7c2ff;
+  background: #faf9ff;
 }
 
 .jp-time-option.active {
-  border-color: #059669;
-  background: #ecfdf5;
-  color: #047857;
-
-  box-shadow: 0 0 0 1px #059669;
+  border-color: #635bff;
+  background: #f5f3ff;
+  color: #5147d9;
+  box-shadow:
+    inset 0 0 0 1px rgba(99, 91, 255, 0.15);
 }
 
-/* =========================================
-   ADDRESS AND REQUIREMENTS TEXTAREAS
-========================================= */
+
+/* =========================================================
+   REQUIREMENTS TEXTAREA
+   ========================================================= */
 
 .jp-booking-textarea {
-  display: block;
-
   width: 100%;
-  min-height: 100px;
-
-  padding: 14px 16px;
-
+  min-height: 105px;
   box-sizing: border-box;
-
-  border: 1px solid #cbd5e1;
+  padding: 13px 14px;
+  border: 1px solid #d0d5dd;
   border-radius: 12px;
-
+  outline: none;
   background: #ffffff;
-  color: #0f172a;
-
+  color: #101828;
   font-family: inherit;
-  font-size: 14px;
-  line-height: 1.6;
-
+  font-size: 13px;
+  line-height: 1.55;
   resize: vertical;
-
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: all 0.16s ease;
 }
 
 .jp-booking-textarea::placeholder {
-  color: #94a3b8;
-}
-
-.jp-booking-textarea:hover {
-  border-color: #94a3b8;
+  color: #98a2b3;
 }
 
 .jp-booking-textarea:focus {
-  outline: none;
-
-  border-color: #059669;
-
-  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12);
+  border-color: #635bff;
+  box-shadow:
+    0 0 0 3px rgba(99, 91, 255, 0.1);
 }
 
-/* =========================================
-   ADD TO CART BUTTON
-========================================= */
+
+/* =========================================================
+   SUBMIT BUTTON
+   ========================================================= */
 
 .jp-booking-submit {
+  width: 100%;
+  min-height: 52px;
   display: flex;
   align-items: center;
   justify-content: center;
-
-  width: 100%;
-  min-height: 54px;
-
-  gap: 10px;
-
-  padding: 16px 24px;
-
-  border: none;
-  border-radius: 12px;
-
-  background: #059669;
+  gap: 9px;
+  border: 0;
+  border-radius: 13px;
+  background: #171717;
   color: #ffffff;
-
   font-family: inherit;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 750;
-
   cursor: pointer;
-
-  box-shadow: 0 6px 16px rgba(5, 150, 105, 0.18);
-
-  transition:
-    background 0.2s ease,
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+  box-shadow:
+    0 7px 18px rgba(16, 24, 40, 0.14);
+  transition: all 0.18s ease;
 }
 
 .jp-booking-submit:hover {
-  background: #047857;
-
-  transform: translateY(-2px);
-
-  box-shadow: 0 8px 20px rgba(5, 150, 105, 0.25);
-}
-
-.jp-booking-submit:active {
-  transform: translateY(0);
+  background: #000000;
+  transform: translateY(-1px);
+  box-shadow:
+    0 10px 23px rgba(16, 24, 40, 0.18);
 }
 
 .jp-booking-submit span {
-  font-size: 20px;
-  line-height: 1;
+  font-size: 19px;
 }
 
-/* =========================================
-   FOOTNOTE
-========================================= */
-
 .jp-booking-form-footnote {
-  margin: 16px 0 0;
-
-  color: #94a3b8;
-
-  font-size: 12px;
-  line-height: 1.7;
+  margin: 11px 0 0;
+  color: #98a2b3;
+  font-size: 10px;
+  line-height: 1.5;
   text-align: center;
 }
 
-/* =========================================
-   RESPONSIVE: TABLET
-========================================= */
 
-@media (max-width: 1100px) {
-  .jp-booking-grid {
-    grid-template-columns:
-      minmax(240px, 0.8fr)
-      minmax(0, 1.2fr);
+/* =========================================================
+   FLOATING CART
+   ========================================================= */
 
-    gap: 18px;
-  }
-
-  .jp-booking-form-card {
-    padding: 22px;
-  }
-
-  .jp-date-options {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  .jp-booking-service-image-wrap {
-    height: 200px;
-  }
+.floating-cart {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 48px;
+  padding: 0 17px;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 999px;
+  background: #171717;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.22);
+  transition: all 0.18s ease;
 }
 
-/* =========================================
-   RESPONSIVE: MOBILE
-========================================= */
+.floating-cart:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 14px 35px rgba(0,0,0,0.26);
+}
 
-@media (max-width: 768px) {
-  .jp-booking-page {
-    padding: 16px;
 
-    border-radius: 14px;
-  }
+/* =========================================================
+   CART POPUP
+   ========================================================= */
 
-  .jp-booking-header {
-    margin-bottom: 20px;
-  }
+.cart-popup {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(16, 24, 40, 0.48);
+  backdrop-filter: blur(5px);
+}
 
-  .jp-booking-header h1 {
-    font-size: 23px;
-  }
+.cart-popup-content {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 25px;
+  box-sizing: border-box;
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow:
+    0 25px 70px rgba(0,0,0,0.2);
+}
 
-  .jp-booking-header p {
-    font-size: 14px;
-  }
+.cart-popup-content h2 {
+  margin: 0 0 20px;
+  color: #101828;
+  font-size: 21px;
+}
+
+.cart-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #eaecf0;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #667085;
+  font-size: 21px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.cart-popup-content ul {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cart-item-list {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px;
+  border: 1px solid #eaecf0;
+  border-radius: 13px;
+}
+
+.cart-item-image {
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
+  border-radius: 9px;
+  object-fit: cover;
+  background: #f2f4f7;
+}
+
+.cart-item-details {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cart-item-name {
+  overflow: hidden;
+  color: #344054;
+  font-size: 12px;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.unit-label {
+  color: #667085;
+  font-size: 10px;
+}
+
+.cart-item-quantity {
+  color: #98a2b3;
+  font-size: 10px;
+}
+
+.cart-item-price {
+  color: #101828;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.cart-popup-content .login-btn {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 18px;
+  border: 0;
+  border-radius: 11px;
+  background: #171717;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 850px) {
 
   .jp-booking-grid {
     grid-template-columns: 1fr;
-    gap: 18px;
   }
 
   .jp-booking-service-image-wrap {
-    height: 220px;
+    height: 300px;
+  }
+
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+  .jp-booking-page {
+    padding: 18px 11px 95px;
+  }
+
+  .jp-booking-header h1 {
+    font-size: 27px;
+  }
+
+  .jp-booking-header p {
+    font-size: 12px;
+  }
+
+  .jp-booking-grid {
+    gap: 14px;
+  }
+
+  .jp-booking-service-card,
+  .jp-booking-form-card {
+    border-radius: 18px;
+  }
+
+  .jp-booking-service-image-wrap {
+    height: 230px;
   }
 
   .jp-booking-service-content {
-    padding: 20px;
+    padding: 18px;
   }
 
   .jp-booking-service-content h2 {
-    font-size: 21px;
-  }
-
-  .jp-booking-price {
-    font-size: 25px;
-  }
-
-  .jp-booking-form-card {
-    padding: 20px;
-  }
-
-  .jp-booking-form-header h2 {
     font-size: 20px;
   }
 
+  .jp-booking-form-card {
+    padding: 18px;
+  }
+
+  .jp-booking-form-header h2 {
+    font-size: 18px;
+  }
+
+  /*
+     Date selector becomes horizontally
+     scrollable instead of squeezing 7
+     buttons into a tiny screen.
+  */
+
   .jp-date-options {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    display: flex;
+    overflow-x: auto;
     gap: 8px;
+    padding-bottom: 5px;
+    scrollbar-width: none;
+  }
+
+  .jp-date-options::-webkit-scrollbar {
+    display: none;
   }
 
   .jp-date-option {
-    min-height: 82px;
+    min-width: 63px;
+    flex: 0 0 63px;
   }
 
   .jp-time-options {
@@ -657,46 +714,50 @@
   }
 
   .jp-time-option {
-    justify-content: flex-start;
-    padding: 14px 16px;
+    min-height: 48px;
   }
+
+  .floating-cart {
+    right: 11px;
+    bottom: 11px;
+    left: 11px;
+    justify-content: center;
+    min-height: 48px;
+  }
+
+  .cart-popup {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .cart-popup-content {
+    max-height: 82vh;
+    max-width: none;
+    border-radius: 22px 22px 0 0;
+    padding: 22px 16px 25px;
+  }
+
 }
 
-/* =========================================
-   RESPONSIVE: SMALL MOBILE
-========================================= */
 
-@media (max-width: 400px) {
-  .jp-booking-page {
-    padding: 12px;
-  }
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
 
-  .jp-booking-form-card {
-    padding: 16px;
-  }
+@media (max-width: 380px) {
 
   .jp-booking-header h1 {
-    font-size: 21px;
+    font-size: 24px;
   }
 
-  .jp-date-options {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .jp-booking-price {
+    font-size: 22px;
   }
 
-  .jp-date-option {
-    min-height: 78px;
+  .jp-booking-price-box > span {
+    width: 40px;
+    height: 40px;
+    font-size: 25px !important;
   }
 
-  .jp-date-option strong {
-    font-size: 19px;
-  }
-
-  .jp-booking-price-box {
-    padding: 16px;
-  }
-
-  .jp-booking-submit {
-    min-height: 50px;
-    font-size: 15px;
-  }
 }

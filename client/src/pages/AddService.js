@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./AddService.css";
 
@@ -24,6 +24,9 @@ const AddService = () => {
 
   const token = localStorage.getItem("authToken");
 
+  // ---------------------------------------------------------
+  // Load categories
+  // ---------------------------------------------------------
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -51,6 +54,20 @@ const AddService = () => {
     fetchCategories();
   }, []);
 
+  // ---------------------------------------------------------
+  // Cleanup preview URL
+  // ---------------------------------------------------------
+  useEffect(() => {
+    return () => {
+      if (preview) {
+        URL.revokeObjectURL(preview);
+      }
+    };
+  }, [preview]);
+
+  // ---------------------------------------------------------
+  // Handle text/select changes
+  // ---------------------------------------------------------
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -58,8 +75,15 @@ const AddService = () => {
       ...prev,
       [name]: value,
     }));
+
+    if (error) {
+      setError("");
+    }
   };
 
+  // ---------------------------------------------------------
+  // Image selection
+  // ---------------------------------------------------------
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
 
@@ -79,11 +103,30 @@ const AddService = () => {
       return;
     }
 
+    if (preview) {
+      URL.revokeObjectURL(preview);
+    }
+
     setError("");
     setImage(file);
     setPreview(URL.createObjectURL(file));
   };
 
+  // ---------------------------------------------------------
+  // Remove selected image
+  // ---------------------------------------------------------
+  const handleRemoveImage = () => {
+    if (preview) {
+      URL.revokeObjectURL(preview);
+    }
+
+    setImage(null);
+    setPreview("");
+  };
+
+  // ---------------------------------------------------------
+  // Submit
+  // ---------------------------------------------------------
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -200,180 +243,583 @@ const AddService = () => {
   };
 
   return (
-    <div className="service-form-page">
+    <div className="add-service-page">
 
-      <div className="service-form-card">
+      {/* =====================================================
+          PAGE HEADER
+         ===================================================== */}
 
-        <div className="service-form-heading">
-          <h2>Add a Service</h2>
+      <div className="add-service-page-header">
+
+        <div>
+          <span className="add-service-eyebrow">
+            JUSPING BUSINESS
+          </span>
+
+          <h1>
+            Add a Service
+          </h1>
 
           <p>
-            Showcase your service on JusPing
-            and reach more customers.
+            Create a professional service listing
+            and help customers discover what you offer.
           </p>
         </div>
 
-        {error && (
-          <div className="service-error">
-            {error}
-          </div>
-        )}
+        <button
+          type="button"
+          className="add-service-back-btn"
+          onClick={() => navigate(-1)}
+          disabled={loading}
+        >
+          ← Back
+        </button>
 
-        <form onSubmit={handleSubmit}>
+      </div>
 
-          <div className="service-form-group">
-            <label>
-              Service Name *
-            </label>
 
-            <input
-              type="text"
-              name="title"
-              value={form.title}
-              onChange={handleChange}
-              placeholder="e.g. AC Repair, Home Cleaning"
-              maxLength={200}
-              required
-            />
-          </div>
+      {/* =====================================================
+          ERROR
+         ===================================================== */}
 
-          <div className="service-form-group">
-            <label>
-              Description
-            </label>
+      {error && (
+        <div className="add-service-error">
 
-            <textarea
-              name="description"
-              value={form.description}
-              onChange={handleChange}
-              placeholder="Describe your service..."
-              rows={5}
-            />
+          <div className="add-service-error-icon">
+            !
           </div>
 
-          <div className="service-form-group">
+          <div>
+            <strong>
+              Please check the following
+            </strong>
 
-            <label>
-              Category
-            </label>
-
-            <select
-              name="category"
-              value={form.category}
-              onChange={handleChange}
-            >
-              <option value="">
-                Select category
-              </option>
-
-              {categories.map((category) => (
-                <option
-                  key={category.id}
-                  value={category.name}
-                >
-                  {category.name}
-                </option>
-              ))}
-            </select>
-
+            <p>
+              {error}
+            </p>
           </div>
 
-          <div className="service-form-group">
+        </div>
+      )}
 
-            <label>
-              Pricing Type *
-            </label>
 
-            <select
-              name="pricing_type"
-              value={form.pricing_type}
-              onChange={handleChange}
-            >
-              <option value="fixed">
-                Fixed Price
-              </option>
+      {/* =====================================================
+          MAIN FORM
+         ===================================================== */}
 
-              <option value="starting_from">
-                Starting From
-              </option>
+      <form
+        className="add-service-layout"
+        onSubmit={handleSubmit}
+      >
 
-              <option value="quote">
-                Contact for Quote
-              </option>
-            </select>
+        {/* ===================================================
+            LEFT SIDE
+           =================================================== */}
 
-          </div>
+        <div className="add-service-main-column">
 
-          {form.pricing_type !== "quote" && (
-            <div className="service-form-group">
+          {/* Basic information */}
 
-              <label>
-                Price (₹) *
+          <section className="add-service-card">
+
+            <div className="add-service-section-header">
+
+              <div className="section-number">
+                01
+              </div>
+
+              <div>
+                <h2>
+                  Service information
+                </h2>
+
+                <p>
+                  Tell customers what service you provide.
+                </p>
+              </div>
+
+            </div>
+
+
+            {/* Service name */}
+
+            <div className="add-service-field">
+
+              <label htmlFor="title">
+                Service Name
+                <span>*</span>
               </label>
 
               <input
-                type="number"
-                name="price"
-                min="0"
-                step="0.01"
-                value={form.price}
+                id="title"
+                type="text"
+                name="title"
+                value={form.title}
                 onChange={handleChange}
-                placeholder="Enter price"
+                placeholder="e.g. AC Repair, Home Cleaning"
+                maxLength={200}
                 required
               />
 
+              <div className="field-hint">
+                Use a clear name customers will
+                understand quickly.
+              </div>
+
             </div>
-          )}
 
-          <div className="service-form-group">
 
-            <label>
-              Service Image
-            </label>
+            {/* Description */}
 
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-            />
+            <div className="add-service-field">
 
-            {preview && (
-              <div className="service-image-preview">
+              <div className="field-label-row">
+
+                <label htmlFor="description">
+                  Description
+                </label>
+
+                <span className="character-count">
+                  {form.description.length}/1000
+                </span>
+
+              </div>
+
+              <textarea
+                id="description"
+                name="description"
+                value={form.description}
+                onChange={handleChange}
+                placeholder="Describe what customers can expect from this service..."
+                rows={7}
+                maxLength={1000}
+              />
+
+              <div className="field-hint">
+                Explain what is included, how it
+                works and what makes your service useful.
+              </div>
+
+            </div>
+
+
+            {/* Category */}
+
+            <div className="add-service-field">
+
+              <label htmlFor="category">
+                Category
+              </label>
+
+              <select
+                id="category"
+                name="category"
+                value={form.category}
+                onChange={handleChange}
+              >
+                <option value="">
+                  Select a category
+                </option>
+
+                {categories.map((category) => (
+                  <option
+                    key={category.id}
+                    value={category.name}
+                  >
+                    {category.name}
+                  </option>
+                ))}
+
+              </select>
+
+            </div>
+
+          </section>
+
+
+          {/* Pricing */}
+
+          <section className="add-service-card">
+
+            <div className="add-service-section-header">
+
+              <div className="section-number">
+                02
+              </div>
+
+              <div>
+                <h2>
+                  Pricing
+                </h2>
+
+                <p>
+                  Tell customers how you charge.
+                </p>
+              </div>
+
+            </div>
+
+
+            <div className="pricing-options">
+
+              <label
+                className={`pricing-option ${
+                  form.pricing_type === "fixed"
+                    ? "selected"
+                    : ""
+                }`}
+              >
+
+                <input
+                  type="radio"
+                  name="pricing_type"
+                  value="fixed"
+                  checked={
+                    form.pricing_type === "fixed"
+                  }
+                  onChange={handleChange}
+                />
+
+                <span className="pricing-radio"></span>
+
+                <span className="pricing-content">
+                  <strong>
+                    Fixed Price
+                  </strong>
+
+                  <small>
+                    Charge one fixed amount
+                  </small>
+                </span>
+
+              </label>
+
+
+              <label
+                className={`pricing-option ${
+                  form.pricing_type ===
+                  "starting_from"
+                    ? "selected"
+                    : ""
+                }`}
+              >
+
+                <input
+                  type="radio"
+                  name="pricing_type"
+                  value="starting_from"
+                  checked={
+                    form.pricing_type ===
+                    "starting_from"
+                  }
+                  onChange={handleChange}
+                />
+
+                <span className="pricing-radio"></span>
+
+                <span className="pricing-content">
+                  <strong>
+                    Starting From
+                  </strong>
+
+                  <small>
+                    Show a minimum starting price
+                  </small>
+                </span>
+
+              </label>
+
+
+              <label
+                className={`pricing-option ${
+                  form.pricing_type === "quote"
+                    ? "selected"
+                    : ""
+                }`}
+              >
+
+                <input
+                  type="radio"
+                  name="pricing_type"
+                  value="quote"
+                  checked={
+                    form.pricing_type === "quote"
+                  }
+                  onChange={handleChange}
+                />
+
+                <span className="pricing-radio"></span>
+
+                <span className="pricing-content">
+                  <strong>
+                    Contact for Quote
+                  </strong>
+
+                  <small>
+                    Let customers ask for pricing
+                  </small>
+                </span>
+
+              </label>
+
+            </div>
+
+
+            {form.pricing_type !== "quote" && (
+              <div className="price-input-wrapper">
+
+                <label htmlFor="price">
+                  Price
+                  <span>*</span>
+                </label>
+
+                <div className="price-input">
+
+                  <span>
+                    ₹
+                  </span>
+
+                  <input
+                    id="price"
+                    type="number"
+                    name="price"
+                    min="0"
+                    step="0.01"
+                    value={form.price}
+                    onChange={handleChange}
+                    placeholder="0.00"
+                    required
+                  />
+
+                </div>
+
+              </div>
+            )}
+
+          </section>
+
+        </div>
+
+
+        {/* ===================================================
+            RIGHT SIDE
+           =================================================== */}
+
+        <aside className="add-service-sidebar">
+
+          {/* Image */}
+
+          <section className="add-service-card image-card">
+
+            <div className="add-service-section-header">
+
+              <div className="section-number">
+                03
+              </div>
+
+              <div>
+                <h2>
+                  Service image
+                </h2>
+
+                <p>
+                  Add an image that represents your service.
+                </p>
+              </div>
+
+            </div>
+
+
+            {!preview ? (
+              <label
+                className="image-upload-area"
+                htmlFor="service-image"
+              >
+
+                <div className="image-upload-icon">
+                  ↑
+                </div>
+
+                <strong>
+                  Upload service image
+                </strong>
+
+                <span>
+                  Click to choose an image
+                </span>
+
+                <small>
+                  JPG, PNG or WEBP · Maximum 5 MB
+                </small>
+
+                <input
+                  id="service-image"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                />
+
+              </label>
+            ) : (
+              <div className="service-preview-wrapper">
 
                 <img
                   src={preview}
                   alt="Service preview"
+                  className="service-preview-image"
+                />
+
+                <div className="service-preview-overlay">
+
+                  <label
+                    htmlFor="service-image-replace"
+                    className="preview-action"
+                  >
+                    Change
+                  </label>
+
+                  <button
+                    type="button"
+                    className="preview-action remove"
+                    onClick={handleRemoveImage}
+                  >
+                    Remove
+                  </button>
+
+                </div>
+
+                <input
+                  id="service-image-replace"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  hidden
                 />
 
               </div>
             )}
 
-          </div>
+            <div className="image-tip">
+              <span>💡</span>
 
-          <div className="service-form-actions">
+              <p>
+                Use a clear image that helps
+                customers understand your service.
+              </p>
+            </div>
 
-            <button
-              type="button"
-              className="service-btn-secondary"
-              onClick={() => navigate(-1)}
-              disabled={loading}
-            >
-              Cancel
-            </button>
+          </section>
 
-            <button
-              type="submit"
-              className="service-btn-primary"
-              disabled={loading}
-            >
-              {loading
-                ? "Submitting..."
-                : "Submit for Review"}
-            </button>
 
-          </div>
+          {/* Preview card */}
 
-        </form>
+          <section className="service-mini-preview">
+
+            <span className="mini-preview-label">
+              CUSTOMER PREVIEW
+            </span>
+
+            <div className="mini-preview-image">
+
+              {preview ? (
+                <img
+                  src={preview}
+                  alt=""
+                />
+              ) : (
+                <div>
+                  🛠️
+                </div>
+              )}
+
+            </div>
+
+            <div className="mini-preview-content">
+
+              <h3>
+                {form.title.trim() ||
+                  "Your Service Name"}
+              </h3>
+
+              <p>
+                {form.description.trim()
+                  ? form.description
+                  : "Your service description will appear here."}
+              </p>
+
+              <div className="mini-preview-bottom">
+
+                <span>
+                  {form.pricing_type === "quote"
+                    ? "Contact for Quote"
+                    : form.pricing_type ===
+                      "starting_from"
+                    ? `From ₹${
+                        form.price || "0"
+                      }`
+                    : `₹${
+                        form.price || "0"
+                      }`}
+                </span>
+
+              </div>
+
+            </div>
+
+          </section>
+
+        </aside>
+
+      </form>
+
+
+      {/* =====================================================
+          ACTION BAR
+         ===================================================== */}
+
+      <div className="add-service-action-bar">
+
+        <div>
+          <strong>
+            Ready to publish your service?
+          </strong>
+
+          <span>
+            Your service will be submitted for admin review.
+          </span>
+        </div>
+
+        <div className="add-service-action-buttons">
+
+          <button
+            type="button"
+            className="add-service-cancel-btn"
+            onClick={() => navigate(-1)}
+            disabled={loading}
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            className="add-service-submit-btn"
+            onClick={handleSubmit}
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <span className="button-spinner"></span>
+                Submitting...
+              </>
+            ) : (
+              <>
+                Submit for Review
+                <span>→</span>
+              </>
+            )}
+          </button>
+
+        </div>
 
       </div>
 

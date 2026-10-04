@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { secondaryApiUrl } from "../config/apiConfig";
+import "./MyBusiness.css";
 
 const MyBusiness = () => {
   const navigate = useNavigate();
@@ -8,6 +9,7 @@ const MyBusiness = () => {
   const [shop, setShop] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const loadMyBusiness = async () => {
     try {
@@ -68,10 +70,10 @@ const MyBusiness = () => {
 
   const getStoreTypeLabel = (storeType) => {
     if (storeType === "service") {
-      return "Service Store";
+      return "Service Business";
     }
 
-    return "Product Store";
+    return "Product Business";
   };
 
   const getStatusLabel = (status) => {
@@ -86,10 +88,29 @@ const MyBusiness = () => {
         return "Active";
 
       case "rejected":
-        return "Rejected";
+        return "Needs Changes";
 
       default:
         return status || "Unknown";
+    }
+  };
+
+  const getStatusClass = (status) => {
+    switch (status) {
+      case "draft":
+        return "status-draft";
+
+      case "pending":
+        return "status-pending";
+
+      case "active":
+        return "status-active";
+
+      case "rejected":
+        return "status-rejected";
+
+      default:
+        return "status-unknown";
     }
   };
 
@@ -116,60 +137,63 @@ const MyBusiness = () => {
   };
 
   const handleSubmitForApproval = async () => {
-  if (!shop) return;
+    if (!shop || submitting) return;
 
-  try {
-    const token = localStorage.getItem("authToken");
+    try {
+      setSubmitting(true);
 
-    if (!token) {
-      navigate("/login");
-      return;
-    }
+      const token = localStorage.getItem("authToken");
 
-    const response = await fetch(
-      `${secondaryApiUrl}/api/shops/submit-for-approval`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      if (!token) {
+        navigate("/login");
+        return;
       }
-    );
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(
-        data.error ||
-          data.message ||
-          "Failed to submit store for approval"
+      const response = await fetch(
+        `${secondaryApiUrl}/api/shops/submit-for-approval`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error ||
+            data.message ||
+            "Failed to submit store for approval"
+        );
+      }
+
+      alert(
+        "Your store has been submitted successfully for admin approval."
+      );
+
+      await loadMyBusiness();
+    } catch (err) {
+      console.error(
+        "Submit store for approval error:",
+        err
+      );
+
+      alert(
+        err.message ||
+          "Unable to submit store for approval."
+      );
+    } finally {
+      setSubmitting(false);
     }
-
-    alert(
-      "Your store has been submitted successfully for admin approval."
-    );
-
-    // Refresh store status
-    await loadMyBusiness();
-
-  } catch (err) {
-    console.error(
-      "Submit store for approval error:",
-      err
-    );
-
-    alert(
-      err.message ||
-        "Unable to submit store for approval."
-    );
-  }
-};
+  };
 
   if (loading) {
     return (
       <div className="my-business-page">
-        <div className="my-business-card">
+        <div className="business-loading-card">
+          <div className="business-spinner"></div>
           <p>Loading your business...</p>
         </div>
       </div>
@@ -179,149 +203,309 @@ const MyBusiness = () => {
   return (
     <div className="my-business-page">
 
-      <div className="my-business-header">
+      {/* =========================
+          PAGE HEADER
+         ========================= */}
+      <div className="my-business-page-header">
+
         <div>
+          <span className="business-eyebrow">
+            JUSPING BUSINESS
+          </span>
+
           <h1>My Business</h1>
+
           <p>
-            Manage your JusPing business
+            Manage your business, services,
+            products and customer presence.
           </p>
         </div>
+
       </div>
 
+
+      {/* =========================
+          ERROR
+         ========================= */}
       {error && (
-        <div className="service-error">
-          {error}
+        <div className="business-error">
+          <span className="business-error-icon">
+            !
+          </span>
+
+          <div>
+            <strong>
+              Something went wrong
+            </strong>
+
+            <p>{error}</p>
+          </div>
         </div>
       )}
 
+
+      {/* =========================
+          NO BUSINESS
+         ========================= */}
       {!error && !shop && (
-        <div className="my-business-card">
-          <h2>No Business Found</h2>
+        <div className="empty-business-card">
+
+          <div className="empty-business-icon">
+            🏪
+          </div>
+
+          <h2>
+            Create your business
+          </h2>
 
           <p>
-            You don't have a business linked
-            to your account yet.
+            Create your JusPing business profile
+            and start showcasing your services or
+            products to customers.
           </p>
 
           <button
+            className="business-primary-btn"
             onClick={() =>
               navigate("/create-store")
             }
           >
-            Create Your Store
+            Create Your Business
           </button>
+
         </div>
       )}
 
+
+      {/* =========================
+          BUSINESS
+         ========================= */}
       {shop && (
-        <div className="my-business-card">
+        <div className="business-dashboard">
 
-          {/* Store Header */}
-          <div className="my-business-card-header">
+          {/* =========================
+              BUSINESS HERO
+             ========================= */}
+          <section className="business-hero-card">
 
-            {shop.image_url && (
-              <img
-                src={shop.image_url}
-                alt={shop.name}
-                className="my-business-image"
-              />
-            )}
+            <div className="business-hero-main">
 
-            <div>
-              <h2>{shop.name}</h2>
+              <div className="business-logo-wrapper">
 
-              <p>
+                {shop.image_url ? (
+                  <img
+                    src={shop.image_url}
+                    alt={shop.name}
+                    className="business-logo"
+                  />
+                ) : (
+                  <div className="business-logo-placeholder">
+                    {shop.name
+                      ?.charAt(0)
+                      ?.toUpperCase() || "J"}
+                  </div>
+                )}
+
+              </div>
+
+              <div className="business-hero-content">
+
+                <div className="business-title-row">
+
+                  <h2>
+                    {shop.name}
+                  </h2>
+
+                  <span
+                    className={`business-status ${getStatusClass(
+                      shop.tenant_status
+                    )}`}
+                  >
+                    <span className="status-dot"></span>
+
+                    {getStatusLabel(
+                      shop.tenant_status
+                    )}
+                  </span>
+
+                </div>
+
+                <p className="business-type">
+                  {shop.store_type === "service"
+                    ? "🛠️"
+                    : "🛍️"}{" "}
+                  {getStoreTypeLabel(
+                    shop.store_type
+                  )}
+                </p>
+
+                {shop.slug && (
+                  <div className="business-url">
+                    <span>
+                      jusping.com/
+                    </span>
+
+                    <strong>
+                      {shop.slug}
+                    </strong>
+                  </div>
+                )}
+
+              </div>
+
+            </div>
+
+            <div className="business-hero-action">
+
+              {shop.tenant_status === "active" && (
+                <button
+                  className="business-primary-btn"
+                  onClick={handleManageStore}
+                >
+                  {shop.store_type === "service"
+                    ? "Manage Services"
+                    : "Manage Products"}
+
+                  <span>→</span>
+                </button>
+              )}
+
+            </div>
+
+          </section>
+
+
+          {/* =========================
+              BUSINESS INFO
+             ========================= */}
+          <section className="business-info-grid">
+
+            <div className="business-info-card">
+
+              <span className="info-label">
+                BUSINESS NAME
+              </span>
+
+              <strong>
+                {shop.name || "—"}
+              </strong>
+
+            </div>
+
+            <div className="business-info-card">
+
+              <span className="info-label">
+                BUSINESS TYPE
+              </span>
+
+              <strong>
                 {getStoreTypeLabel(
                   shop.store_type
                 )}
-              </p>
+              </strong>
+
             </div>
 
-          </div>
+            <div className="business-info-card">
 
-          {/* Store Details */}
-          <div className="my-business-details">
+              <span className="info-label">
+                STORE URL
+              </span>
 
-            <div className="my-business-detail">
-              <span>Store Name</span>
+              <strong className="store-url-text">
+                /{shop.slug || "—"}
+              </strong>
+
+            </div>
+
+            <div className="business-info-card">
+
+              <span className="info-label">
+                STATUS
+              </span>
 
               <strong>
-                {shop.name}
-              </strong>
-            </div>
-
-            <div className="my-business-detail">
-              <span>Store Type</span>
-
-              <strong>
-                {getStoreTypeLabel(
-                  shop.store_type
-                )}
-              </strong>
-            </div>
-
-            <div className="my-business-detail">
-              <span>Store Slug</span>
-
-              <strong>
-                {shop.slug}
-              </strong>
-            </div>
-
-            <div className="my-business-detail">
-              <span>Status</span>
-
-              <strong
-                className={`business-status ${
-                  shop.tenant_status || ""
-                }`}
-              >
                 {getStatusLabel(
                   shop.tenant_status
                 )}
               </strong>
+
             </div>
 
-          </div>
+          </section>
 
 
           {/* =========================
               DRAFT
              ========================= */}
           {shop.tenant_status === "draft" && (
-            <div className="business-review-message">
+            <section className="business-action-card draft-card">
 
-              <h3>
-                Complete your store
-              </h3>
+              <div className="action-card-icon">
+                🚀
+              </div>
 
-              <p>
-                Your store is currently saved
-                as a draft. Add all your products
-                or services before submitting your
-                store for admin approval.
-              </p>
+              <div className="action-card-content">
 
-              <div className="my-business-actions">
+                <div className="action-card-heading">
 
-                <button
-                  onClick={handleCompleteStore}
-                >
+                  <div>
+                    <span className="action-label">
+                      NEXT STEP
+                    </span>
+
+                    <h3>
+                      Complete your business
+                    </h3>
+                  </div>
+
+                  <span className="action-status">
+                    Draft
+                  </span>
+
+                </div>
+
+                <p>
+                  Add your{" "}
                   {shop.store_type === "service"
-                    ? "Add Services"
-                    : "Add Products"}
-                </button>
+                    ? "services"
+                    : "products"}{" "}
+                  and complete your business
+                  information before submitting
+                  it for admin approval.
+                </p>
 
-                <button
-                  type="button"
-                  onClick={handleSubmitForApproval}
-                >
-                  Submit Store for Approval
-                </button>
+                <div className="business-actions">
+
+                  <button
+                    className="business-primary-btn"
+                    onClick={handleCompleteStore}
+                  >
+                    {shop.store_type === "service"
+                      ? "Add Services"
+                      : "Add Products"}
+
+                    <span>→</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className="business-secondary-btn"
+                    onClick={
+                      handleSubmitForApproval
+                    }
+                    disabled={submitting}
+                  >
+                    {submitting
+                      ? "Submitting..."
+                      : "Submit for Approval"}
+                  </button>
+
+                </div>
 
               </div>
 
-            </div>
+            </section>
           )}
 
 
@@ -329,20 +513,32 @@ const MyBusiness = () => {
               PENDING
              ========================= */}
           {shop.tenant_status === "pending" && (
-            <div className="business-review-message">
+            <section className="business-action-card pending-card">
 
-              <h3>
-                Your store is under review
-              </h3>
+              <div className="action-card-icon">
+                ⏳
+              </div>
 
-              <p>
-                Your store has been submitted
-                for admin approval. Once approved,
-                your JusPing store will become
-                active.
-              </p>
+              <div className="action-card-content">
 
-            </div>
+                <span className="action-label">
+                  UNDER REVIEW
+                </span>
+
+                <h3>
+                  Your business is being reviewed
+                </h3>
+
+                <p>
+                  Your business has been submitted
+                  for admin approval. Once approved,
+                  your JusPing business page will
+                  become active.
+                </p>
+
+              </div>
+
+            </section>
           )}
 
 
@@ -350,29 +546,44 @@ const MyBusiness = () => {
               REJECTED
              ========================= */}
           {shop.tenant_status === "rejected" && (
-            <div className="business-review-message">
+            <section className="business-action-card rejected-card">
 
-              <h3>
-                Store needs changes
-              </h3>
+              <div className="action-card-icon">
+                ⚠️
+              </div>
 
-              <p>
-                Please update your store
-                information and submit it again
-                for admin approval.
-              </p>
+              <div className="action-card-content">
 
-              <div className="my-business-actions">
+                <span className="action-label">
+                  ACTION REQUIRED
+                </span>
 
-                <button
-                  onClick={handleCompleteStore}
-                >
-                  Update Store
-                </button>
+                <h3>
+                  Your business needs some changes
+                </h3>
+
+                <p>
+                  Please update your business
+                  information and submit it again
+                  for admin approval.
+                </p>
+
+                <div className="business-actions">
+
+                  <button
+                    className="business-primary-btn"
+                    onClick={handleCompleteStore}
+                  >
+                    Update Business
+
+                    <span>→</span>
+                  </button>
+
+                </div>
 
               </div>
 
-            </div>
+            </section>
           )}
 
 
@@ -380,17 +591,42 @@ const MyBusiness = () => {
               ACTIVE
              ========================= */}
           {shop.tenant_status === "active" && (
-            <div className="my-business-actions">
+            <section className="business-active-card">
+
+              <div>
+
+                <span className="active-label">
+                  YOUR BUSINESS IS LIVE
+                </span>
+
+                <h3>
+                  Start connecting with customers
+                </h3>
+
+                <p>
+                  Your JusPing business is active.
+                  Manage your{" "}
+                  {shop.store_type === "service"
+                    ? "services"
+                    : "products"}{" "}
+                  and keep your business profile
+                  up to date.
+                </p>
+
+              </div>
 
               <button
+                className="business-primary-btn"
                 onClick={handleManageStore}
               >
                 {shop.store_type === "service"
                   ? "Manage Services"
                   : "Manage Products"}
+
+                <span>→</span>
               </button>
 
-            </div>
+            </section>
           )}
 
         </div>

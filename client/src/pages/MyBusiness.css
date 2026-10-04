@@ -1,0 +1,754 @@
+/* =========================================================
+   PAGE
+   ========================================================= */
+
+.my-business-page {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 40px 24px 70px;
+  box-sizing: border-box;
+  color: #172033;
+}
+
+
+/* =========================================================
+   PAGE HEADER
+   ========================================================= */
+
+.my-business-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 28px;
+}
+
+.business-eyebrow {
+  display: inline-block;
+  margin-bottom: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  color: #667085;
+}
+
+.my-business-page-header h1 {
+  margin: 0;
+  font-size: 34px;
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+}
+
+.my-business-page-header p {
+  margin: 9px 0 0;
+  color: #667085;
+  font-size: 15px;
+}
+
+
+/* =========================================================
+   LOADING
+   ========================================================= */
+
+.business-loading-card {
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid #eaecf0;
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 8px 30px rgba(16, 24, 40, 0.06);
+}
+
+.business-loading-card p {
+  margin: 0;
+  color: #667085;
+}
+
+.business-spinner {
+  width: 34px;
+  height: 34px;
+  border: 3px solid #e4e7ec;
+  border-top-color: #635bff;
+  border-radius: 50%;
+  animation: business-spin 0.8s linear infinite;
+}
+
+@keyframes business-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* =========================================================
+   ERROR
+   ========================================================= */
+
+.business-error {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 16px 18px;
+  margin-bottom: 20px;
+  border: 1px solid #fecdca;
+  border-radius: 16px;
+  background: #fff6f5;
+  color: #b42318;
+}
+
+.business-error-icon {
+  width: 25px;
+  height: 25px;
+  flex: 0 0 25px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  background: #f04438;
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.business-error strong {
+  display: block;
+  margin-bottom: 3px;
+}
+
+.business-error p {
+  margin: 0;
+  font-size: 14px;
+}
+
+
+/* =========================================================
+   EMPTY BUSINESS
+   ========================================================= */
+
+.empty-business-card {
+  max-width: 650px;
+  margin: 40px auto;
+  padding: 55px 30px;
+  text-align: center;
+  border: 1px solid #eaecf0;
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 12px 40px rgba(16, 24, 40, 0.07);
+}
+
+.empty-business-icon {
+  width: 70px;
+  height: 70px;
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+  background: #f4f3ff;
+  font-size: 32px;
+}
+
+.empty-business-card h2 {
+  margin: 0;
+  font-size: 25px;
+}
+
+.empty-business-card p {
+  max-width: 500px;
+  margin: 12px auto 25px;
+  line-height: 1.6;
+  color: #667085;
+}
+
+
+/* =========================================================
+   DASHBOARD
+   ========================================================= */
+
+.business-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.business-hero-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 30px;
+  padding: 28px;
+  border: 1px solid #eaecf0;
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 12px 35px rgba(16, 24, 40, 0.07);
+}
+
+.business-hero-main {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  min-width: 0;
+}
+
+.business-logo-wrapper {
+  width: 105px;
+  height: 105px;
+  flex: 0 0 105px;
+}
+
+.business-logo,
+.business-logo-placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 22px;
+}
+
+.business-logo {
+  display: block;
+  object-fit: cover;
+  border: 1px solid #eaecf0;
+}
+
+.business-logo-placeholder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(
+    135deg,
+    #635bff,
+    #ec4899
+  );
+  color: #ffffff;
+  font-size: 38px;
+  font-weight: 800;
+}
+
+.business-hero-content {
+  min-width: 0;
+}
+
+.business-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.business-title-row h2 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.business-type {
+  margin: 7px 0 12px;
+  color: #667085;
+  font-size: 14px;
+}
+
+.business-url {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: #f8f9fc;
+  color: #667085;
+  font-size: 13px;
+  overflow: hidden;
+}
+
+.business-url strong {
+  margin-left: 2px;
+  color: #344054;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   STATUS
+   ========================================================= */
+
+.business-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.status-draft {
+  color: #b54708;
+  background: #fffaeb;
+}
+
+.status-pending {
+  color: #175cd3;
+  background: #eff8ff;
+}
+
+.status-active {
+  color: #027a48;
+  background: #ecfdf3;
+}
+
+.status-rejected {
+  color: #b42318;
+  background: #fef3f2;
+}
+
+.status-unknown {
+  color: #475467;
+  background: #f2f4f7;
+}
+
+
+/* =========================================================
+   INFO GRID
+   ========================================================= */
+
+.business-info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.business-info-card {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid #eaecf0;
+  border-radius: 18px;
+  background: #ffffff;
+}
+
+.info-label {
+  display: block;
+  margin-bottom: 8px;
+  color: #98a2b3;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.9px;
+}
+
+.business-info-card strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #344054;
+  font-size: 14px;
+}
+
+.store-url-text {
+  color: #635bff !important;
+}
+
+
+/* =========================================================
+   ACTION CARDS
+   ========================================================= */
+
+.business-action-card {
+  display: flex;
+  gap: 20px;
+  padding: 25px;
+  border-radius: 22px;
+  border: 1px solid #eaecf0;
+}
+
+.draft-card {
+  background: linear-gradient(
+    135deg,
+    #f8f7ff,
+    #ffffff
+  );
+  border-color: #ddd9ff;
+}
+
+.pending-card {
+  background: #f5faff;
+  border-color: #b2ddff;
+}
+
+.rejected-card {
+  background: #fff8f7;
+  border-color: #fecdca;
+}
+
+.action-card-icon {
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(16, 24, 40, 0.08);
+  font-size: 25px;
+}
+
+.action-card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.action-card-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.action-label {
+  display: block;
+  margin-bottom: 5px;
+  color: #667085;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.action-card-content h3 {
+  margin: 0;
+  font-size: 20px;
+  color: #1d2939;
+}
+
+.action-card-content p {
+  max-width: 760px;
+  margin: 8px 0 20px;
+  color: #667085;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.action-status {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #b54708;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   ACTIVE CARD
+   ========================================================= */
+
+.business-active-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 25px;
+  padding: 26px;
+  border-radius: 22px;
+  background: linear-gradient(
+    135deg,
+    #f5faff,
+    #f9f7ff
+  );
+  border: 1px solid #d9d6fe;
+}
+
+.active-label {
+  display: block;
+  margin-bottom: 7px;
+  color: #027a48;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.business-active-card h3 {
+  margin: 0;
+  font-size: 21px;
+}
+
+.business-active-card p {
+  max-width: 700px;
+  margin: 8px 0 0;
+  color: #667085;
+  line-height: 1.55;
+  font-size: 14px;
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.business-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.business-primary-btn,
+.business-secondary-btn {
+  min-height: 44px;
+  padding: 0 17px;
+  border-radius: 11px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.business-primary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border: 0;
+  background: #171717;
+  color: #ffffff;
+  box-shadow: 0 5px 15px rgba(16, 24, 40, 0.15);
+}
+
+.business-primary-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(16, 24, 40, 0.18);
+}
+
+.business-primary-btn span {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.business-secondary-btn {
+  border: 1px solid #d0d5dd;
+  background: #ffffff;
+  color: #344054;
+}
+
+.business-secondary-btn:hover {
+  background: #f9fafb;
+}
+
+.business-primary-btn:disabled,
+.business-secondary-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 850px) {
+
+  .my-business-page {
+    padding: 28px 16px 50px;
+  }
+
+  .my-business-page-header h1 {
+    font-size: 29px;
+  }
+
+  .business-hero-card {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 20px;
+  }
+
+  .business-hero-action {
+    width: 100%;
+  }
+
+  .business-hero-action .business-primary-btn {
+    width: 100%;
+  }
+
+  .business-info-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .business-active-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .business-active-card .business-primary-btn {
+    width: 100%;
+  }
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 560px) {
+
+  .my-business-page {
+    padding: 22px 12px 40px;
+  }
+
+  .my-business-page-header {
+    margin-bottom: 20px;
+  }
+
+  .my-business-page-header h1 {
+    font-size: 26px;
+  }
+
+  .my-business-page-header p {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .business-hero-card {
+    border-radius: 20px;
+    padding: 18px;
+  }
+
+  .business-hero-main {
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .business-logo-wrapper {
+    width: 72px;
+    height: 72px;
+    flex-basis: 72px;
+  }
+
+  .business-logo,
+  .business-logo-placeholder {
+    border-radius: 17px;
+  }
+
+  .business-logo-placeholder {
+    font-size: 27px;
+  }
+
+  .business-title-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .business-title-row h2 {
+    font-size: 21px;
+    line-height: 1.25;
+  }
+
+  .business-type {
+    margin: 5px 0 9px;
+    font-size: 12px;
+  }
+
+  .business-url {
+    max-width: 100%;
+    font-size: 11px;
+  }
+
+  .business-info-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .business-info-card {
+    padding: 14px;
+    border-radius: 15px;
+  }
+
+  .info-label {
+    font-size: 9px;
+  }
+
+  .business-info-card strong {
+    font-size: 12px;
+  }
+
+  .business-action-card {
+    padding: 18px;
+    border-radius: 18px;
+    gap: 13px;
+  }
+
+  .action-card-icon {
+    width: 42px;
+    height: 42px;
+    flex-basis: 42px;
+    border-radius: 13px;
+    font-size: 20px;
+  }
+
+  .action-card-content h3 {
+    font-size: 17px;
+  }
+
+  .action-card-content p {
+    font-size: 13px;
+  }
+
+  .action-card-heading {
+    display: block;
+  }
+
+  .action-status {
+    display: inline-block;
+    margin-top: 10px;
+  }
+
+  .business-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .business-actions button {
+    width: 100%;
+  }
+
+  .business-active-card {
+    padding: 19px;
+    border-radius: 18px;
+  }
+
+  .business-active-card h3 {
+    font-size: 18px;
+  }
+
+  .business-active-card p {
+    font-size: 13px;
+  }
+
+  .empty-business-card {
+    margin: 20px auto;
+    padding: 40px 20px;
+    border-radius: 20px;
+  }
+
+}
