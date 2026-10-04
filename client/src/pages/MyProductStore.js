@@ -459,13 +459,13 @@ const MyProductStore = () => {
         </div>
 
         {/* ONLY ADD PRODUCT BUTTON */}
-        <button
+        {/* <button
           type="button"
           className="my-product-store-add-btn"
           onClick={handleAddProduct}
         >
-          ＋ Add Product
-        </button>
+          ＋ Add Product1
+        </button> */}
 
       </div>
 
