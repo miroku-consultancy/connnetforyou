@@ -51,6 +51,7 @@ import MyServiceStore from "./pages/MyServiceStore";
 import MyBusiness from "./pages/MyBusiness";
 import EditService from "./pages/EditService";
 import MyProductStore from "./pages/MyProductStore";
+import EditProduct from "./components/EditProduct";
 //import Banner from './components/Banner';
 
 
@@ -105,7 +106,7 @@ const AppRoutes = () => (
         <Route path="/qr-login" element={<QrLoginPage />} />
         <Route path="/qr-codes" element={<ShopQRCodes />} />
         <Route path="/consent" element={<ConsentPage />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
         <Route path="/about" element={<About />} />
         <Route path="/help" element={<HelpPage />} />
         <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
@@ -189,6 +190,14 @@ const AppRoutes = () => (
 <Route
   path="/my-product-store/add"
   element={<AddProduct />}
+/>
+<Route
+  path="/my-product-store/edit/:productId"
+  element={<EditProduct />}
+/>
+<Route
+  path="*"
+  element={<Navigate to="/" replace />}
 />
         {/* <Route
     path="/chat/:recipientId/:recipientName"

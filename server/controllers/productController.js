@@ -109,6 +109,9 @@ const getPublicProducts = async (req, res) => {
 // ============================================================
 // GET SINGLE PRODUCT
 // ============================================================
+// ============================================================
+// GET SINGLE PRODUCT
+// ============================================================
 const getProduct = async (req, res) => {
   try {
     const product = await productModel.getProductById(req.params.id);
@@ -121,7 +124,7 @@ const getProduct = async (req, res) => {
 
     res.json(product);
   } catch (err) {
-    console.error('Error fetching product:', err);
+    console.error('❌ Error fetching product:', err);
 
     res.status(500).json({
       message: 'Error fetching product',

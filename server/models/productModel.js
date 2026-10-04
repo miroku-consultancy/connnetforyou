@@ -117,28 +117,89 @@ const getAllProducts = async (shopId) => {
 
 // 🔍 Get single product
 // Example getProductById for full variant info
+// ============================================================
+// GET SINGLE PRODUCT
+// ============================================================
 const getProductById = async (id) => {
   try {
-    // Assume you have join for size/color/unit tables if needed
-    const res = await pool.query(`
-      SELECT products.*,
-        size.name AS size_name,
-        color.name AS color_name,
-        unit.name AS unit_name
-      FROM products
-      LEFT JOIN size ON size.id = products.size_id
-      LEFT JOIN color ON color.id = products.color_id
-      LEFT JOIN unit ON unit.id = products.unit_id
-      WHERE products.id = $1
-    `, [id]);
-    if (!res.rows[0]) return null;
-    // Map variant info back in a compatible structure for frontend
-    const row = res.rows[0];
+    // Get main product
+    const productRes = await pool.query(
+      `
+      SELECT
+        p.*,
+        c.name AS category_name
+      FROM products p
+      LEFT JOIN categories c
+        ON p.category_id = c.id
+      WHERE p.id = $1
+      `,
+      [id]
+    );
+
+    if (!productRes.rows.length) {
+      return null;
+    }
+
+    const product = productRes.rows[0];
+
+    // Get product variants / units
+    const variantsRes = await pool.query(
+      `
+      SELECT
+        pu.*,
+        u.name AS unit_name,
+        u.category AS unit_category,
+        size_u.name AS size_name,
+        color_u.name AS color_name
+      FROM product_units pu
+      LEFT JOIN units u
+        ON pu.unit_id = u.id
+      LEFT JOIN units size_u
+        ON pu.size_id = size_u.id
+      LEFT JOIN units color_u
+        ON pu.color_id = color_u.id
+      WHERE pu.product_id = $1
+      ORDER BY pu.id ASC
+      `,
+      [id]
+    );
+
+    const variants = variantsRes.rows.map((row) => ({
+      id: row.id,
+      price: row.price,
+      stock: row.stock,
+      mrp: row.mrp,
+      discount: row.discount,
+      sku: row.sku,
+      barcode: row.barcode,
+      images: row.images,
+
+      size: row.size_id
+        ? {
+            id: row.size_id,
+            name: row.size_name,
+          }
+        : null,
+
+      color: row.color_id
+        ? {
+            id: row.color_id,
+            name: row.color_name,
+          }
+        : null,
+
+      unit: row.unit_id
+        ? {
+            id: row.unit_id,
+            name: row.unit_name,
+            category: row.unit_category,
+          }
+        : null,
+    }));
+
     return {
-      ...row,
-      size: row.size_name ? { name: row.size_name } : undefined,
-      color: row.color_name ? { name: row.color_name } : undefined,
-      unit: row.unit_name ? { name: row.unit_name } : undefined,
+      ...product,
+      variants,
     };
   } catch (err) {
     console.error('❌ Error in getProductById:', err);
