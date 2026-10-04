@@ -127,6 +127,15 @@ app.use('/api', saveFcmTokenRouter);
 app.use("/api", chatNotifyRoutes);
 
 app.use('/api', whatsappRoutes);
+app.use('/api/categories', (req, res, next) => {
+  console.log("=== CATEGORIES REQUEST ===");
+  console.log("URL:", req.originalUrl);
+  console.log("Origin:", req.headers.origin);
+  console.log("Authorization:", !!req.headers.authorization);
+  next();
+});
+
+app.use('/api/categories', categoriesRouter);
 app.use('/api/categories', categoriesRouter);
 app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/razorpay', require('./routes/razorpay'));
