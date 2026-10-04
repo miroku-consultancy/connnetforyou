@@ -486,25 +486,22 @@ const DashboardSummary = () => {
   // -----------------------------
   // Existing shop navigation
   // -----------------------------
-const handleClick = (shop) => {
-  if (!shop?.slug) return;
+  const handleClick = (slug) => {
+    if (!slug) return;
 
-  const storeType = String(
-    shop.store_type ||
-    shop.storeType ||
-    ""
-  )
-    .toLowerCase()
-    .trim();
+    if (
+      slug.toLowerCase() ===
+      "city-home-services"
+    ) {
+      window.location.href =
+        "https://city-home-services.jusping.com/services";
 
-  const path =
-    storeType === "service"
-      ? "services"
-      : "products";
+      return;
+    }
 
-  window.location.href =
-    `https://${shop.slug}.jusping.com/${path}`;
-};
+    window.location.href =
+      `https://${slug}.jusping.com/products`;
+  };
 
   // -----------------------------
   // Navigate to specific service
