@@ -30,7 +30,7 @@ const EditService = () => {
 
   const [serviceStatus, setServiceStatus] = useState("");
 
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("authToken");
 
   // --------------------------------------------------
   // Load categories
@@ -38,7 +38,14 @@ const EditService = () => {
   useEffect(() => {
     const loadCategories = async () => {
       try {
-        const response = await fetch(`${secondaryApiUrl}/api/categories`);
+        const response = await fetch(
+  `${secondaryApiUrl}/api/categories`,
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
 
         if (!response.ok) {
           throw new Error("Failed to load categories");
