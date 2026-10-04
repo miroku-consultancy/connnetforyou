@@ -547,47 +547,92 @@ const DashboardSummary = () => {
   // -----------------------------
   // Shop image with fallback
   // -----------------------------
-  const getShopImage = (shop) => {
-    const extensions = [
-      "jpeg",
-      "jpg",
-      "png",
-      "JPG",
-    ];
+  // -----------------------------
+// Shop image - dynamic + legacy fallback
+// -----------------------------
+const getShopImage = (shop) => {
+  const shopName =
+    shop.name || displayName(shop.slug);
 
+  // 1. New uploaded image / Cloudinary URL
+  if (shop.image_url) {
+    const imageUrl = shop.image_url.trim();
+
+    // Full URL - Cloudinary or any external image
+    if (
+      imageUrl.startsWith("http://") ||
+      imageUrl.startsWith("https://")
+    ) {
+      return (
+        <img
+          className="jp-shop-img"
+          src={imageUrl}
+          alt={shopName}
+          loading="lazy"
+          onError={(event) => {
+            event.currentTarget.onerror = null;
+            event.currentTarget.src =
+              `${IMAGE_BASE_URL}/logo.png`;
+          }}
+        />
+      );
+    }
+
+    // Old database path such as:
+    // images/shops/Ganga-Medical-hall.png
     return (
       <img
         className="jp-shop-img"
-        src={`${IMAGE_BASE_URL}/${shop.slug}.${extensions[0]}`}
-        alt={
-          shop.name ||
-          displayName(shop.slug)
-        }
+        src={`https://www.jusping.com/${imageUrl.replace(/^\/+/, "")}`}
+        alt={shopName}
         loading="lazy"
         onError={(event) => {
-          const img = event.currentTarget;
-          const attempt = Number(
-            img.dataset.attempt || 0
-          );
-
-          if (
-            attempt <
-            extensions.length - 1
-          ) {
-            img.dataset.attempt =
-              String(attempt + 1);
-
-            img.src =
-              `${IMAGE_BASE_URL}/${shop.slug}.${extensions[attempt + 1]}`;
-          } else {
-            img.onerror = null;
-            img.src =
-              `${IMAGE_BASE_URL}/logo.png`;
-          }
+          event.currentTarget.onerror = null;
+          event.currentTarget.src =
+            `${IMAGE_BASE_URL}/logo.png`;
         }}
       />
     );
-  };
+  }
+
+  // 2. Legacy slug-based image fallback
+  const extensions = [
+    "jpeg",
+    "jpg",
+    "png",
+    "JPG",
+  ];
+
+  return (
+    <img
+      className="jp-shop-img"
+      src={`${IMAGE_BASE_URL}/${shop.slug}.${extensions[0]}`}
+      alt={shopName}
+      loading="lazy"
+      onError={(event) => {
+        const img = event.currentTarget;
+        const attempt = Number(
+          img.dataset.attempt || 0
+        );
+
+        if (
+          attempt <
+          extensions.length - 1
+        ) {
+          img.dataset.attempt =
+            String(attempt + 1);
+
+          img.src =
+            `${IMAGE_BASE_URL}/${shop.slug}.${extensions[attempt + 1]}`;
+        } else {
+          img.onerror = null;
+          img.src =
+            `${IMAGE_BASE_URL}/logo.png`;
+        }
+      }}
+    />
+  );
+};
 
   // -----------------------------
   // Static fallback shop list
