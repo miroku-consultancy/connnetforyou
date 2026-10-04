@@ -50,7 +50,7 @@ import CreateStore from "./pages/CreateStore";
 import MyServiceStore from "./pages/MyServiceStore";
 import MyBusiness from "./pages/MyBusiness";
 import EditService from "./pages/EditService";
-import MyProductStore from "./MyProductStore";
+import MyProductStore from "./pages/MyProductStore";
 //import Banner from './components/Banner';
 
 
