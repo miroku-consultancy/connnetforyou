@@ -441,3 +441,112 @@
     height: 135px;
   }
 }
+/* =========================================================
+   JUSPING SERVICES - FINAL OVERRIDES
+   Prevent cart/popup styles from affecting service cards
+   ========================================================= */
+
+.jp-services-page {
+  position: relative;
+  width: 100%;
+  min-height: 100%;
+  background: transparent;
+}
+
+/* Services list */
+.jp-services-list-panel {
+  position: relative;
+  width: 100%;
+  background: transparent;
+  overflow: visible;
+}
+
+.jp-services-list-grid {
+  position: relative;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  overflow: visible;
+}
+
+/* Individual service wrapper */
+.jp-service-select-card {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  background: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Make sure selected state doesn't create black overlay */
+.jp-service-select-card.selected {
+  background: #ffffff;
+}
+
+/* ServiceCard should remain inside its wrapper */
+.jp-service-select-card > * {
+  max-width: 100%;
+}
+
+/* Selected label */
+.jp-service-selected-label {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+
+  padding: 6px 10px;
+  border-radius: 20px;
+
+  background: #111827;
+  color: #ffffff;
+
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* Booking panel */
+.jp-services-booking-top {
+  position: relative;
+  width: 100%;
+  margin-bottom: 28px;
+  background: transparent;
+  z-index: 1;
+}
+
+/* =========================================================
+   IMPORTANT:
+   Do NOT allow generic modal/cart classes to position
+   themselves inside the services page.
+   ========================================================= */
+
+.jp-services-page .cart-popup,
+.jp-services-page .cart-modal,
+.jp-services-page .cart-overlay,
+.jp-services-page .popup,
+.jp-services-page .modal {
+  box-sizing: border-box;
+}
+
+/* Mobile */
+@media (max-width: 900px) {
+  .jp-services-list-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+  }
+}
+
+@media (max-width: 600px) {
+  .jp-services-list-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .jp-service-select-card {
+    border-radius: 14px;
+  }
+}
