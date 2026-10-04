@@ -48,9 +48,11 @@ const AddService = () => {
         const response = await fetch(
           `${secondaryApiUrl}/api/categories`,
           {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            headers: token
+              ? {
+                  Authorization: `Bearer ${token}`,
+                }
+              : {},
           }
         );
 
@@ -79,33 +81,28 @@ const AddService = () => {
   }, []);
 
   // ---------------------------------------------------------
-  // Handle image selection
+  // Image selection
   // ---------------------------------------------------------
   const handleImageChange = (event) => {
     const file = event.target.files?.[0];
 
-    if (!file) {
-      return;
-    }
+    if (!file) return;
 
     setError("");
     setSuccess("");
 
-    // Validate image type
     if (!file.type.startsWith("image/")) {
       setError("Please select a valid image file.");
       event.target.value = "";
       return;
     }
 
-    // Validate file size
     if (file.size > 5 * 1024 * 1024) {
       setError("Image size must be less than 5 MB.");
       event.target.value = "";
       return;
     }
 
-    // Cleanup previous preview
     if (imagePreview) {
       URL.revokeObjectURL(imagePreview);
     }
@@ -117,7 +114,7 @@ const AddService = () => {
   };
 
   // ---------------------------------------------------------
-  // Remove selected image
+  // Remove image
   // ---------------------------------------------------------
   const handleRemoveImage = () => {
     if (imagePreview) {
@@ -137,7 +134,7 @@ const AddService = () => {
   };
 
   // ---------------------------------------------------------
-  // Cleanup preview when component unmounts
+  // Cleanup preview
   // ---------------------------------------------------------
   useEffect(() => {
     return () => {
@@ -173,7 +170,7 @@ const AddService = () => {
   };
 
   // ---------------------------------------------------------
-  // Submit service
+  // Submit
   // ---------------------------------------------------------
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -182,9 +179,7 @@ const AddService = () => {
     setSuccess("");
     setLimitReached(false);
 
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     const token = getAuthToken();
 
@@ -224,9 +219,7 @@ const AddService = () => {
 
       const data = await response.json().catch(() => ({}));
 
-      // -----------------------------------------------------
-      // Free plan limit reached
-      // -----------------------------------------------------
+      // Free plan limit
       if (
         response.status === 403 &&
         data.code === "FREE_SERVICE_LIMIT_REACHED"
@@ -240,7 +233,7 @@ const AddService = () => {
         throw new Error(
           data.message ||
             data.error ||
-            "Failed to create service"
+            "Failed to create service."
         );
       }
 
@@ -248,7 +241,6 @@ const AddService = () => {
         "Service created successfully and submitted for review."
       );
 
-      // Navigate after short delay
       setTimeout(() => {
         navigate("/my-service-store");
       }, 1200);
@@ -265,7 +257,7 @@ const AddService = () => {
   };
 
   // ---------------------------------------------------------
-  // Category value helper
+  // Category helper
   // ---------------------------------------------------------
   const getCategoryValue = (item) => {
     if (typeof item === "string") {
@@ -273,9 +265,9 @@ const AddService = () => {
     }
 
     return (
-      item.name ||
-      item.category ||
-      item.title ||
+      item?.name ||
+      item?.category ||
+      item?.title ||
       ""
     );
   };
@@ -284,11 +276,8 @@ const AddService = () => {
     <div className="add-service-page">
       <div className="add-service-container">
 
-        {/* =================================================
-            Header
-        ================================================= */}
+        {/* HEADER */}
         <div className="add-service-header">
-
           <div className="add-service-header-left">
 
             <button
@@ -297,6 +286,7 @@ const AddService = () => {
               onClick={() =>
                 navigate("/my-service-store")
               }
+              disabled={submitting}
               aria-label="Back"
             >
               ←
@@ -316,21 +306,16 @@ const AddService = () => {
             </div>
 
           </div>
-
         </div>
 
-        {/* =================================================
-            Free Plan Limit Card
-        ================================================= */}
+        {/* FREE PLAN LIMIT */}
         {limitReached && (
           <div className="service-limit-card">
-
             <div className="service-limit-icon">
               ↑
             </div>
 
             <div className="service-limit-content">
-
               <span className="service-limit-label">
                 FREE PLAN LIMIT REACHED
               </span>
@@ -348,25 +333,19 @@ const AddService = () => {
               <button
                 type="button"
                 className="service-limit-button"
-                onClick={() => {
-                  // Future:
-                  // navigate("/plans");
+                onClick={() =>
                   alert(
                     "Plan upgrade will be available soon."
-                  );
-                }}
+                  )
+                }
               >
                 View Upgrade Plans →
               </button>
-
             </div>
-
           </div>
         )}
 
-        {/* =================================================
-            Error
-        ================================================= */}
+        {/* ERROR */}
         {error && (
           <div className="add-alert add-alert-error">
             <span className="add-alert-icon">!</span>
@@ -374,9 +353,7 @@ const AddService = () => {
           </div>
         )}
 
-        {/* =================================================
-            Success
-        ================================================= */}
+        {/* SUCCESS */}
         {success && (
           <div className="add-alert add-alert-success">
             <span className="add-alert-icon">✓</span>
@@ -384,29 +361,21 @@ const AddService = () => {
           </div>
         )}
 
-        {/* =================================================
-            Form
-        ================================================= */}
+        {/* MAIN FORM */}
         <form
           className="add-service-form"
           onSubmit={handleSubmit}
         >
 
-          {/* =================================================
-              LEFT COLUMN
-          ================================================= */}
+          {/* LEFT */}
           <div className="add-service-main">
 
-            {/* ---------------------------------------------
-                Basic Information
-            --------------------------------------------- */}
+            {/* BASIC INFORMATION */}
             <section className="add-card">
 
               <div className="add-card-header">
-
                 <div>
                   <h2>Basic Information</h2>
-
                   <p>
                     Tell customers what service you provide.
                   </p>
@@ -415,15 +384,13 @@ const AddService = () => {
                 <span className="add-section-number">
                   01
                 </span>
-
               </div>
 
-              {/* Title */}
+              {/* TITLE */}
               <div className="add-form-group">
 
                 <label htmlFor="service-title">
-                  Service Title
-                  <span>*</span>
+                  Service Title <span>*</span>
                 </label>
 
                 <input
@@ -435,10 +402,10 @@ const AddService = () => {
                   }
                   placeholder="e.g. Home AC Repair"
                   maxLength={120}
+                  required
                 />
 
                 <div className="add-input-meta">
-
                   <span>
                     Use a clear name customers can
                     understand.
@@ -447,17 +414,22 @@ const AddService = () => {
                   <span>
                     {title.length}/120
                   </span>
-
                 </div>
 
               </div>
 
-              {/* Description */}
+              {/* DESCRIPTION */}
               <div className="add-form-group">
 
-                <label htmlFor="service-description">
-                  Description
-                </label>
+                <div className="add-label-row">
+                  <label htmlFor="service-description">
+                    Description
+                  </label>
+
+                  <span>
+                    {description.length}/1000
+                  </span>
+                </div>
 
                 <textarea
                   id="service-description"
@@ -471,20 +443,14 @@ const AddService = () => {
                 />
 
                 <div className="add-input-meta">
-
                   <span>
                     Explain what customers can expect.
                   </span>
-
-                  <span>
-                    {description.length}/1000
-                  </span>
-
                 </div>
 
               </div>
 
-              {/* Category */}
+              {/* CATEGORY */}
               <div className="add-form-group">
 
                 <label htmlFor="service-category">
@@ -499,7 +465,6 @@ const AddService = () => {
                   }
                   disabled={loadingCategories}
                 >
-
                   <option value="">
                     {loadingCategories
                       ? "Loading categories..."
@@ -510,9 +475,7 @@ const AddService = () => {
                     const value =
                       getCategoryValue(item);
 
-                    if (!value) {
-                      return null;
-                    }
+                    if (!value) return null;
 
                     return (
                       <option
@@ -523,20 +486,16 @@ const AddService = () => {
                       </option>
                     );
                   })}
-
                 </select>
 
               </div>
 
             </section>
 
-            {/* ---------------------------------------------
-                Pricing
-            --------------------------------------------- */}
+            {/* PRICING */}
             <section className="add-card">
 
               <div className="add-card-header">
-
                 <div>
                   <h2>Pricing</h2>
 
@@ -549,12 +508,10 @@ const AddService = () => {
                 <span className="add-section-number">
                   02
                 </span>
-
               </div>
 
               <div className="pricing-options">
 
-                {/* Fixed */}
                 <button
                   type="button"
                   className={`pricing-option ${
@@ -566,31 +523,22 @@ const AddService = () => {
                     setPricingType("fixed")
                   }
                 >
-
                   <div className="pricing-option-icon">
                     ₹
                   </div>
 
                   <div className="pricing-option-content">
-
-                    <strong>
-                      Fixed Price
-                    </strong>
-
+                    <strong>Fixed Price</strong>
                     <span>
                       One fixed price for the service
                     </span>
-
                   </div>
 
                   <div className="pricing-radio">
-                    {pricingType === "fixed" &&
-                      "✓"}
+                    {pricingType === "fixed" && "✓"}
                   </div>
-
                 </button>
 
-                {/* Starting From */}
                 <button
                   type="button"
                   className={`pricing-option ${
@@ -599,36 +547,26 @@ const AddService = () => {
                       : ""
                   }`}
                   onClick={() =>
-                    setPricingType(
-                      "starting_from"
-                    )
+                    setPricingType("starting_from")
                   }
                 >
-
                   <div className="pricing-option-icon">
                     ↗
                   </div>
 
                   <div className="pricing-option-content">
-
-                    <strong>
-                      Starting From
-                    </strong>
-
+                    <strong>Starting From</strong>
                     <span>
                       Show a minimum starting price
                     </span>
-
                   </div>
 
                   <div className="pricing-radio">
-                    {pricingType ===
-                      "starting_from" && "✓"}
+                    {pricingType === "starting_from" &&
+                      "✓"}
                   </div>
-
                 </button>
 
-                {/* Quote */}
                 <button
                   type="button"
                   className={`pricing-option ${
@@ -641,40 +579,29 @@ const AddService = () => {
                     setPrice("");
                   }}
                 >
-
                   <div className="pricing-option-icon">
                     ?
                   </div>
 
                   <div className="pricing-option-content">
-
-                    <strong>
-                      Request a Quote
-                    </strong>
-
+                    <strong>Request a Quote</strong>
                     <span>
-                      Customer contacts you for
-                      pricing
+                      Customer contacts you for pricing
                     </span>
-
                   </div>
 
                   <div className="pricing-radio">
-                    {pricingType === "quote" &&
-                      "✓"}
+                    {pricingType === "quote" && "✓"}
                   </div>
-
                 </button>
 
               </div>
 
-              {/* Price */}
               {pricingType !== "quote" && (
                 <div className="add-price-wrapper">
 
                   <label htmlFor="service-price">
-                    {pricingType ===
-                    "starting_from"
+                    {pricingType === "starting_from"
                       ? "Starting Price"
                       : "Service Price"}
 
@@ -682,7 +609,6 @@ const AddService = () => {
                   </label>
 
                   <div className="add-price-input">
-
                     <span>₹</span>
 
                     <input
@@ -695,8 +621,8 @@ const AddService = () => {
                         setPrice(e.target.value)
                       }
                       placeholder="0.00"
+                      required
                     />
-
                   </div>
 
                 </div>
@@ -704,29 +630,30 @@ const AddService = () => {
 
             </section>
 
-            {/* ---------------------------------------------
-                Service Image
-            --------------------------------------------- */}
-            <section className="add-card">
+          </div>
+
+          {/* RIGHT SIDEBAR */}
+          <aside className="add-service-sidebar">
+
+            {/* IMAGE */}
+            <section className="add-card image-card">
 
               <div className="add-card-header">
-
                 <div>
                   <h2>Service Image</h2>
 
                   <p>
-                    Add a professional image to make
-                    your service stand out.
+                    Add an image that represents your
+                    service.
                   </p>
                 </div>
 
                 <span className="add-section-number">
                   03
                 </span>
-
               </div>
 
-              {/* Hidden Camera Input */}
+              {/* CAMERA */}
               <input
                 ref={cameraInputRef}
                 type="file"
@@ -736,7 +663,7 @@ const AddService = () => {
                 hidden
               />
 
-              {/* Hidden Gallery Input */}
+              {/* GALLERY */}
               <input
                 ref={galleryInputRef}
                 type="file"
@@ -746,7 +673,6 @@ const AddService = () => {
               />
 
               {!imagePreview ? (
-
                 <div className="image-upload-area">
 
                   <div className="image-upload-icon">
@@ -774,10 +700,7 @@ const AddService = () => {
                       <span className="image-source-icon">
                         📷
                       </span>
-
-                      <span>
-                        Take Photo
-                      </span>
+                      <span>Take Photo</span>
                     </button>
 
                     <button
@@ -790,10 +713,7 @@ const AddService = () => {
                       <span className="image-source-icon">
                         🖼️
                       </span>
-
-                      <span>
-                        Gallery
-                      </span>
+                      <span>Gallery</span>
                     </button>
 
                   </div>
@@ -803,9 +723,7 @@ const AddService = () => {
                   </small>
 
                 </div>
-
               ) : (
-
                 <div className="selected-image-area">
 
                   <img
@@ -844,7 +762,6 @@ const AddService = () => {
                   </div>
 
                 </div>
-
               )}
 
               <div className="image-upload-help">
@@ -858,32 +775,22 @@ const AddService = () => {
 
             </section>
 
-          </div>
-
-          {/* =================================================
-              RIGHT SIDEBAR
-          ================================================= */}
-          <aside className="add-service-sidebar">
-
-            {/* Preview */}
-            <div className="add-card preview-card">
+            {/* CUSTOMER PREVIEW */}
+            <section className="add-card preview-card">
 
               <div className="add-card-header">
-
                 <div>
-                  <h2>Preview</h2>
+                  <h2>Customer Preview</h2>
 
                   <p>
-                    See how your service will look.
+                    See how your service will appear.
                   </p>
                 </div>
-
               </div>
 
               <div className="service-live-preview">
 
                 <div className="service-preview-image">
-
                   {imagePreview ? (
                     <img
                       src={imagePreview}
@@ -894,19 +801,16 @@ const AddService = () => {
                       <span>✦</span>
                     </div>
                   )}
-
                 </div>
 
                 <div className="service-preview-content">
 
                   <span className="service-preview-category">
-                    {category ||
-                      "Service Category"}
+                    {category || "Service Category"}
                   </span>
 
                   <h3>
-                    {title ||
-                      "Your Service Title"}
+                    {title || "Your Service Title"}
                   </h3>
 
                   <p>
@@ -921,9 +825,7 @@ const AddService = () => {
                         ? "Get Quote"
                         : `₹${
                             price
-                              ? Number(
-                                  price
-                                ).toLocaleString(
+                              ? Number(price).toLocaleString(
                                   "en-IN"
                                 )
                               : "0"
@@ -931,8 +833,7 @@ const AddService = () => {
                     </strong>
 
                     <span>
-                      {pricingType ===
-                      "starting_from"
+                      {pricingType === "starting_from"
                         ? "starting"
                         : pricingType === "quote"
                         ? "Contact"
@@ -945,9 +846,9 @@ const AddService = () => {
 
               </div>
 
-            </div>
+            </section>
 
-            {/* Tips */}
+            {/* TIPS */}
             <div className="add-tips-card">
 
               <div className="add-tips-icon">
@@ -955,44 +856,28 @@ const AddService = () => {
               </div>
 
               <div>
-
                 <strong>
                   Make your service stand out
                 </strong>
 
                 <ul>
-                  <li>
-                    Use a clear service title
-                  </li>
-
-                  <li>
-                    Add a useful description
-                  </li>
-
-                  <li>
-                    Upload a quality image
-                  </li>
-
-                  <li>
-                    Keep pricing accurate
-                  </li>
+                  <li>Use a clear service title</li>
+                  <li>Add a useful description</li>
+                  <li>Upload a quality image</li>
+                  <li>Keep pricing accurate</li>
                 </ul>
-
               </div>
 
             </div>
 
-            {/* Actions */}
+            {/* ACTIONS */}
             <div className="add-actions">
 
               <button
                 type="submit"
                 className="add-btn add-btn-primary"
-                disabled={
-                  submitting || limitReached
-                }
+                disabled={submitting || limitReached}
               >
-
                 {submitting ? (
                   <>
                     <span className="add-button-spinner"></span>
@@ -1004,7 +889,6 @@ const AddService = () => {
                     <span>→</span>
                   </>
                 )}
-
               </button>
 
               <button
@@ -1023,7 +907,6 @@ const AddService = () => {
           </aside>
 
         </form>
-
       </div>
     </div>
   );
