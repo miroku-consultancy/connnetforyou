@@ -55,55 +55,55 @@ const EditService = () => {
   // ---------------------------------------------------------
   // Load categories
   // ---------------------------------------------------------
-  useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        setLoadingCategories(true);
+//   useEffect(() => {
+//     const loadCategories = async () => {
+//       try {
+//         setLoadingCategories(true);
 
-        const token = getAuthToken();
+//         const token = getAuthToken();
 
-        const response = await fetch(
-          `${secondaryApiUrl}/api/categories`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          }
-        );
+//         const response = await fetch(
+//           `${secondaryApiUrl}/api/categories`,
+//           {
+//             headers: {
+//               Authorization: `Bearer ${token}`
+//             }
+//           }
+//         );
 
-        if (!response.ok) {
-          throw new Error(
-            "Failed to load categories"
-          );
-        }
+//         if (!response.ok) {
+//           throw new Error(
+//             "Failed to load categories"
+//           );
+//         }
 
-        const data = await response.json();
+//         const data = await response.json();
 
-        if (Array.isArray(data)) {
-          setCategories(data);
-        } else if (
-          Array.isArray(data.categories)
-        ) {
-          setCategories(data.categories);
-        } else {
-          setCategories([]);
-        }
-      } catch (err) {
-        console.error(
-          "Load categories error:",
-          err
-        );
+//         if (Array.isArray(data)) {
+//           setCategories(data);
+//         } else if (
+//           Array.isArray(data.categories)
+//         ) {
+//           setCategories(data.categories);
+//         } else {
+//           setCategories([]);
+//         }
+//       } catch (err) {
+//         console.error(
+//           "Load categories error:",
+//           err
+//         );
 
-        setError(
-          "Unable to load service categories."
-        );
-      } finally {
-        setLoadingCategories(false);
-      }
-    };
+//         setError(
+//           "Unable to load service categories."
+//         );
+//       } finally {
+//         setLoadingCategories(false);
+//       }
+//     };
 
-    loadCategories();
-  }, []);
+//     loadCategories();
+//   }, []);
 
   // ---------------------------------------------------------
   // Load service
