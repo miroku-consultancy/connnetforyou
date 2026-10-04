@@ -247,7 +247,21 @@ const serviceModel = {
 
     return rows[0] || null;
   },
+// =========================================================
+// Vendor: Count services for a shop
+// =========================================================
+async countServicesByShop({ shopId }) {
+  const { rows } = await pool.query(
+    `
+    SELECT COUNT(*)::int AS count
+    FROM services
+    WHERE shop_id = $1
+    `,
+    [shopId]
+  );
 
+  return rows[0]?.count || 0;
+},
 
   // =========================================================
   // Delete service
@@ -268,6 +282,8 @@ const serviceModel = {
 
     return rows[0] || null;
   }
+
+  
 };
 
 module.exports = serviceModel;

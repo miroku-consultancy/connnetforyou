@@ -857,3 +857,237 @@
   }
 
 }
+/* =========================================================
+   IMAGE SOURCE BUTTONS
+========================================================= */
+
+.image-upload-area {
+  width: 100%;
+  min-height: 240px;
+  padding: 28px 20px;
+  box-sizing: border-box;
+  border: 2px dashed #d9dce5;
+  border-radius: 16px;
+  background: #fafbfc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.image-upload-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: #eef2ff;
+  color: #6366f1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 25px;
+  font-weight: 700;
+  margin-bottom: 13px;
+}
+
+.image-upload-area strong {
+  color: #344054;
+  font-size: 14px;
+}
+
+.image-upload-description {
+  margin-top: 6px;
+  color: #98a2b3;
+  font-size: 12px;
+}
+
+.image-source-buttons {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0 12px;
+}
+
+.image-source-button {
+  min-width: 145px;
+  min-height: 46px;
+  padding: 8px 15px;
+  border: 1px solid #d9dce5;
+  border-radius: 11px;
+  background: #ffffff;
+  color: #344054;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.image-source-button:hover {
+  border-color: #6366f1;
+  background: #f8f7ff;
+  transform: translateY(-1px);
+}
+
+.image-source-icon {
+  font-size: 17px;
+}
+
+.image-upload-area small {
+  color: #98a2b3;
+  font-size: 11px;
+}
+
+/* =========================================================
+   SELECTED IMAGE
+========================================================= */
+
+.selected-image-area {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #f2f4f7;
+}
+
+.selected-image-area > img {
+  display: block;
+  width: 100%;
+  height: 270px;
+  object-fit: cover;
+}
+
+.selected-image-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 13px;
+  background: #ffffff;
+  border: 1px solid #e7e9ef;
+  border-top: 0;
+}
+
+.selected-image-actions button {
+  border: 1px solid #d9dce5;
+  background: #ffffff;
+  color: #344054;
+  border-radius: 9px;
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.selected-image-actions button:hover {
+  border-color: #6366f1;
+  color: #4f46e5;
+}
+
+.selected-image-actions .remove-image-button {
+  color: #d92d20;
+  border-color: #fecdca;
+  background: #fffafa;
+}
+
+/* =========================================================
+   FREE PLAN LIMIT
+========================================================= */
+
+.service-limit-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  padding: 20px;
+  margin-bottom: 22px;
+  border: 1px solid #ddd6fe;
+  border-radius: 18px;
+  background: linear-gradient(
+    135deg,
+    #f5f3ff,
+    #eef2ff
+  );
+}
+
+.service-limit-icon {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: #6366f1;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.service-limit-label {
+  color: #6366f1;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.service-limit-content h2 {
+  margin: 4px 0 5px;
+  color: #312e81;
+  font-size: 18px;
+}
+
+.service-limit-content p {
+  max-width: 650px;
+  margin: 0;
+  color: #5b5f7a;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.service-limit-button {
+  margin-top: 13px;
+  padding: 9px 14px;
+  border: 0;
+  border-radius: 9px;
+  background: #6366f1;
+  color: white;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+  .image-source-buttons {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .image-source-button {
+    width: 100%;
+  }
+
+  .selected-image-actions {
+    flex-direction: column;
+  }
+
+  .selected-image-actions button {
+    width: 100%;
+  }
+
+  .service-limit-card {
+    padding: 16px;
+  }
+
+  .service-limit-content h2 {
+    font-size: 16px;
+  }
+}

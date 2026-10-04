@@ -342,12 +342,8 @@ const MyBusiness = () => {
                 {shop.slug && (
                   <div className="business-url">
                     <span>
-                      jusping.com/
+                      {shop.slug}.jusping.com
                     </span>
-
-                    <strong>
-                      {shop.slug}
-                    </strong>
                   </div>
                 )}
 
@@ -413,7 +409,7 @@ const MyBusiness = () => {
               </span>
 
               <strong className="store-url-text">
-                /{shop.slug || "—"}
+                {shop.slug || "—"}.jusping.com
               </strong>
 
             </div>

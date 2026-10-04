@@ -1,5 +1,13 @@
-import React, { useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import React, {
+  useEffect,
+  useRef,
+  useState
+} from "react";
+import {
+  useLocation,
+  useNavigate,
+  useParams
+} from "react-router-dom";
 import { secondaryApiUrl } from "../config/apiConfig";
 import "./EditService.css";
 
@@ -7,16 +15,19 @@ const EditService = () => {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const fileInputRef = useRef(null);
+
+  const cameraInputRef = useRef(null);
+  const galleryInputRef = useRef(null);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false);
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
   const [categories, setCategories] = useState([]);
+  const [loadingCategories, setLoadingCategories] =
+    useState(true);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -24,197 +35,306 @@ const EditService = () => {
   const [pricingType, setPricingType] = useState("fixed");
   const [price, setPrice] = useState("");
 
-  const [existingImage, setExistingImage] = useState("");
+  const [existingImage, setExistingImage] =
+    useState("");
+
   const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState("");
+  const [imagePreview, setImagePreview] =
+    useState("");
 
-  const [serviceStatus, setServiceStatus] = useState("");
+  const [serviceStatus, setServiceStatus] =
+    useState("");
 
-  const token = localStorage.getItem("authToken");
+  // ---------------------------------------------------------
+  // Authentication
+  // ---------------------------------------------------------
+  const getAuthToken = () => {
+    return localStorage.getItem("authToken");
+  };
 
-  // --------------------------------------------------
+  // ---------------------------------------------------------
   // Load categories
-  // --------------------------------------------------
+  // ---------------------------------------------------------
   useEffect(() => {
     const loadCategories = async () => {
       try {
+        setLoadingCategories(true);
+
+        const token = getAuthToken();
+
         const response = await fetch(
-  `${secondaryApiUrl}/api/categories`,
-  {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  }
-);
+          `${secondaryApiUrl}/api/categories`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
 
         if (!response.ok) {
-          throw new Error("Failed to load categories");
+          throw new Error(
+            "Failed to load categories"
+          );
         }
 
         const data = await response.json();
 
         if (Array.isArray(data)) {
           setCategories(data);
-        } else if (Array.isArray(data.categories)) {
+        } else if (
+          Array.isArray(data.categories)
+        ) {
           setCategories(data.categories);
         } else {
           setCategories([]);
         }
       } catch (err) {
-        console.error("Load categories error:", err);
+        console.error(
+          "Load categories error:",
+          err
+        );
+
+        setError(
+          "Unable to load service categories."
+        );
+      } finally {
+        setLoadingCategories(false);
       }
     };
 
     loadCategories();
   }, []);
 
-  // --------------------------------------------------
+  // ---------------------------------------------------------
   // Load service
-  // --------------------------------------------------
+  // ---------------------------------------------------------
   useEffect(() => {
     const loadService = async () => {
       try {
         setLoading(true);
         setError("");
 
-        // First use service passed from MyServiceStore
-        const passedService = location.state?.service;
+        const passedService =
+          location.state?.service;
 
         if (passedService) {
           populateForm(passedService);
           return;
         }
 
-        // If page is refreshed, state is lost.
-        // Fetch vendor's services and find this service.
+        const token = getAuthToken();
+
+        if (!token) {
+          throw new Error(
+            "Your session has expired. Please login again."
+          );
+        }
+
         const response = await fetch(
           `${secondaryApiUrl}/api/services/my-services`,
           {
             headers: {
-              Authorization: `Bearer ${token}`,
-            },
+              Authorization: `Bearer ${token}`
+            }
           }
         );
 
-        if (!response.ok) {
-          throw new Error("Failed to load your services");
-        }
+        const data = await response
+          .json()
+          .catch(() => ({}));
 
-        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(
+            data.message ||
+              "Failed to load your services"
+          );
+        }
 
         const serviceList = Array.isArray(data)
           ? data
-          : data.services || data.data || [];
+          : data.services ||
+            data.data ||
+            [];
 
-        const foundService = serviceList.find(
-          (service) => String(service.id) === String(id)
-        );
+        const foundService =
+          serviceList.find(
+            (service) =>
+              String(service.id) ===
+              String(id)
+          );
 
         if (!foundService) {
-          throw new Error("Service not found");
+          throw new Error(
+            "Service not found"
+          );
         }
 
         populateForm(foundService);
       } catch (err) {
-        console.error("Load service error:", err);
-        setError(err.message || "Failed to load service");
+        console.error(
+          "Load service error:",
+          err
+        );
+
+        setError(
+          err.message ||
+            "Failed to load service"
+        );
       } finally {
         setLoading(false);
       }
     };
 
     loadService();
-  }, [id, location.state, token]);
+  }, [id, location.state]);
 
-  // --------------------------------------------------
+  // ---------------------------------------------------------
   // Populate form
-  // --------------------------------------------------
+  // ---------------------------------------------------------
   const populateForm = (service) => {
     setTitle(service.title || "");
-    setDescription(service.description || "");
-    setCategory(service.category || "");
 
-    setPricingType(service.pricing_type || "fixed");
+    setDescription(
+      service.description || ""
+    );
+
+    setCategory(
+      service.category || ""
+    );
+
+    setPricingType(
+      service.pricing_type || "fixed"
+    );
 
     setPrice(
-      service.price !== null && service.price !== undefined
+      service.price !== null &&
+        service.price !== undefined
         ? service.price
         : ""
     );
 
-    setExistingImage(service.image_url || "");
-    setServiceStatus(service.status || "");
+    setExistingImage(
+      service.image_url || ""
+    );
+
+    setServiceStatus(
+      service.status || ""
+    );
   };
 
-  // --------------------------------------------------
+  // ---------------------------------------------------------
   // Image selection
-  // --------------------------------------------------
+  // ---------------------------------------------------------
   const handleImageChange = (event) => {
     const file = event.target.files?.[0];
 
-    if (!file) return;
+    if (!file) {
+      return;
+    }
 
     setError("");
     setSuccess("");
 
     if (!file.type.startsWith("image/")) {
-      setError("Please select a valid image file.");
+      setError(
+        "Please select a valid image file."
+      );
+
       event.target.value = "";
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      setError("Image size must be less than 5 MB.");
+    if (
+      file.size >
+      5 * 1024 * 1024
+    ) {
+      setError(
+        "Image size must be less than 5 MB."
+      );
+
       event.target.value = "";
       return;
     }
+
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
+
+    const previewUrl =
+      URL.createObjectURL(file);
 
     setImageFile(file);
-
-    const previewUrl = URL.createObjectURL(file);
     setImagePreview(previewUrl);
   };
 
-  // --------------------------------------------------
-  // Remove selected new image
-  // --------------------------------------------------
+  // ---------------------------------------------------------
+  // Remove replacement image
+  // ---------------------------------------------------------
   const handleRemoveNewImage = () => {
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
+
     setImageFile(null);
     setImagePreview("");
 
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+    if (cameraInputRef.current) {
+      cameraInputRef.current.value = "";
+    }
+
+    if (galleryInputRef.current) {
+      galleryInputRef.current.value = "";
     }
   };
 
-  // --------------------------------------------------
+  // ---------------------------------------------------------
+  // Cleanup image preview
+  // ---------------------------------------------------------
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
+  // ---------------------------------------------------------
   // Validation
-  // --------------------------------------------------
+  // ---------------------------------------------------------
   const validateForm = () => {
     if (!title.trim()) {
-      setError("Please enter a service title.");
+      setError(
+        "Please enter a service title."
+      );
+
       return false;
     }
 
     if (!pricingType) {
-      setError("Please select a pricing type.");
+      setError(
+        "Please select a pricing type."
+      );
+
       return false;
     }
 
     if (
-      (pricingType === "fixed" || pricingType === "starting_from") &&
+      pricingType !== "quote" &&
       (!price || Number(price) <= 0)
     ) {
-      setError("Please enter a valid price.");
+      setError(
+        "Please enter a valid price."
+      );
+
       return false;
     }
 
     return true;
   };
 
-  // --------------------------------------------------
-  // Save service
-  // --------------------------------------------------
+  // ---------------------------------------------------------
+  // Save changes
+  // ---------------------------------------------------------
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -225,37 +345,83 @@ const EditService = () => {
       return;
     }
 
+    const token = getAuthToken();
+
+    if (!token) {
+      setError(
+        "Your session has expired. Please login again."
+      );
+
+      return;
+    }
+
     try {
       setSaving(true);
 
       const formData = new FormData();
 
-      formData.append("title", title.trim());
-      formData.append("description", description.trim());
-      formData.append("category", category);
-      formData.append("pricing_type", pricingType);
+      formData.append(
+        "title",
+        title.trim()
+      );
+
+      formData.append(
+        "description",
+        description.trim()
+      );
+
+      formData.append(
+        "category",
+        category
+      );
+
+      formData.append(
+        "pricing_type",
+        pricingType
+      );
 
       if (pricingType !== "quote") {
-        formData.append("price", price);
+        formData.append(
+          "price",
+          price
+        );
       }
 
-      // Only send image if user selected a new image.
+      // Only send image when user selected
+      // a replacement image.
       if (imageFile) {
-        formData.append("image", imageFile);
+        formData.append(
+          "image",
+          imageFile
+        );
       }
 
       const response = await fetch(
         `${secondaryApiUrl}/api/services/${id}`,
         {
           method: "PUT",
+
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`
           },
-          body: formData,
+
+          body: formData
         }
       );
 
-      const data = await response.json().catch(() => ({}));
+      const data = await response
+        .json()
+        .catch(() => ({}));
+
+      if (
+        response.status === 401 ||
+        response.status === 403
+      ) {
+        throw new Error(
+          data.message ||
+            "Your session is invalid or expired. Please login again."
+        );
+      }
 
       if (!response.ok) {
         throw new Error(
@@ -273,219 +439,275 @@ const EditService = () => {
         navigate("/my-service-store");
       }, 1200);
     } catch (err) {
-      console.error("Update service error:", err);
-      setError(err.message || "Failed to update service.");
+      console.error(
+        "Update service error:",
+        err
+      );
+
+      setError(
+        err.message ||
+          "Failed to update service."
+      );
     } finally {
       setSaving(false);
     }
   };
 
-  // --------------------------------------------------
-  // Delete service
-  // --------------------------------------------------
+  // ---------------------------------------------------------
+  // Delete intentionally disabled for now
+  // ---------------------------------------------------------
+  /*
   const handleDelete = async () => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this service? This action cannot be undone."
+    // Delete disabled for now.
+    // We will add permission/admin control later.
+  };
+  */
+
+  // ---------------------------------------------------------
+  // Category helper
+  // ---------------------------------------------------------
+  const getCategoryValue = (item) => {
+    if (typeof item === "string") {
+      return item;
+    }
+
+    return (
+      item.name ||
+      item.category ||
+      item.title ||
+      ""
     );
-
-    if (!confirmed) return;
-
-    try {
-      setDeleting(true);
-      setError("");
-
-      const response = await fetch(
-        `${secondaryApiUrl}/api/services/${id}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const data = await response.json().catch(() => ({}));
-
-      if (!response.ok) {
-        throw new Error(
-          data.message ||
-            data.error ||
-            "Failed to delete service"
-        );
-      }
-
-      navigate("/my-service-store");
-    } catch (err) {
-      console.error("Delete service error:", err);
-      setError(err.message || "Failed to delete service.");
-    } finally {
-      setDeleting(false);
-    }
   };
 
-  // --------------------------------------------------
-  // Price display
-  // --------------------------------------------------
-  const getPricingText = () => {
-    if (pricingType === "quote") {
-      return "Customer will request a quote";
-    }
-
-    if (pricingType === "starting_from") {
-      return "Starting from this price";
-    }
-
-    return "Fixed service price";
-  };
-
-  // --------------------------------------------------
+  // ---------------------------------------------------------
   // Loading
-  // --------------------------------------------------
+  // ---------------------------------------------------------
   if (loading) {
     return (
       <div className="edit-service-page">
         <div className="edit-service-container">
+
           <div className="edit-service-loading">
+
             <div className="edit-service-spinner"></div>
-            <p>Loading service...</p>
+
+            <p>
+              Loading service...
+            </p>
+
           </div>
+
         </div>
       </div>
     );
   }
 
-  // --------------------------------------------------
-  // Error loading service
-  // --------------------------------------------------
+  // ---------------------------------------------------------
+  // Load error
+  // ---------------------------------------------------------
   if (error && !title) {
     return (
       <div className="edit-service-page">
+
         <div className="edit-service-container">
+
           <div className="edit-service-error-card">
-            <div className="edit-service-error-icon">!</div>
 
-            <h2>Unable to load service</h2>
+            <div className="edit-service-error-icon">
+              !
+            </div>
 
-            <p>{error}</p>
+            <h2>
+              Unable to load service
+            </h2>
+
+            <p>
+              {error}
+            </p>
 
             <button
               className="edit-btn edit-btn-primary"
-              onClick={() => navigate("/my-service-store")}
+              onClick={() =>
+                navigate(
+                  "/my-service-store"
+                )
+              }
             >
               Back to My Services
             </button>
+
           </div>
+
         </div>
+
       </div>
     );
   }
 
   return (
     <div className="edit-service-page">
+
       <div className="edit-service-container">
 
-        {/* ---------------------------------------------
-            Header
-        --------------------------------------------- */}
+        {/* =================================================
+            HEADER
+        ================================================= */}
         <div className="edit-service-header">
+
           <div className="edit-service-header-left">
+
             <button
               type="button"
               className="edit-back-button"
-              onClick={() => navigate("/my-service-store")}
+              onClick={() =>
+                navigate(
+                  "/my-service-store"
+                )
+              }
               aria-label="Back"
             >
               ←
             </button>
 
             <div>
+
               <div className="edit-service-eyebrow">
                 MY SERVICE STORE
               </div>
 
-              <h1>Edit Service</h1>
+              <h1>
+                Edit Service
+              </h1>
 
               <p>
-                Update your service information and keep your
-                listing fresh.
+                Update your service information
+                and keep your listing fresh.
               </p>
+
             </div>
+
           </div>
 
           {serviceStatus && (
-            <div className={`edit-current-status status-${serviceStatus}`}>
-              {serviceStatus === "published"
+            <div
+              className={`edit-current-status status-${serviceStatus}`}
+            >
+              {serviceStatus ===
+              "published"
                 ? "Published"
-                : serviceStatus === "pending_review"
+                : serviceStatus ===
+                  "pending_review"
                 ? "Pending Review"
-                : serviceStatus === "rejected"
+                : serviceStatus ===
+                  "rejected"
                 ? "Rejected"
-                : serviceStatus === "inactive"
+                : serviceStatus ===
+                  "inactive"
                 ? "Inactive"
                 : "Draft"}
             </div>
           )}
+
         </div>
 
-        {/* ---------------------------------------------
-            Alerts
-        --------------------------------------------- */}
+        {/* =================================================
+            ALERTS
+        ================================================= */}
         {error && (
           <div className="edit-alert edit-alert-error">
-            <span className="edit-alert-icon">!</span>
-            <span>{error}</span>
+
+            <span className="edit-alert-icon">
+              !
+            </span>
+
+            <span>
+              {error}
+            </span>
+
           </div>
         )}
 
         {success && (
           <div className="edit-alert edit-alert-success">
-            <span className="edit-alert-icon">✓</span>
-            <span>{success}</span>
+
+            <span className="edit-alert-icon">
+              ✓
+            </span>
+
+            <span>
+              {success}
+            </span>
+
           </div>
         )}
 
-        {/* ---------------------------------------------
-            Review notice
-        --------------------------------------------- */}
+        {/* =================================================
+            REVIEW NOTICE
+        ================================================= */}
         <div className="edit-review-notice">
-          <div className="edit-review-icon">✓</div>
+
+          <div className="edit-review-icon">
+            ✓
+          </div>
 
           <div>
-            <strong>Changes go through review</strong>
+
+            <strong>
+              Changes go through review
+            </strong>
+
             <p>
-              When you update a service, the changes may be
-              submitted for admin review before becoming live.
+              When you update a service,
+              your changes may be submitted
+              for admin review before becoming
+              live.
             </p>
+
           </div>
+
         </div>
 
-        {/* ---------------------------------------------
-            Main Form
-        --------------------------------------------- */}
+        {/* =================================================
+            FORM
+        ================================================= */}
         <form
           className="edit-service-form"
           onSubmit={handleSubmit}
         >
 
-          {/* LEFT COLUMN */}
+          {/* =================================================
+              LEFT
+          ================================================= */}
           <div className="edit-service-main">
 
-            {/* Basic Information */}
+            {/* ---------------------------------------------
+                BASIC INFORMATION
+            --------------------------------------------- */}
             <section className="edit-card">
+
               <div className="edit-card-header">
+
                 <div>
-                  <h2>Basic Information</h2>
+
+                  <h2>
+                    Basic Information
+                  </h2>
+
                   <p>
-                    Tell customers what service you provide.
+                    Tell customers what service
+                    you provide.
                   </p>
+
                 </div>
 
                 <span className="edit-section-number">
                   01
                 </span>
+
               </div>
 
               <div className="edit-form-group">
+
                 <label htmlFor="service-title">
                   Service Title
                   <span>*</span>
@@ -495,21 +717,30 @@ const EditService = () => {
                   id="service-title"
                   type="text"
                   value={title}
-                  onChange={(e) => setTitle(e.target.value)}
+                  onChange={(e) =>
+                    setTitle(e.target.value)
+                  }
                   placeholder="e.g. Home AC Repair"
                   maxLength={120}
                 />
 
                 <div className="edit-input-meta">
+
                   <span>
-                    Use a clear name customers can understand.
+                    Use a clear name customers
+                    can understand.
                   </span>
 
-                  <span>{title.length}/120</span>
+                  <span>
+                    {title.length}/120
+                  </span>
+
                 </div>
+
               </div>
 
               <div className="edit-form-group">
+
                 <label htmlFor="service-description">
                   Description
                 </label>
@@ -518,7 +749,9 @@ const EditService = () => {
                   id="service-description"
                   value={description}
                   onChange={(e) =>
-                    setDescription(e.target.value)
+                    setDescription(
+                      e.target.value
+                    )
                   }
                   placeholder="Describe what is included in this service..."
                   rows={6}
@@ -526,17 +759,22 @@ const EditService = () => {
                 />
 
                 <div className="edit-input-meta">
+
                   <span>
-                    Explain what customers can expect.
+                    Explain what customers
+                    can expect.
                   </span>
 
                   <span>
                     {description.length}/1000
                   </span>
+
                 </div>
+
               </div>
 
               <div className="edit-form-group">
+
                 <label htmlFor="service-category">
                   Category
                 </label>
@@ -545,51 +783,74 @@ const EditService = () => {
                   id="service-category"
                   value={category}
                   onChange={(e) =>
-                    setCategory(e.target.value)
+                    setCategory(
+                      e.target.value
+                    )
                   }
+                  disabled={loadingCategories}
                 >
+
                   <option value="">
-                    Select a category
+                    {loadingCategories
+                      ? "Loading categories..."
+                      : "Select a category"}
                   </option>
 
-                  {categories.map((item, index) => {
-                    const value =
-                      typeof item === "string"
-                        ? item
-                        : item.name ||
-                          item.category ||
-                          item.title ||
-                          "";
+                  {categories.map(
+                    (item, index) => {
+                      const value =
+                        getCategoryValue(
+                          item
+                        );
 
-                    if (!value) return null;
+                      if (!value) {
+                        return null;
+                      }
 
-                    return (
-                      <option
-                        key={item.id || index}
-                        value={value}
-                      >
-                        {value}
-                      </option>
-                    );
-                  })}
+                      return (
+                        <option
+                          key={
+                            item.id ||
+                            index
+                          }
+                          value={value}
+                        >
+                          {value}
+                        </option>
+                      );
+                    }
+                  )}
+
                 </select>
+
               </div>
+
             </section>
 
-            {/* Pricing */}
+            {/* ---------------------------------------------
+                PRICING
+            --------------------------------------------- */}
             <section className="edit-card">
+
               <div className="edit-card-header">
+
                 <div>
-                  <h2>Pricing</h2>
+
+                  <h2>
+                    Pricing
+                  </h2>
+
                   <p>
-                    Choose how customers should see your
-                    service price.
+                    Choose how customers should
+                    see your service price.
                   </p>
+
                 </div>
 
                 <span className="edit-section-number">
                   02
                 </span>
+
               </div>
 
               <div className="pricing-options">
@@ -597,97 +858,146 @@ const EditService = () => {
                 <button
                   type="button"
                   className={`pricing-option ${
-                    pricingType === "fixed"
+                    pricingType ===
+                    "fixed"
                       ? "selected"
                       : ""
                   }`}
-                  onClick={() => setPricingType("fixed")}
+                  onClick={() =>
+                    setPricingType(
+                      "fixed"
+                    )
+                  }
                 >
+
                   <div className="pricing-option-icon">
                     ₹
                   </div>
 
                   <div className="pricing-option-content">
-                    <strong>Fixed Price</strong>
+
+                    <strong>
+                      Fixed Price
+                    </strong>
+
                     <span>
-                      One fixed price for the service
+                      One fixed price for
+                      the service
                     </span>
+
                   </div>
 
                   <div className="pricing-radio">
-                    {pricingType === "fixed" && "✓"}
+                    {pricingType ===
+                      "fixed" &&
+                      "✓"}
                   </div>
+
                 </button>
 
                 <button
                   type="button"
                   className={`pricing-option ${
-                    pricingType === "starting_from"
+                    pricingType ===
+                    "starting_from"
                       ? "selected"
                       : ""
                   }`}
                   onClick={() =>
-                    setPricingType("starting_from")
+                    setPricingType(
+                      "starting_from"
+                    )
                   }
                 >
+
                   <div className="pricing-option-icon">
                     ↗
                   </div>
 
                   <div className="pricing-option-content">
-                    <strong>Starting From</strong>
+
+                    <strong>
+                      Starting From
+                    </strong>
+
                     <span>
-                      Show a minimum starting price
+                      Show a minimum
+                      starting price
                     </span>
+
                   </div>
 
                   <div className="pricing-radio">
-                    {pricingType === "starting_from" &&
+                    {pricingType ===
+                      "starting_from" &&
                       "✓"}
                   </div>
+
                 </button>
 
                 <button
                   type="button"
                   className={`pricing-option ${
-                    pricingType === "quote"
+                    pricingType ===
+                    "quote"
                       ? "selected"
                       : ""
                   }`}
                   onClick={() => {
-                    setPricingType("quote");
+                    setPricingType(
+                      "quote"
+                    );
                     setPrice("");
                   }}
                 >
+
                   <div className="pricing-option-icon">
                     ?
                   </div>
 
                   <div className="pricing-option-content">
-                    <strong>Request a Quote</strong>
+
+                    <strong>
+                      Request a Quote
+                    </strong>
+
                     <span>
-                      Customer contacts you for pricing
+                      Customer contacts
+                      you for pricing
                     </span>
+
                   </div>
 
                   <div className="pricing-radio">
-                    {pricingType === "quote" && "✓"}
+                    {pricingType ===
+                      "quote" &&
+                      "✓"}
                   </div>
+
                 </button>
 
               </div>
 
-              {pricingType !== "quote" && (
+              {pricingType !==
+                "quote" && (
                 <div className="edit-price-wrapper">
+
                   <label htmlFor="service-price">
-                    {pricingType === "starting_from"
+
+                    {pricingType ===
+                    "starting_from"
                       ? "Starting Price"
                       : "Service Price"}
+
                     <span>*</span>
+
                   </label>
 
                   <div className="edit-price-input">
-                    <span>₹</span>
+
+                    <span>
+                      ₹
+                    </span>
 
                     <input
                       id="service-price"
@@ -696,38 +1006,81 @@ const EditService = () => {
                       step="0.01"
                       value={price}
                       onChange={(e) =>
-                        setPrice(e.target.value)
+                        setPrice(
+                          e.target.value
+                        )
                       }
                       placeholder="0.00"
                     />
+
                   </div>
 
                   <p className="edit-price-help">
-                    {getPricingText()}
+
+                    {pricingType ===
+                    "starting_from"
+                      ? "Starting price shown to customers."
+                      : "Fixed service price."}
+
                   </p>
+
                 </div>
               )}
+
             </section>
 
-            {/* Image */}
+            {/* ---------------------------------------------
+                IMAGE
+            --------------------------------------------- */}
             <section className="edit-card">
+
               <div className="edit-card-header">
+
                 <div>
-                  <h2>Service Image</h2>
+
+                  <h2>
+                    Service Image
+                  </h2>
+
                   <p>
-                    Add a professional image to make your
-                    service stand out.
+                    Replace your existing image
+                    whenever you need.
                   </p>
+
                 </div>
 
                 <span className="edit-section-number">
                   03
                 </span>
+
               </div>
 
-              <div className="edit-image-area">
+              {/* Camera */}
+              <input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleImageChange}
+                hidden
+              />
 
-                {(imagePreview || existingImage) ? (
+              {/* Gallery */}
+              <input
+                ref={galleryInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleImageChange}
+                hidden
+              />
+
+              {/* -------------------------------------------
+                  IMAGE PREVIEW
+              ------------------------------------------- */}
+              {(imagePreview ||
+                existingImage) ? (
+                <div className="edit-image-area">
+
                   <div className="edit-image-preview">
 
                     <img
@@ -735,116 +1088,189 @@ const EditService = () => {
                         imagePreview ||
                         existingImage
                       }
-                      alt={title || "Service"}
+                      alt={
+                        title ||
+                        "Service"
+                      }
                     />
 
-                    <div className="edit-image-overlay">
+                  </div>
+
+                  <div className="edit-image-source-buttons">
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        cameraInputRef.current?.click()
+                      }
+                    >
+                      <span>
+                        📷
+                      </span>
+
+                      Take Photo
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        galleryInputRef.current?.click()
+                      }
+                    >
+                      <span>
+                        🖼️
+                      </span>
+
+                      Gallery
+                    </button>
+
+                    {imagePreview && (
                       <button
                         type="button"
-                        className="edit-image-change"
-                        onClick={() =>
-                          fileInputRef.current?.click()
+                        className="edit-image-revert"
+                        onClick={
+                          handleRemoveNewImage
                         }
                       >
-                        Change Image
+                        Use Existing
                       </button>
+                    )}
 
-                      {imagePreview && (
-                        <button
-                          type="button"
-                          className="edit-image-remove"
-                          onClick={handleRemoveNewImage}
-                        >
-                          Use Existing Image
-                        </button>
-                      )}
-                    </div>
                   </div>
-                ) : (
-                  <button
-                    type="button"
-                    className="edit-upload-box"
-                    onClick={() =>
-                      fileInputRef.current?.click()
-                    }
-                  >
-                    <div className="edit-upload-icon">
-                      ↑
+
+                  {imagePreview && (
+                    <div className="edit-new-image-label">
+                      New image selected — save
+                      changes to upload it.
                     </div>
+                  )}
 
-                    <strong>
-                      Upload service image
-                    </strong>
+                </div>
+              ) : (
+                <div className="edit-upload-box">
 
-                    <span>
-                      JPG, PNG or WEBP · Maximum 5 MB
-                    </span>
-                  </button>
-                )}
+                  <div className="edit-upload-icon">
+                    ↑
+                  </div>
 
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={handleImageChange}
-                  hidden
-                />
+                  <strong>
+                    Add a service image
+                  </strong>
 
-              </div>
+                  <span>
+                    Take a photo or choose
+                    from your gallery.
+                  </span>
+
+                  <div className="edit-image-source-buttons">
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        cameraInputRef.current?.click()
+                      }
+                    >
+                      📷 Take Photo
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        galleryInputRef.current?.click()
+                      }
+                    >
+                      🖼️ Gallery
+                    </button>
+
+                  </div>
+
+                  <small>
+                    JPG, PNG or WEBP · Maximum 5 MB
+                  </small>
+
+                </div>
+              )}
 
               <div className="edit-image-help">
-                <span>💡</span>
+
+                <span>
+                  💡
+                </span>
+
                 <p>
-                  Use a clear, high-quality image related
-                  to your service. If you don't select a new
-                  image, your current image will be kept.
+                  If you don't select a new image,
+                  your current Cloudinary image will
+                  remain unchanged.
                 </p>
+
               </div>
+
             </section>
 
           </div>
 
-          {/* RIGHT COLUMN */}
+          {/* =================================================
+              RIGHT SIDEBAR
+          ================================================= */}
           <aside className="edit-service-sidebar">
 
             {/* Preview */}
             <div className="edit-card preview-card">
 
               <div className="edit-card-header">
+
                 <div>
-                  <h2>Preview</h2>
+
+                  <h2>
+                    Preview
+                  </h2>
+
                   <p>
-                    How your service looks to you.
+                    How your service looks.
                   </p>
+
                 </div>
+
               </div>
 
               <div className="service-live-preview">
 
                 <div className="service-preview-image">
-                  {imagePreview || existingImage ? (
+
+                  {imagePreview ||
+                  existingImage ? (
                     <img
                       src={
                         imagePreview ||
                         existingImage
                       }
-                      alt={title || "Service preview"}
+                      alt={
+                        title ||
+                        "Service preview"
+                      }
                     />
                   ) : (
                     <div className="service-preview-placeholder">
-                      <span>✦</span>
+                      <span>
+                        ✦
+                      </span>
                     </div>
                   )}
+
                 </div>
 
                 <div className="service-preview-content">
 
                   <span className="service-preview-category">
-                    {category || "Service Category"}
+
+                    {category ||
+                      "Service Category"}
+
                   </span>
 
                   <h3>
-                    {title || "Your Service Title"}
+                    {title ||
+                      "Your Service Title"}
                   </h3>
 
                   <p>
@@ -855,29 +1281,38 @@ const EditService = () => {
                   <div className="service-preview-bottom">
 
                     <strong>
-                      {pricingType === "quote"
+
+                      {pricingType ===
+                      "quote"
                         ? "Get Quote"
                         : `₹${
                             price
-                              ? Number(price).toLocaleString(
+                              ? Number(
+                                  price
+                                ).toLocaleString(
                                   "en-IN"
                                 )
                               : "0"
                           }`}
+
                     </strong>
 
                     <span>
+
                       {pricingType ===
                       "starting_from"
                         ? "starting"
-                        : pricingType === "quote"
+                        : pricingType ===
+                          "quote"
                         ? "Contact"
                         : "fixed"}
+
                     </span>
 
                   </div>
 
                 </div>
+
               </div>
 
             </div>
@@ -890,16 +1325,31 @@ const EditService = () => {
               </div>
 
               <div>
+
                 <strong>
-                  Make your service stand out
+                  Keep your service fresh
                 </strong>
 
                 <ul>
-                  <li>Use a clear service title</li>
-                  <li>Add a useful description</li>
-                  <li>Upload a quality image</li>
-                  <li>Keep pricing accurate</li>
+
+                  <li>
+                    Use a clear title
+                  </li>
+
+                  <li>
+                    Keep the description useful
+                  </li>
+
+                  <li>
+                    Use a quality image
+                  </li>
+
+                  <li>
+                    Keep pricing accurate
+                  </li>
+
                 </ul>
+
               </div>
 
             </div>
@@ -910,8 +1360,9 @@ const EditService = () => {
               <button
                 type="submit"
                 className="edit-btn edit-btn-primary"
-                disabled={saving || deleting}
+                disabled={saving}
               >
+
                 {saving ? (
                   <>
                     <span className="button-spinner"></span>
@@ -920,39 +1371,37 @@ const EditService = () => {
                 ) : (
                   <>
                     Save Changes
-                    <span>→</span>
+                    <span>
+                      →
+                    </span>
                   </>
                 )}
+
               </button>
 
               <button
                 type="button"
                 className="edit-btn edit-btn-secondary"
                 onClick={() =>
-                  navigate("/my-service-store")
+                  navigate(
+                    "/my-service-store"
+                  )
                 }
-                disabled={saving || deleting}
+                disabled={saving}
               >
                 Cancel
               </button>
 
-              <button
-                type="button"
-                className="edit-delete-button"
-                onClick={handleDelete}
-                disabled={saving || deleting}
-              >
-                {deleting
-                  ? "Deleting..."
-                  : "Delete Service"}
-              </button>
+              {/* Delete intentionally disabled for now */}
 
             </div>
 
           </aside>
 
         </form>
+
       </div>
+
     </div>
   );
 };

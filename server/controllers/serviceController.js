@@ -160,6 +160,25 @@ exports.getService = async (req, res) => {
 exports.createService = async (req, res) => {
   try {
     const shopId = await getVendorShopId(req);
+    // -------------------------------------------------------
+// Free plan: maximum 10 services
+// -------------------------------------------------------
+const serviceCount =
+  await serviceModel.countServicesByShop({
+    shopId: Number(shopId)
+  });
+
+const FREE_SERVICE_LIMIT = 10;
+
+if (serviceCount >= FREE_SERVICE_LIMIT) {
+  return res.status(403).json({
+    message:
+      "You have reached the Free plan limit of 10 services. Upgrade your plan to add more services.",
+    code: "FREE_SERVICE_LIMIT_REACHED",
+    limit: FREE_SERVICE_LIMIT,
+    currentCount: serviceCount
+  });
+}
 
     console.log("[createService] vendor shopId:", shopId);
 

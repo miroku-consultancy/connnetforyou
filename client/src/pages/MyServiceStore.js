@@ -183,9 +183,9 @@ const MyServiceStore = () => {
           </button>
 
           <div>
-            {/* <span className="service-page-eyebrow">
+            <span className="service-page-eyebrow">
               JUSPING BUSINESS
-            </span> */}
+            </span>
 
             <h1>My Service Store</h1>
 
