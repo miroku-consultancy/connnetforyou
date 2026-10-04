@@ -60,12 +60,7 @@ const MyProductStore = () => {
       // Get vendor's products
       // ------------------------------------
       const productResponse = await fetch(
-  `${secondaryApiUrl}/api/products?shopId=${currentShop.id}`,
-  {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  }
+  `${secondaryApiUrl}/api/products?shopId=${currentShop.id}`
 );
 
       const productData = await productResponse.json();
