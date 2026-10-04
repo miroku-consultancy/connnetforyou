@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { secondaryApiUrl } from "./config/apiConfig";
+import { secondaryApiUrl } from "../config/apiConfig";
 import "./MyProductStore.css";
 
 const MyProductStore = () => {
