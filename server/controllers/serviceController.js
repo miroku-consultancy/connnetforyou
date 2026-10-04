@@ -1,5 +1,6 @@
 const serviceModel = require("../models/serviceModel");
 const pool = require("../db");
+const uploadToCloudinary = require("../utils/uploadToCloudinary");
 
 // ---------------------------------------------------------
 // Resolve the vendor's shop from user_shop_roles
@@ -141,12 +142,12 @@ exports.getService = async (req, res) => {
       });
     }
 
-    res.json(service);
+    return res.json(service);
 
   } catch (error) {
     console.error("Get service error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       message: "Failed to fetch service"
     });
   }
@@ -216,6 +217,32 @@ exports.createService = async (req, res) => {
       });
     }
 
+    // -------------------------------------------------------
+    // Upload service image to Cloudinary
+    // -------------------------------------------------------
+    let imageUrl = null;
+
+    if (req.file) {
+      console.log(
+        "[createService] Uploading image to Cloudinary..."
+      );
+
+      const uploadedImage = await uploadToCloudinary(
+        req.file.buffer,
+        "jusping/services"
+      );
+
+      imageUrl = uploadedImage.secure_url;
+
+      console.log(
+        "[createService] Cloudinary image URL:",
+        imageUrl
+      );
+    }
+
+    // -------------------------------------------------------
+    // Create service in database
+    // -------------------------------------------------------
     const service = await serviceModel.createService({
       shop_id: Number(shopId),
       title: title.trim(),
@@ -223,9 +250,7 @@ exports.createService = async (req, res) => {
       category,
       price: servicePrice,
       pricing_type: pricingType,
-      image_url: req.file
-        ? `/images/services/${req.file.filename}`
-        : null,
+      image_url: imageUrl,
 
       // Store-level approval architecture:
       // service is initially part of the draft store.
@@ -284,11 +309,13 @@ exports.updateService = async (req, res) => {
 
     const pricingType = pricing_type || "fixed";
 
-    if (![
-      "fixed",
-      "starting_from",
-      "quote"
-    ].includes(pricingType)) {
+    if (
+      ![
+        "fixed",
+        "starting_from",
+        "quote"
+      ].includes(pricingType)
+    ) {
       return res.status(400).json({
         message: "Invalid pricing type"
       });
@@ -311,6 +338,32 @@ exports.updateService = async (req, res) => {
       }
     }
 
+    // -------------------------------------------------------
+    // Upload new image only if one was selected
+    // -------------------------------------------------------
+    let imageUrl = null;
+
+    if (req.file) {
+      console.log(
+        "[updateService] Uploading new image to Cloudinary..."
+      );
+
+      const uploadedImage = await uploadToCloudinary(
+        req.file.buffer,
+        "jusping/services"
+      );
+
+      imageUrl = uploadedImage.secure_url;
+
+      console.log(
+        "[updateService] Cloudinary image URL:",
+        imageUrl
+      );
+    }
+
+    // -------------------------------------------------------
+    // Update service in database
+    // -------------------------------------------------------
     const service = await serviceModel.updateService(
       id,
       Number(shopId),
@@ -320,9 +373,10 @@ exports.updateService = async (req, res) => {
         category,
         price: servicePrice,
         pricing_type: pricingType,
-        image_url: req.file
-          ? `/images/services/${req.file.filename}`
-          : null,
+
+        // null means keep existing image because
+        // serviceModel uses COALESCE()
+        image_url: imageUrl,
 
         status:
           req.body.status === "inactive"
