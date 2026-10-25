@@ -228,6 +228,35 @@ router.post('/create', authMiddleware, async (req, res) => {
 
     transactionStarted = true;
 
+    
+    // Prevent concurrent requests from creating multiple stores
+    // for the same user. This lock exists only for this transaction.
+    await client.query(
+      'SELECT pg_advisory_xact_lock($1::bigint)',
+      [userId]
+    );
+
+    // Enforce the new rule without modifying legacy store records.
+    const existingStore = await client.query(
+      `SELECT shop_id
+       FROM user_shop_roles
+       WHERE user_id = $1
+         AND role = 'vendor'
+       LIMIT 1`,
+      [userId]
+    );
+
+    if (existingStore.rows.length > 0) {
+      await client.query('ROLLBACK');
+      transactionStarted = false;
+
+      return res.status(409).json({
+        error: 'STORE_ALREADY_EXISTS',
+        message:
+          'You already have a store. You cannot create another store.'
+      });
+    }
+
 
     // -----------------------------
     // Make slug unique
