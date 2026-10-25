@@ -529,9 +529,9 @@ const EditProduct = () => {
 
     if (
 
-      image.startsWith("http\://") ||
+      image.startsWith("http://") ||
 
-      image.startsWith("https\://") ||
+      image.startsWith("https://") ||
 
       image.startsWith("blob:")
 
@@ -646,7 +646,7 @@ const EditProduct = () => {
 
 
 
-    if (file.size > 5 \* 1024 \* 1024) {
+    if (file.size > 5 * 1024 * 1024) {
 
       alert("Image size must be less than 5 MB.");
 
@@ -1360,7 +1360,7 @@ const EditProduct = () => {
 
 
 
-      {/\* HEADER \*/}
+      {/* HEADER */}
 
       <div className="edit-product-header">
 
@@ -1400,7 +1400,7 @@ const EditProduct = () => {
 
 
 
-      {/\* ERROR \*/}
+      {/* ERROR */}
 
       {error && (
 
@@ -1427,11 +1427,11 @@ const EditProduct = () => {
 
 
 
-        {/\* ======================================================
+        {/* ======================================================
 
             LEFT COLUMN
 
-        ======================================================= \*/}
+        ======================================================= */}
 
 
 
@@ -1439,7 +1439,7 @@ const EditProduct = () => {
 
 
 
-          {/\* BASIC INFORMATION \*/}
+          {/* BASIC INFORMATION */}
 
           <section className="edit-product-card">
 
@@ -1469,7 +1469,7 @@ const EditProduct = () => {
 
                   Product Name
 
-                  <span className="required">\*</span>
+                  <span className="required">*</span>
 
                 </label>
 
@@ -1525,7 +1525,7 @@ const EditProduct = () => {
 
 
 
-          {/\* CATEGORY \*/}
+          {/* CATEGORY */}
 
           <section className="edit-product-card">
 
@@ -1555,7 +1555,7 @@ const EditProduct = () => {
 
                   Category
 
-                  <span className="required">\*</span>
+                  <span className="required">*</span>
 
                 </label>
 
@@ -1637,7 +1637,7 @@ const EditProduct = () => {
 
                   Subcategory
 
-                  <span className="required">\*</span>
+                  <span className="required">*</span>
 
                 </label>
 
@@ -1813,7 +1813,7 @@ const EditProduct = () => {
 
 
 
-          {/\* PRICING & INVENTORY \*/}
+          {/* PRICING & INVENTORY */}
 
           <section className="edit-product-card">
 
@@ -1843,7 +1843,7 @@ const EditProduct = () => {
 
                   Price
 
-                  <span className="required">\*</span>
+                  <span className="required">*</span>
 
                 </label>
 
@@ -1885,7 +1885,7 @@ const EditProduct = () => {
 
                   Stock
 
-                  <span className="required">\*</span>
+                  <span className="required">*</span>
 
                 </label>
 
@@ -1917,7 +1917,7 @@ const EditProduct = () => {
 
                   Unit
 
-                  <span className="required">\*</span>
+                  <span className="required">*</span>
 
                 </label>
 
@@ -2091,7 +2091,7 @@ const EditProduct = () => {
 
 
 
-          {/\* BARCODE \*/}
+          {/* BARCODE */}
 
           <section className="edit-product-card">
 
@@ -2159,11 +2159,11 @@ const EditProduct = () => {
 
 
 
-        {/\* ======================================================
+        {/* ======================================================
 
             RIGHT COLUMN
 
-        ======================================================= \*/}
+        ======================================================= */}
 
 
 
@@ -2171,7 +2171,7 @@ const EditProduct = () => {
 
 
 
-          {/\* IMAGE \*/}
+          {/* IMAGE */}
 
           <section className="edit-product-card image-card">
 
@@ -2359,7 +2359,7 @@ const EditProduct = () => {
 
                 type="file"
 
-                accept="image/\*"
+                accept="image/*"
 
                 capture="environment"
 
@@ -2417,7 +2417,7 @@ const EditProduct = () => {
 
 
 
-          {/\* CUSTOMER PREVIEW \*/}
+          {/* CUSTOMER PREVIEW */}
 
           <section className="edit-product-card">
 
@@ -2531,7 +2531,7 @@ const EditProduct = () => {
 
 
 
-          {/\* TIPS \*/}
+          {/* TIPS */}
 
           <section className="edit-product-tips">
 
@@ -2573,7 +2573,7 @@ const EditProduct = () => {
 
 
 
-      {/\* ACTION BAR \*/}
+      {/* ACTION BAR */}
 
       <div className="edit-product-actions">
 
@@ -2622,7 +2622,7 @@ const EditProduct = () => {
 
 
 
-      {/\* BARCODE SCANNER \*/}
+      {/* BARCODE SCANNER */}
 
       {showScanner && (
 
