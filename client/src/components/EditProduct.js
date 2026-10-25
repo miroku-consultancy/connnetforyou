@@ -217,56 +217,33 @@ const EditProduct = () => {
 
 
         // --------------------------------------------------------
+// Categories
+// --------------------------------------------------------
 
-        // Categories
+let categoriesData = [];
 
-        // --------------------------------------------------------
+if (categoriesResponse.ok) {
+  categoriesData = await categoriesResponse.json();
 
+  if (Array.isArray(categoriesData)) {
+    setCategoryTree(categoriesData);
 
+    const map = {};
 
-        if (categoriesResponse.ok) {
+    const flatten = (categories) => {
+      categories.forEach((category) => {
+        map[category.name] = category.id;
 
-          const categoriesData = await categoriesResponse.json();
+        if (Array.isArray(category.children)) {
+          flatten(category.children);
+        }
+      });
+    };
 
-
-
-          if (Array.isArray(categoriesData)) {
-
-            setCategoryTree(categoriesData);
-
-
-
-            const map = {};
-
-
-
-            const flatten = (categories) => {
-
-              categories.forEach((category) => {
-
-                map[category.name] = category.id;
-
-
-
-                if (Array.isArray(category.children)) {
-
-                  flatten(category.children);
-
-                }
-
-              });
-
-            };
-
-
-
-            flatten(categoriesData);
-
-            setCategoryIdMap(map);
-
-          }
-
-        }
+    flatten(categoriesData);
+    setCategoryIdMap(map);
+  }
+}
 
 
 
@@ -1096,65 +1073,61 @@ const EditProduct = () => {
 
 
 
-  // ============================================================
+// ============================================================
+// UPDATE PRODUCT
+// ============================================================
 
-  // UPDATE PRODUCT
+const getSelectedCategoryId = () => {
+  if (selectedSubcategory) {
+    const subcategoryId = categoryIdMap[selectedSubcategory];
 
-  // ============================================================
-
-
-
-  const handleSubmit = async (e) => {
-
-    e.preventDefault();
-
-
-
-    const token = getToken();
-
-
-
-    if (!token) {
-
-      navigate("/login");
-
-      return;
-
-    }
-
-
-
-    if (
-
-      !productData.name.trim() ||
-
-      !productData.price ||
-
-      !productData.stock ||
-
-      !selectedSubcategory ||
-
-      !productData.unit
-
-    ) {
-
-      alert("Please fill in all required fields.");
-
-      return;
-
-    }
-    const category_id = getSelectedCategoryId();
-
-    console.log("[EditProduct] Final category:", {
-      selectedCategory,
-      selectedSubcategory,
-      category_id,
-    });
-
-    if (!category_id) {
-      alert("Unable to determine category. Please select category/subcategory again.");
-      return;
+    if (subcategoryId) {
+      return subcategoryId;
     }
+  }
+
+  if (selectedCategory) {
+    return categoryIdMap[selectedCategory] || null;
+  }
+
+  return null;
+};
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  const token = getToken();
+
+  if (!token) {
+    navigate("/login");
+    return;
+  }
+
+  if (
+    !productData.name.trim() ||
+    !productData.price ||
+    !productData.stock ||
+    !selectedSubcategory ||
+    !productData.unit
+  ) {
+    alert("Please fill in all required fields.");
+    return;
+  }
+
+  const category_id = getSelectedCategoryId();
+
+  console.log("[EditProduct] Final category:", {
+    selectedCategory,
+    selectedSubcategory,
+    category_id,
+  });
+
+  if (!category_id) {
+    alert(
+      "Unable to determine category. Please select category/subcategory again."
+    );
+    return;
+  }
 
 
 
