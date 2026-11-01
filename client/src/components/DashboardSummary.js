@@ -578,16 +578,12 @@ const handleClick = (shop) => {
     .trim()
     .toLowerCase();
 
-  if (storeType === "service" || storeType === "services") {
-    window.location.assign(
-      `https://${slug}.jusping.com/products`
-    );
-    return;
-  }
+  const page =
+    storeType === "service" || storeType === "services"
+      ? "services"
+      : "products";
 
-  window.location.assign(
-    `https://${slug}.jusping.com/products`
-  );
+  window.location.assign(`https://${slug}.jusping.com/${page}`);
 };
 
 // -----------------------------
