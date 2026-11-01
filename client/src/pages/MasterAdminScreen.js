@@ -27,17 +27,20 @@ const MasterAdminScreen = () => {
     }
 
     const response = await fetch(
-      `${API_BASE_URL}/api/shops${endpoint}`,
-      {
-        method,
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        ...(body ? { body: JSON.stringify(body) } : {}),
-      }
-    );
+  `${API_BASE_URL}/api/shops${endpoint}`,
+  {
+    method,
+    cache: "no-store",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      "Cache-Control": "no-cache",
+      "Pragma": "no-cache",
+    },
+    ...(body ? { body: JSON.stringify(body) } : {}),
+  }
+);
 
     const responseText = await response.text();
     let data = {};
@@ -76,11 +79,17 @@ const MasterAdminScreen = () => {
       // Load pending stores.
       const pendingResult = await apiRequest("/admin/pending");
 
-      setStores(
-        Array.isArray(pendingResult)
-          ? pendingResult
-          : pendingResult.stores || []
-      );
+      const pendingShops = Array.isArray(pendingResult)
+  ? pendingResult
+  : pendingResult.shops || [];
+
+setStores(pendingShops);
+
+console.log(
+  "[Master Admin] Pending stores:",
+  pendingShops.length,
+  pendingShops
+);
     } catch (error) {
       console.error("Master Admin error:", error);
 
