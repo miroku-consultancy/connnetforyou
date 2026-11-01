@@ -10,8 +10,6 @@ import { useUser } from "./UserContext";
 
 const API_BASE_URL = "https://connnet4you-server.onrender.com";
 
-const SERVICES_API = "https://city-home-services.jusping.com/services";
-
 const IMAGE_BASE_URL = "https://www.jusping.com/images/shops";
 
 const PLAY_STORE_URL =
@@ -550,13 +548,25 @@ const DashboardSummary = () => {
 // Centralized service navigation
 // -----------------------------
 const navigateToServiceStore = (params = {}) => {
-  const url = new URL(SERVICES_API);
+  const { shopSlug, shopId, serviceId } = params;
 
-  Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== "") {
-      url.searchParams.set(key, String(value));
-    }
-  });
+  // No particular store selected: open the central services directory.
+  if (!shopSlug) {
+    navigate("/services");
+    return;
+  }
+
+  const url = new URL(
+    `https://${shopSlug}.jusping.com/services`
+  );
+
+  if (shopId != null) {
+    url.searchParams.set("shopId", String(shopId));
+  }
+
+  if (serviceId != null) {
+    url.searchParams.set("serviceId", String(serviceId));
+  }
 
   window.location.assign(url.toString());
 };
@@ -597,7 +607,7 @@ const handleBookService = (service) => {
     service.service_id ??
     service.serviceId;
 
-  if (serviceId === undefined || serviceId === null) {
+  if (serviceId == null) {
     console.error("Service ID is missing:", service);
     return;
   }
@@ -605,9 +615,34 @@ const handleBookService = (service) => {
   const shopId =
     service.shopId ??
     service.shop_id ??
-    25;
+    service.shop?.id ??
+    service.shop?.shopId;
+
+  // First check whether the service already contains its store slug.
+  // Otherwise, find its store in the shops already loaded on the dashboard.
+  const matchedShop = shops.find(
+    (shop) =>
+      String(shop.id ?? shop.shopId ?? shop.shop_id) ===
+      String(shopId)
+  );
+
+  const shopSlug =
+    service.shopSlug ||
+    service.shop_slug ||
+    service.shop?.slug ||
+    matchedShop?.slug ||
+    matchedShop?.shop_slug;
+
+  if (!shopSlug) {
+    console.error(
+      "Cannot identify the service store. Missing shop slug:",
+      { service, shopId }
+    );
+    return;
+  }
 
   navigateToServiceStore({
+    shopSlug,
     shopId,
     serviceId,
   });
