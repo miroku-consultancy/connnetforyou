@@ -53,6 +53,7 @@ import EditService from "./pages/EditService";
 import MyProductStore from "./pages/MyProductStore";
 import EditProduct from "./components/EditProduct";
 import MasterAdminScreen from "./pages/MasterAdminScreen";
+import StoreReviewScreen from "./pages/StoreReviewScreen";
 //import Banner from './components/Banner';
 
 
@@ -120,6 +121,15 @@ const AppRoutes = () => (
   element={
     <ProtectedRoute>
       <MasterAdminScreen />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/master-admin/store-review/:shopId"
+  element={
+    <ProtectedRoute>
+      <StoreReviewScreen />
     </ProtectedRoute>
   }
 />
