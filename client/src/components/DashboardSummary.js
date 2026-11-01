@@ -786,7 +786,7 @@ const getShopImage = (shop) => {
     }
 
     // Active
-    if (status === "active") {
+    if (status === "approved") {
       return {
         title:
           "My Business",

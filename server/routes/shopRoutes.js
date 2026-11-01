@@ -278,7 +278,7 @@ router.get('/public', async (req, res) => {
       FROM shops s
       INNER JOIN tenants t
         ON t.shop_id = s.id
-       AND t.status = 'approved'
+       AND t.status IN ('approved', 'active')
       WHERE s.id NOT IN (1)
       ORDER BY
         s.is_featured DESC NULLS LAST,
