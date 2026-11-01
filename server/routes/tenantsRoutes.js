@@ -1,3 +1,4 @@
+
 const express = require('express');
 const pool = require('../db');
 
@@ -6,11 +7,9 @@ const router = express.Router();
 // Resolve tenant from current hostname
 router.get('/resolve', async (req, res) => {
   try {
-    // Example:
-    // kanji-sweets.jusping.com
     const hostname = (req.query.domain || req.hostname)
-  .toLowerCase()
-  .trim();
+      .toLowerCase()
+      .trim();
 
     console.log('[Tenant Resolve] Hostname:', hostname);
 
@@ -31,9 +30,11 @@ router.get('/resolve', async (req, res) => {
         s.address AS shop_address,
         s.phone AS shop_phone,
         s.image_url,
-        s.price_markup_percent
+        s.price_markup_percent,
+        s.store_type
 
       FROM domains d
+
       INNER JOIN tenants t
         ON t.id = d.tenant_id
 
@@ -59,7 +60,7 @@ router.get('/resolve', async (req, res) => {
 
     const row = result.rows[0];
 
-    res.json({
+    return res.json({
       tenantId: row.tenant_id,
       tenantSlug: row.tenant_slug,
       tenantStatus: row.tenant_status,
@@ -71,6 +72,9 @@ router.get('/resolve', async (req, res) => {
       shopId: row.shop_id,
       shopSlug: row.shop_slug,
 
+      // Store type available at tenant level
+      store_type: row.store_type || null,
+
       shop: {
         id: row.shop_id,
         name: row.shop_name,
@@ -78,14 +82,17 @@ router.get('/resolve', async (req, res) => {
         address: row.shop_address,
         phone: row.shop_phone,
         imageUrl: row.image_url,
-        priceMarkupPercent: Number(row.price_markup_percent || 0)
+        store_type: row.store_type || null,
+        priceMarkupPercent: Number(
+          row.price_markup_percent || 0
+        )
       }
     });
 
   } catch (err) {
     console.error('[Tenant Resolve] Error:', err);
 
-    res.status(500).json({
+    return res.status(500).json({
       error: 'Failed to resolve tenant'
     });
   }
