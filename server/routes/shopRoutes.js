@@ -266,6 +266,7 @@ router.get('/public', async (req, res) => {
         s.address,
         s.phone,
         s.image_url,
+         s.store_type,
         s.open_time,
         s.close_time,
         s.minordervalue,
