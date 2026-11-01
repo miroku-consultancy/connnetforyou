@@ -64,32 +64,36 @@ const MyProductStore = () => {
       // ------------------------------------
       // Get vendor's products
       // ------------------------------------
-      const productResponse = await fetch(
-        `${secondaryApiUrl}/api/products?shopId=${currentShop.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      // ------------------------------------
+// Get vendor's own products
+// ------------------------------------
 
-      const productData = await productResponse.json();
+const productResponse = await fetch(
+  `${secondaryApiUrl}/api/products/my-store`,
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
 
-      if (!productResponse.ok) {
-        throw new Error(
-          productData?.message ||
-            productData?.error ||
-            "Failed to load products"
-        );
-      }
+const productData = await productResponse.json();
 
-      const productList = Array.isArray(productData)
-        ? productData
-        : Array.isArray(productData?.products)
-        ? productData.products
-        : [];
+if (!productResponse.ok) {
+  throw new Error(
+    productData?.message ||
+    productData?.error ||
+    'Failed to load products'
+  );
+}
 
-      setProducts(productList);
+const productList = Array.isArray(productData)
+  ? productData
+  : Array.isArray(productData?.products)
+  ? productData.products
+  : [];
+
+setProducts(productList);
     } catch (err) {
       console.error(
         "[MyProductStore] Load error:",
