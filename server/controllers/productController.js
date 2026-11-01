@@ -76,6 +76,7 @@ const getProducts = async (req, res) => {
 // Only products from approved stores are visible
 // GET /api/products?shopId=123
 // ============================================================
+
 const getPublicProducts = async (req, res) => {
   try {
     const shopId = Number(req.query.shopId);
@@ -86,13 +87,13 @@ const getPublicProducts = async (req, res) => {
       });
     }
 
-    // Check tenant approval before returning products.
+    // Allow newly approved stores and existing active stores.
     const tenantResult = await pool.query(
       `
         SELECT id
         FROM tenants
         WHERE shop_id = $1
-          AND status = 'approved'
+          AND status IN ('approved', 'active')
         LIMIT 1
       `,
       [shopId]
@@ -117,6 +118,7 @@ const getPublicProducts = async (req, res) => {
     });
   }
 };
+
 
 
 // ============================================================

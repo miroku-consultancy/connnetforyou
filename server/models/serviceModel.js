@@ -35,7 +35,7 @@ const serviceModel = {
   },
 
   // =========================================================
-  // Public: Get PUBLISHED services from APPROVED stores only
+  // Public: Get PUBLISHED services from approved/active stores
   // =========================================================
   async getPublishedServices({
     shopId,
@@ -89,7 +89,7 @@ const serviceModel = {
         ON sh.id = s.shop_id
       INNER JOIN tenants t
         ON t.shop_id = sh.id
-        AND t.status = 'approved'
+        AND t.status IN ('approved', 'active')
       WHERE ${conditions.join(" AND ")}
       ORDER BY s.created_at DESC
     `;
@@ -100,7 +100,7 @@ const serviceModel = {
   },
 
   // =========================================================
-  // Public: Get service by ID from an APPROVED store only
+  // Public: Get service by ID from approved/active stores
   // =========================================================
   async getServiceById(id) {
     const { rows } = await pool.query(
@@ -127,7 +127,7 @@ const serviceModel = {
         ON sh.id = s.shop_id
       INNER JOIN tenants t
         ON t.shop_id = sh.id
-        AND t.status = 'approved'
+        AND t.status IN ('approved', 'active')
       WHERE s.id = $1
       LIMIT 1
       `,
