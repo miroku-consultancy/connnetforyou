@@ -546,46 +546,76 @@ const DashboardSummary = () => {
   // -----------------------------
   // Existing shop navigation
   // -----------------------------
-  const handleClick = (slug) => {
-    if (!slug) return;
+// -----------------------------
+// Centralized service navigation
+// -----------------------------
+const navigateToServiceStore = (params = {}) => {
+  const url = new URL(SERVICES_API);
 
-    if (slug.toLowerCase() === "city-home-services") {
-      window.location.href =
-        "https://city-home-services.jusping.com/services";
-      return;
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      url.searchParams.set(key, String(value));
     }
+  });
 
-    window.location.href = `https://${slug}.jusping.com/products`;
-  };
+  window.location.assign(url.toString());
+};
 
-  // -----------------------------
-  // Navigate to specific service
-  // -----------------------------
-  const handleBookService = (service) => {
-    const serviceId =
-      service.id ??
-      service.service_id ??
-      service.serviceId;
+// -----------------------------
+// Shop navigation
+// -----------------------------
+const handleClick = (shop) => {
+  if (!shop) return;
 
-    if (!serviceId) {
-      console.error("Service ID is missing:", service);
-      return;
-    }
+  const slug = shop.slug || shop.shop_slug;
 
-    const shopId =
-      service.shopId ??
-      service.shop_id ??
-      25;
+  if (!slug) {
+    console.error("Shop slug missing:", shop);
+    return;
+  }
 
-    const bookingUrl = new URL(
-      "https://city-home-services.jusping.com/services"
+  const storeType = String(shop.store_type || "")
+    .trim()
+    .toLowerCase();
+
+  if (storeType === "service" || storeType === "services") {
+    window.location.assign(
+      `https://${slug}.jusping.com/products`
     );
+    return;
+  }
 
-    bookingUrl.searchParams.set("shopId", shopId);
-    bookingUrl.searchParams.set("serviceId", serviceId);
+  window.location.assign(
+    `https://${slug}.jusping.com/products`
+  );
+};
 
-    window.location.href = bookingUrl.toString();
-  };
+// -----------------------------
+// Navigate to selected service
+// -----------------------------
+const handleBookService = (service) => {
+  if (!service) return;
+
+  const serviceId =
+    service.id ??
+    service.service_id ??
+    service.serviceId;
+
+  if (serviceId === undefined || serviceId === null) {
+    console.error("Service ID is missing:", service);
+    return;
+  }
+
+  const shopId =
+    service.shopId ??
+    service.shop_id ??
+    25;
+
+  navigateToServiceStore({
+    shopId,
+    serviceId,
+  });
+};
 
   // -----------------------------
   // Shop image - dynamic + legacy fallback
@@ -878,9 +908,16 @@ const DashboardSummary = () => {
         <section className="jp-categories">
           {categories.map((category) => (
             <button
-              className="jp-category"
-              key={category.name}
-            >
+  className="jp-category"
+  key={category.name}
+  onClick={() => {
+    if (category.name === "Services") {
+      navigateToServiceStore();
+    } else {
+      navigate(category.path);
+    }
+  }}
+>
               <span
                 className={`jp-category-icon ${category.color}`}
               >
@@ -949,16 +986,16 @@ const DashboardSummary = () => {
                   }
                   role="link"
                   tabIndex={0}
-                  onClick={() => handleClick(shop.slug)}
+                  onClick={() => handleClick(shop)}
                   onKeyDown={(event) => {
-                    if (
-                      event.key === "Enter" ||
-                      event.key === " "
-                    ) {
-                      event.preventDefault();
-                      handleClick(shop.slug);
-                    }
-                  }}
+  if (
+    event.key === "Enter" ||
+    event.key === " "
+  ) {
+    event.preventDefault();
+    handleClick(shop);
+  }
+}}
                 >
                   <div className="jp-shop-image">
                     {getShopImage(shop)}
@@ -1024,14 +1061,9 @@ const DashboardSummary = () => {
           <div className="jp-section-heading">
             <h2>Popular Services</h2>
 
-            <button
-              onClick={() =>
-                (window.location.href =
-                  "https://city-home-services.jusping.com/services")
-              }
-            >
-              View All <span>→</span>
-            </button>
+            <button onClick={() => navigateToServiceStore()}>
+  View All <span>→</span>
+</button>
           </div>
 
           {servicesLoading ? (
