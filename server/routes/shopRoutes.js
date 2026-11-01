@@ -2,31 +2,39 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const pool = require('../db');
 const authMiddleware = require('../middleware/authMiddleware');
+const masterAdminMiddleware = require('../middleware/masterAdminMiddleware');
 
 const router = express.Router();
 
-// 🔥 PUBLIC SHOPS - EXCLUDE JusPing (ID=1,24)
+// ============================================================
+// PUBLIC SHOPS
+// ============================================================
 router.get('/public', async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT id, name, slug, address, phone, image_url, 
+      SELECT id, name, slug, address, phone, image_url,
              open_time, close_time, minordervalue, lat, lng, is_featured,
              COALESCE(rating, 4.2) as rating,
              COALESCE(review_count, 0) as review_count,
              COALESCE(orders_count, 0) as orders_count
-      FROM shops 
+      FROM shops
       WHERE id NOT IN (1)
-      ORDER BY is_featured DESC NULLS LAST, rating DESC, orders_count DESC, created_at DESC
+      ORDER BY is_featured DESC NULLS LAST,
+               rating DESC,
+               orders_count DESC,
+               created_at DESC
     `);
 
     console.log(
-      `📦 Found ${result.rows.length} shops (excluding IDs 1) for dashboard`
+      `Found ${result.rows.length} shops for dashboard`
     );
 
     res.json(result.rows || []);
   } catch (err) {
-    console.error('🛑 Public shops fetch error:', err);
-    res.status(500).json({ error: 'Failed to fetch shops' });
+    console.error('Public shops fetch error:', err);
+    res.status(500).json({
+      error: 'Failed to fetch shops'
+    });
   }
 });
 
@@ -70,15 +78,6 @@ router.get('/vendor', async (req, res) => {
       });
     }
 
-    /*
-     * Find the vendor store for this user.
-     *
-     * If the JWT already points to a vendor shop,
-     * prefer that shop.
-     *
-     * Otherwise, find the user's vendor shop from
-     * user_shop_roles.
-     */
     let result;
 
     if (decoded.shop_id) {
@@ -102,10 +101,6 @@ router.get('/vendor', async (req, res) => {
       );
     }
 
-    /*
-     * Root/customer JWT or selected shop is not a vendor.
-     * Find the user's vendor store.
-     */
     if (!result || result.rows.length === 0) {
       result = await pool.query(
         `
@@ -138,7 +133,7 @@ router.get('/vendor', async (req, res) => {
     return res.json(result.rows[0]);
 
   } catch (err) {
-    console.error('🛑 Vendor fetch error:', err);
+    console.error('Vendor fetch error:', err);
 
     if (err.name === 'TokenExpiredError') {
       return res.status(403).json({
@@ -162,17 +157,7 @@ router.get('/vendor', async (req, res) => {
 
 // ============================================================
 // CREATE NEW STORE
-//
-// Flow:
-// Create Store
-//      ↓
-// Draft
-//      ↓
-// Add Products / Services
-//      ↓
-// Submit Store for Approval
-//      ↓
-// Pending
+// Initial status: draft
 // ============================================================
 router.post('/create', authMiddleware, async (req, res) => {
   const client = await pool.connect();
@@ -191,10 +176,6 @@ router.post('/create', authMiddleware, async (req, res) => {
       closeTime
     } = req.body;
 
-
-    // -----------------------------
-    // Validation
-    // -----------------------------
     if (!name || !name.trim()) {
       return res.status(400).json({
         error: 'Store name is required'
@@ -207,10 +188,6 @@ router.post('/create', authMiddleware, async (req, res) => {
       });
     }
 
-
-    // -----------------------------
-    // Generate slug
-    // -----------------------------
     const baseSlug = name
       .trim()
       .toLowerCase()
@@ -223,26 +200,23 @@ router.post('/create', authMiddleware, async (req, res) => {
       });
     }
 
-
     await client.query('BEGIN');
-
     transactionStarted = true;
 
-    
-    // Prevent concurrent requests from creating multiple stores
-    // for the same user. This lock exists only for this transaction.
+    // Prevent concurrent requests from creating multiple stores.
     await client.query(
       'SELECT pg_advisory_xact_lock($1::bigint)',
       [userId]
     );
 
-    // Enforce the new rule without modifying legacy store records.
     const existingStore = await client.query(
-      `SELECT shop_id
-       FROM user_shop_roles
-       WHERE user_id = $1
-         AND role = 'vendor'
-       LIMIT 1`,
+      `
+      SELECT shop_id
+      FROM user_shop_roles
+      WHERE user_id = $1
+        AND role = 'vendor'
+      LIMIT 1
+      `,
       [userId]
     );
 
@@ -257,10 +231,7 @@ router.post('/create', authMiddleware, async (req, res) => {
       });
     }
 
-
-    // -----------------------------
-    // Make slug unique
-    // -----------------------------
+    // Generate unique slug.
     let slug = baseSlug;
     let counter = 1;
 
@@ -278,10 +249,7 @@ router.post('/create', authMiddleware, async (req, res) => {
       slug = `${baseSlug}-${counter}`;
     }
 
-
-    // -----------------------------
-    // Create shop
-    // -----------------------------
+    // Create shop.
     const shopResult = await client.query(
       `
       INSERT INTO shops (
@@ -319,10 +287,7 @@ router.post('/create', authMiddleware, async (req, res) => {
 
     const shop = shopResult.rows[0];
 
-
-    // -----------------------------
-    // Create tenant as DRAFT
-    // -----------------------------
+    // Create tenant as draft.
     const tenantResult = await client.query(
       `
       INSERT INTO tenants (
@@ -349,10 +314,7 @@ router.post('/create', authMiddleware, async (req, res) => {
 
     const tenant = tenantResult.rows[0];
 
-
-    // -----------------------------
-    // Link user to new shop
-    // -----------------------------
+    // Link vendor to shop.
     await client.query(
       `
       INSERT INTO user_shop_roles (
@@ -368,14 +330,11 @@ router.post('/create', authMiddleware, async (req, res) => {
       ]
     );
 
-
     await client.query('COMMIT');
 
-
     console.log(
-      `🏪 Store created: ${shop.id} | ${shop.name} | ${storeType} | user ${userId}`
+      `Store created: ${shop.id} | ${shop.name} | ${storeType} | user ${userId}`
     );
-
 
     return res.status(201).json({
       message: 'Store created successfully',
@@ -384,12 +343,11 @@ router.post('/create', authMiddleware, async (req, res) => {
     });
 
   } catch (err) {
-
     if (transactionStarted) {
       await client.query('ROLLBACK');
     }
 
-    console.error('🛑 Store creation error:', err);
+    console.error('Store creation error:', err);
 
     return res.status(500).json({
       error: 'Failed to create store',
@@ -401,15 +359,10 @@ router.post('/create', authMiddleware, async (req, res) => {
   }
 });
 
+
 // ============================================================
 // SUBMIT STORE FOR APPROVAL
-//
-// Flow:
-// draft
-//   ↓
-// pending
-//
-// Store owner submits the complete store for admin review.
+// draft -> pending
 // ============================================================
 router.post(
   '/submit-for-approval',
@@ -429,11 +382,6 @@ router.post(
         userId
       );
 
-      // ---------------------------------------------------
-      // Resolve vendor shop from user_shop_roles
-      // Do NOT rely on JWT shop_id/role because root login
-      // can have shop_id=1 and role=customer.
-      // ---------------------------------------------------
       const vendorResult = await pool.query(
         `
         SELECT
@@ -464,32 +412,18 @@ router.post(
 
       const shop = vendorResult.rows[0];
 
-      console.log(
-        '[submit-for-approval] Vendor shop:',
-        shop
-      );
-
-      // ---------------------------------------------------
-      // Make sure tenant exists
-      // ---------------------------------------------------
       if (!shop.tenant_status) {
         return res.status(404).json({
           error: 'Store tenant not found'
         });
       }
 
-      // ---------------------------------------------------
-      // Only draft stores can be submitted
-      // ---------------------------------------------------
       if (shop.tenant_status !== 'draft') {
         return res.status(400).json({
           error: `Store cannot be submitted from '${shop.tenant_status}' status`
         });
       }
 
-      // ---------------------------------------------------
-      // Submit store for approval
-      // ---------------------------------------------------
       const updateResult = await pool.query(
         `
         UPDATE tenants
@@ -544,6 +478,8 @@ router.post(
     }
   }
 );
+
+
 // ============================================================
 // SWITCH ACTIVE SHOP
 // ============================================================
@@ -558,10 +494,6 @@ router.post('/switch-shop', authMiddleware, async (req, res) => {
       });
     }
 
-
-    // ------------------------------------------------
-    // Verify that this user actually belongs to shop
-    // ------------------------------------------------
     const roleResult = await pool.query(
       `
       SELECT
@@ -584,37 +516,26 @@ router.post('/switch-shop', authMiddleware, async (req, res) => {
       [userId, shop_id]
     );
 
-
     if (roleResult.rows.length === 0) {
       return res.status(403).json({
         error: 'You do not have access to this shop'
       });
     }
 
-
     const shop = roleResult.rows[0];
 
-
-    // ------------------------------------------------
-    // For now, only vendor switching is supported
-    // ------------------------------------------------
     if (shop.role !== 'vendor') {
       return res.status(403).json({
         error: 'You are not a vendor for this shop'
       });
     }
 
-
-    // ------------------------------------------------
-    // Create new JWT with selected shop context
-    // ------------------------------------------------
     const tokenPayload = {
       id: userId,
       email: req.user.email,
       shop_id: shop.shop_id,
       role: shop.role
     };
-
 
     const token = jwt.sign(
       tokenPayload,
@@ -624,12 +545,9 @@ router.post('/switch-shop', authMiddleware, async (req, res) => {
       }
     );
 
-
     return res.json({
       message: 'Shop switched successfully',
-
       token,
-
       shop: {
         id: shop.shop_id,
         name: shop.name,
@@ -641,8 +559,7 @@ router.post('/switch-shop', authMiddleware, async (req, res) => {
     });
 
   } catch (err) {
-
-    console.error('🛑 Switch shop error:', err);
+    console.error('Switch shop error:', err);
 
     return res.status(500).json({
       error: 'Failed to switch shop',
@@ -653,7 +570,7 @@ router.post('/switch-shop', authMiddleware, async (req, res) => {
 
 
 // ============================================================
-// Existing: GET shop by slug
+// EXISTING: GET SHOP BY SLUG
 // ============================================================
 router.get('/:slug', async (req, res) => {
   const { slug } = req.params;
@@ -686,6 +603,7 @@ router.get('/:slug', async (req, res) => {
 
 // ============================================================
 // GET /api/shops?lat=...&lng=...
+// NEARBY SHOPS
 // ============================================================
 router.get('/', async (req, res) => {
   const { lat, lng } = req.query;
@@ -699,8 +617,7 @@ router.get('/', async (req, res) => {
   const userLat = parseFloat(lat);
   const userLng = parseFloat(lng);
 
-  const maxDistance = 5; // in km
-
+  const maxDistance = 5;
 
   const getDistance = (lat1, lon1, lat2, lon2) => {
     const R = 6371;
@@ -723,24 +640,19 @@ router.get('/', async (req, res) => {
     return R * c;
   };
 
-
   try {
-
     const result = await pool.query(`
       SELECT *
-      FROM shops 
+      FROM shops
       WHERE lat IS NOT NULL
-        AND lng IS NOT NULL 
+        AND lng IS NOT NULL
         AND (is_featured IS DISTINCT FROM TRUE)
     `);
 
-
     const allShops = result.rows;
-
 
     const nearbyShops = allShops
       .map(shop => {
-
         const distance = getDistance(
           userLat,
           userLng,
@@ -756,7 +668,6 @@ router.get('/', async (req, res) => {
       .filter(shop => shop.distance <= maxDistance)
       .sort((a, b) => a.distance - b.distance);
 
-
     res.json(
       nearbyShops.map(shop => ({
         id: shop.id,
@@ -771,8 +682,7 @@ router.get('/', async (req, res) => {
     );
 
   } catch (err) {
-
-    console.error('🛑 Nearby shop fetch error:', err);
+    console.error('Nearby shop fetch error:', err);
 
     res.status(500).json({
       error: 'Server error',
@@ -780,6 +690,28 @@ router.get('/', async (req, res) => {
     });
   }
 });
+
+
+// ============================================================
+// MASTER ADMIN ACCESS TEST
+// GET /api/shops/admin/check
+// ============================================================
+router.get(
+  '/admin/check',
+  authMiddleware,
+  masterAdminMiddleware,
+  async (req, res) => {
+    return res.json({
+      success: true,
+      message: 'Master admin access verified',
+      admin: {
+        id: req.user.id,
+        email: req.user.email,
+        name: req.user.name
+      }
+    });
+  }
+);
 
 
 module.exports = router;
