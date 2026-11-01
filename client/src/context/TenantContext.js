@@ -79,19 +79,87 @@ export const TenantProvider = ({ children }) => {
           throw new Error("Invalid tenant API response");
         }
 
-        if (!data || (!data.shopId && !data.shop_id)) {
-          throw new Error("Tenant response does not contain a shop ID");
+        const shop = data?.shop || {};
+
+        const resolvedShopId =
+          data.shopId ??
+          data.shop_id ??
+          shop.id ??
+          shop.shopId ??
+          shop.shop_id;
+
+        if (
+          resolvedShopId === undefined ||
+          resolvedShopId === null
+        ) {
+          throw new Error(
+            "Tenant response does not contain a shop ID"
+          );
         }
 
-        if (isMounted) {
-          setTenant({
-            ...data,
-            shopId: data.shopId ?? data.shop_id,
-          });
+        // Normalize store type from the tenant/shop response.
+        const storeType =
+          data.store_type ??
+          data.storeType ??
+          shop.store_type ??
+          shop.storeType ??
+          null;
 
+        // Normalize shop slug.
+        const shopSlug =
+          data.shopSlug ??
+          data.shop_slug ??
+          shop.slug ??
+          shop.shopSlug ??
+          shop.shop_slug ??
+          data.tenantSlug ??
+          data.tenant_slug ??
+          null;
+
+        const normalizedTenant = {
+          ...data,
+
+          shopId: resolvedShopId,
+          shopSlug,
+
+          store_type: storeType,
+
+          // Keep the original shop properties and expose
+          // normalized values inside the shop object too.
+          shop: {
+            ...shop,
+            id: shop.id ?? resolvedShopId,
+            slug: shop.slug ?? shopSlug,
+            store_type:
+              shop.store_type ??
+              shop.storeType ??
+              storeType,
+          },
+        };
+
+        if (isMounted) {
+          setTenant(normalizedTenant);
           setError(null);
 
-          console.log("[Tenant] Resolved successfully:", data);
+          console.log(
+            "[Tenant] Resolved successfully:",
+            normalizedTenant
+          );
+
+          console.log(
+            "[Tenant] Shop ID:",
+            normalizedTenant.shopId
+          );
+
+          console.log(
+            "[Tenant] Shop slug:",
+            normalizedTenant.shopSlug
+          );
+
+          console.log(
+            "[Tenant] Store type:",
+            normalizedTenant.store_type
+          );
         }
       } catch (err) {
         console.error("[Tenant] Resolution failed:", err);

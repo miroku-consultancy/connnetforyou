@@ -584,16 +584,18 @@ const handleClick = (shop) => {
     return;
   }
 
-  const storeType = String(shop.store_type || "")
-    .trim()
-    .toLowerCase();
 
-  const page =
-    storeType === "service" || storeType === "services"
-      ? "services"
-      : "products";
+const storeType = String(
+  shop.store_type ?? shop.storeType ?? ""
+)
+  .trim()
+  .toLowerCase();
+const page =
+  storeType === "service" || storeType === "services"
+    ? "services"
+    : "products";
 
-  window.location.assign(`https://${slug}.jusping.com/${page}`);
+window.location.assign(`https://${slug}.jusping.com/${page}`);
 };
 
 // -----------------------------
