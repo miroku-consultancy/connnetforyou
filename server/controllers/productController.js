@@ -1,3 +1,4 @@
+
 const pool = require("../db");
 const productModel = require("../models/productModel");
 const uploadToCloudinary = require("../utils/uploadToCloudinary");
@@ -15,24 +16,12 @@ const getVendorShopId = async (req) => {
   const tokenShopId = req.user?.shop_id;
   const tokenRole = String(req.user?.role || "").toLowerCase();
 
-  // If JWT confirms vendor + shop,
-  // safely use the shop from JWT.
+  // If JWT confirms vendor + shop, use that shop.
   if (tokenShopId && tokenRole === "vendor") {
     return Number(tokenShopId);
   }
 
   // Otherwise resolve vendor shop from DB.
-  //
-  // Handles current situation:
-  //
-  // JWT:
-  // role    = customer
-  // shop_id = 1
-  //
-  // user_shop_roles:
-  // role    = vendor
-  // shop_id = 34
-  //
   const { rows } = await pool.query(
     `
       SELECT shop_id
@@ -69,12 +58,12 @@ const getProducts = async (req, res) => {
 
     const products = await productModel.getAllProducts(shopId);
 
-    res.json(products);
+    return res.json(products);
 
   } catch (err) {
-    console.error("❌ Error fetching vendor products:", err);
+    console.error("Error fetching vendor products:", err);
 
-    res.status(500).json({
+    return res.status(500).json({
       message: "Error fetching products",
       error: err.message,
     });
@@ -84,25 +73,45 @@ const getProducts = async (req, res) => {
 
 // ============================================================
 // PUBLIC PRODUCTS
+// Only products from approved stores are visible
+// GET /api/products?shopId=123
 // ============================================================
 const getPublicProducts = async (req, res) => {
   try {
-    const { shopId } = req.query;
+    const shopId = Number(req.query.shopId);
 
-    if (!shopId) {
+    if (!Number.isInteger(shopId) || shopId <= 0) {
       return res.status(400).json({
-        message: "Missing shopId query parameter",
+        message: "Valid shopId query parameter is required",
+      });
+    }
+
+    // Check tenant approval before returning products.
+    const tenantResult = await pool.query(
+      `
+        SELECT id
+        FROM tenants
+        WHERE shop_id = $1
+          AND status = 'approved'
+        LIMIT 1
+      `,
+      [shopId]
+    );
+
+    if (tenantResult.rows.length === 0) {
+      return res.status(404).json({
+        message: "Store is not available",
       });
     }
 
     const products = await productModel.getAllProducts(shopId);
 
-    res.json(products);
+    return res.json(products);
 
   } catch (err) {
-    console.error("❌ Error fetching public products:", err);
+    console.error("Error fetching public products:", err);
 
-    res.status(500).json({
+    return res.status(500).json({
       message: "Error fetching public products",
       error: err.message,
     });
@@ -112,6 +121,7 @@ const getPublicProducts = async (req, res) => {
 
 // ============================================================
 // GET SINGLE PRODUCT
+// Existing authenticated route
 // ============================================================
 const getProduct = async (req, res) => {
   try {
@@ -125,12 +135,12 @@ const getProduct = async (req, res) => {
       });
     }
 
-    res.json(product);
+    return res.json(product);
 
   } catch (err) {
-    console.error("❌ Error fetching product:", err);
+    console.error("Error fetching product:", err);
 
-    res.status(500).json({
+    return res.status(500).json({
       message: "Error fetching product",
       error: err.message,
     });
@@ -155,13 +165,9 @@ const addProduct = async (req, res) => {
       category_id,
     } = req.body;
 
-    // IMPORTANT:
-    // Do NOT use req.user.shop_id directly.
     const shop_id = await getVendorShopId(req);
 
-    // --------------------------------------------------------
-    // Upload image to Cloudinary
-    // --------------------------------------------------------
+    // Upload image to Cloudinary.
     let image = null;
 
     if (req.file) {
@@ -182,9 +188,6 @@ const addProduct = async (req, res) => {
       hasImage: !!image,
     });
 
-    // --------------------------------------------------------
-    // Validation
-    // --------------------------------------------------------
     if (
       !name ||
       !price ||
@@ -198,9 +201,6 @@ const addProduct = async (req, res) => {
       });
     }
 
-    // --------------------------------------------------------
-    // Save product
-    // --------------------------------------------------------
     const newProduct = await productModel.addProduct({
       name,
       description,
@@ -215,22 +215,22 @@ const addProduct = async (req, res) => {
       category_id,
     });
 
-    console.log("✅ New product added:", {
+    console.log("New product added:", {
       ...newProduct,
       shop_id,
       image,
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       ...newProduct,
       shop_id,
       image,
     });
 
   } catch (err) {
-    console.error("❌ Error adding product:", err);
+    console.error("Error adding product:", err);
 
-    res.status(500).json({
+    return res.status(500).json({
       message: "Error adding product",
       error: err.message,
     });
@@ -257,22 +257,9 @@ const updateProduct = async (req, res) => {
       category_id,
     } = req.body;
 
-    // --------------------------------------------------------
-    // Resolve actual vendor shop
-    // --------------------------------------------------------
     const shop_id = await getVendorShopId(req);
 
-    // --------------------------------------------------------
-    // IMPORTANT:
-    //
-    // No new image:
-    //     undefined
-    //     → model keeps existing image
-    //
-    // New image:
-    //     upload to Cloudinary
-    //     → replace image URL
-    // --------------------------------------------------------
+    // Keep existing image if no new image is uploaded.
     let image;
 
     if (req.file) {
@@ -293,9 +280,6 @@ const updateProduct = async (req, res) => {
       hasNewImage: !!req.file,
     });
 
-    // --------------------------------------------------------
-    // Build units array expected by model
-    // --------------------------------------------------------
     const units = [];
 
     if (unit) {
@@ -306,9 +290,6 @@ const updateProduct = async (req, res) => {
       });
     }
 
-    // --------------------------------------------------------
-    // Update product
-    // --------------------------------------------------------
     await productModel.updateProductWithUnits({
       id: Number(id),
       shop_id,
@@ -322,9 +303,6 @@ const updateProduct = async (req, res) => {
       units,
     });
 
-    // --------------------------------------------------------
-    // Get updated product
-    // --------------------------------------------------------
     const updatedProduct = await productModel.getProductById(
       Number(id)
     );
@@ -335,18 +313,18 @@ const updateProduct = async (req, res) => {
       });
     }
 
-    console.log("✅ Product updated:", {
+    console.log("Product updated:", {
       productId: id,
       shop_id,
       hasNewImage: !!req.file,
     });
 
-    res.json(updatedProduct);
+    return res.json(updatedProduct);
 
   } catch (err) {
-    console.error("❌ Error updating product:", err);
+    console.error("Error updating product:", err);
 
-    res.status(500).json({
+    return res.status(500).json({
       message: "Error updating product",
       error: err.message,
     });

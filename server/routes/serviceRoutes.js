@@ -1,3 +1,4 @@
+
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
@@ -30,7 +31,6 @@ const upload = multer({
   }
 });
 
-
 // ---------------------------------------------------------
 // Vendor: Get my services
 // ---------------------------------------------------------
@@ -42,36 +42,24 @@ router.get(
       "🔥🔥🔥 MY-SERVICES AFTER AUTH 🔥🔥🔥"
     );
 
-    console.log(
-      "USER:",
-      req.user
-    );
+    console.log("USER:", req.user);
 
     next();
   },
   serviceController.getMyServices
 );
 
-
 // ---------------------------------------------------------
 // Public marketplace services
+// Only published services from approved stores
 // ---------------------------------------------------------
 router.get(
   "/",
   (req, res, next) => {
-    console.log(
-      "🔥 SERVICES ROUTER HIT"
-    );
+    console.log("🔥 SERVICES ROUTER HIT");
 
-    console.log(
-      "URL:",
-      req.originalUrl
-    );
-
-    console.log(
-      "Query:",
-      req.query
-    );
+    console.log("URL:", req.originalUrl);
+    console.log("Query:", req.query);
 
     console.log(
       "User:",
@@ -83,6 +71,14 @@ router.get(
   serviceController.getServices
 );
 
+// ---------------------------------------------------------
+// Public: Get service details by ID
+// Only published services from approved stores
+// ---------------------------------------------------------
+router.get(
+  "/:id",
+  serviceController.getService
+);
 
 // ---------------------------------------------------------
 // Provider: Create service
@@ -94,7 +90,6 @@ router.post(
   serviceController.createService
 );
 
-
 // ---------------------------------------------------------
 // Provider: Update service
 // ---------------------------------------------------------
@@ -105,7 +100,6 @@ router.put(
   serviceController.updateService
 );
 
-
 // ---------------------------------------------------------
 // Provider: Delete service
 // ---------------------------------------------------------
@@ -114,6 +108,5 @@ router.delete(
   authMiddleware,
   serviceController.deleteService
 );
-
 
 module.exports = router;

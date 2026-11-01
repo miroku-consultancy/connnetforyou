@@ -1,3 +1,4 @@
+
 const serviceModel = require("../models/serviceModel");
 const pool = require("../db");
 const uploadToCloudinary = require("../utils/uploadToCloudinary");
@@ -53,9 +54,8 @@ const getVendorShopId = async (req) => {
   return vendorResult.rows[0]?.shop_id || null;
 };
 
-
 // ---------------------------------------------------------
-// Vendor: get all services belonging to vendor's shop
+// Vendor: Get all services belonging to vendor's shop
 // ---------------------------------------------------------
 exports.getMyServices = async (req, res) => {
   try {
@@ -89,30 +89,34 @@ exports.getMyServices = async (req, res) => {
   }
 };
 
-
 // ---------------------------------------------------------
-// Public: get published services
+// Public: Get published services from approved stores
 // ---------------------------------------------------------
 exports.getServices = async (req, res) => {
   try {
-    const shopId = req.query.shopId || req.query.shop_id;
+    const rawShopId = req.query.shopId || req.query.shop_id;
+    const shopId = Number(rawShopId);
 
-    if (!shopId) {
+    if (
+      !rawShopId ||
+      !Number.isInteger(shopId) ||
+      shopId <= 0
+    ) {
       return res.status(400).json({
-        message: "Missing shopId query parameter"
+        message: "A valid shopId query parameter is required"
       });
     }
 
     const services = await serviceModel.getPublishedServices({
-      shopId: Number(shopId),
+      shopId,
       category: req.query.category,
       search: req.query.search
     });
 
     return res.status(200).json(services);
 
-  } catch (err) {
-    console.error("Error fetching public services:", err);
+  } catch (error) {
+    console.error("Error fetching public services:", error);
 
     return res.status(500).json({
       message: "Error fetching public services"
@@ -120,9 +124,8 @@ exports.getServices = async (req, res) => {
   }
 };
 
-
 // ---------------------------------------------------------
-// Public details: only published services
+// Public details: Only published services from approved stores
 // ---------------------------------------------------------
 exports.getService = async (req, res) => {
   try {
@@ -153,40 +156,40 @@ exports.getService = async (req, res) => {
   }
 };
 
-
 // ---------------------------------------------------------
 // Authenticated provider creates service
 // ---------------------------------------------------------
 exports.createService = async (req, res) => {
   try {
     const shopId = await getVendorShopId(req);
-    // -------------------------------------------------------
-// Free plan: maximum 10 services
-// -------------------------------------------------------
-const serviceCount =
-  await serviceModel.countServicesByShop({
-    shopId: Number(shopId)
-  });
-
-const FREE_SERVICE_LIMIT = 10;
-
-if (serviceCount >= FREE_SERVICE_LIMIT) {
-  return res.status(403).json({
-    message:
-      "You have reached the Free plan limit of 10 services. Upgrade your plan to add more services.",
-    code: "FREE_SERVICE_LIMIT_REACHED",
-    limit: FREE_SERVICE_LIMIT,
-    currentCount: serviceCount
-  });
-}
-
-    console.log("[createService] vendor shopId:", shopId);
 
     if (!shopId) {
       return res.status(403).json({
         message: "Your account is not linked to a vendor shop"
       });
     }
+
+    // -------------------------------------------------------
+    // Free plan: Maximum 10 services
+    // -------------------------------------------------------
+    const serviceCount =
+      await serviceModel.countServicesByShop({
+        shopId: Number(shopId)
+      });
+
+    const FREE_SERVICE_LIMIT = 10;
+
+    if (serviceCount >= FREE_SERVICE_LIMIT) {
+      return res.status(403).json({
+        message:
+          "You have reached the Free plan limit of 10 services. Upgrade your plan to add more services.",
+        code: "FREE_SERVICE_LIMIT_REACHED",
+        limit: FREE_SERVICE_LIMIT,
+        currentCount: serviceCount
+      });
+    }
+
+    console.log("[createService] vendor shopId:", shopId);
 
     const {
       title,
@@ -272,7 +275,7 @@ if (serviceCount >= FREE_SERVICE_LIMIT) {
       image_url: imageUrl,
 
       // Store-level approval architecture:
-      // service is initially part of the draft store.
+      // Service is initially part of the draft store.
       status: "draft"
     });
 
@@ -289,7 +292,6 @@ if (serviceCount >= FREE_SERVICE_LIMIT) {
     });
   }
 };
-
 
 // ---------------------------------------------------------
 // Authenticated provider updates own service
@@ -424,7 +426,6 @@ exports.updateService = async (req, res) => {
     });
   }
 };
-
 
 // ---------------------------------------------------------
 // Authenticated provider deletes own service

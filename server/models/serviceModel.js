@@ -1,8 +1,9 @@
+
 const pool = require("../db");
 
 const serviceModel = {
   // =========================================================
-  // Vendor: Get ALL services for a shop
+  // Vendor/Admin: Get ALL services for a shop
   // =========================================================
   async getServicesByShop({ shopId }) {
     const { rows } = await pool.query(
@@ -33,9 +34,8 @@ const serviceModel = {
     return rows;
   },
 
-
   // =========================================================
-  // Public: Get PUBLISHED services
+  // Public: Get PUBLISHED services from APPROVED stores only
   // =========================================================
   async getPublishedServices({
     shopId,
@@ -50,23 +50,16 @@ const serviceModel = {
 
     if (shopId) {
       values.push(shopId);
-
-      conditions.push(
-        `s.shop_id = $${values.length}`
-      );
+      conditions.push(`s.shop_id = $${values.length}`);
     }
 
     if (category) {
       values.push(category);
-
-      conditions.push(
-        `s.category = $${values.length}`
-      );
+      conditions.push(`s.category = $${values.length}`);
     }
 
     if (search) {
       values.push(`%${search}%`);
-
       conditions.push(
         `(s.title ILIKE $${values.length}
           OR s.description ILIKE $${values.length}
@@ -94,23 +87,20 @@ const serviceModel = {
       FROM services s
       JOIN shops sh
         ON sh.id = s.shop_id
-      LEFT JOIN tenants t
+      INNER JOIN tenants t
         ON t.shop_id = sh.id
+        AND t.status = 'approved'
       WHERE ${conditions.join(" AND ")}
       ORDER BY s.created_at DESC
     `;
 
-    const { rows } = await pool.query(
-      query,
-      values
-    );
+    const { rows } = await pool.query(query, values);
 
     return rows;
   },
 
-
   // =========================================================
-  // Get service by ID
+  // Public: Get service by ID from an APPROVED store only
   // =========================================================
   async getServiceById(id) {
     const { rows } = await pool.query(
@@ -135,8 +125,9 @@ const serviceModel = {
       FROM services s
       JOIN shops sh
         ON sh.id = s.shop_id
-      LEFT JOIN tenants t
+      INNER JOIN tenants t
         ON t.shop_id = sh.id
+        AND t.status = 'approved'
       WHERE s.id = $1
       LIMIT 1
       `,
@@ -145,7 +136,6 @@ const serviceModel = {
 
     return rows[0] || null;
   },
-
 
   // =========================================================
   // Create service
@@ -174,16 +164,7 @@ const serviceModel = {
         image_url,
         status
       )
-      VALUES (
-        $1,
-        $2,
-        $3,
-        $4,
-        $5,
-        $6,
-        $7,
-        $8
-      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *
       `,
       [
@@ -200,7 +181,6 @@ const serviceModel = {
 
     return rows[0];
   },
-
 
   // =========================================================
   // Update service
@@ -247,21 +227,22 @@ const serviceModel = {
 
     return rows[0] || null;
   },
-// =========================================================
-// Vendor: Count services for a shop
-// =========================================================
-async countServicesByShop({ shopId }) {
-  const { rows } = await pool.query(
-    `
-    SELECT COUNT(*)::int AS count
-    FROM services
-    WHERE shop_id = $1
-    `,
-    [shopId]
-  );
 
-  return rows[0]?.count || 0;
-},
+  // =========================================================
+  // Vendor: Count services for a shop
+  // =========================================================
+  async countServicesByShop({ shopId }) {
+    const { rows } = await pool.query(
+      `
+      SELECT COUNT(*)::int AS count
+      FROM services
+      WHERE shop_id = $1
+      `,
+      [shopId]
+    );
+
+    return rows[0]?.count || 0;
+  },
 
   // =========================================================
   // Delete service
@@ -274,16 +255,11 @@ async countServicesByShop({ shopId }) {
         AND shop_id = $2
       RETURNING id
       `,
-      [
-        id,
-        shopId
-      ]
+      [id, shopId]
     );
 
     return rows[0] || null;
   }
-
-  
 };
 
 module.exports = serviceModel;

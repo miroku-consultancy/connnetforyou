@@ -1,38 +1,301 @@
+
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const pool = require('../db');
+
 const authMiddleware = require('../middleware/authMiddleware');
 const masterAdminMiddleware = require('../middleware/masterAdminMiddleware');
+
+const productModel = require('../models/productModel');
+const serviceModel = require('../models/serviceModel');
 
 const router = express.Router();
 
 // ============================================================
+// MASTER ADMIN ACCESS TEST
+// GET /api/shops/admin/check
+// ============================================================
+router.get(
+  '/admin/check',
+  authMiddleware,
+  masterAdminMiddleware,
+  async (req, res) => {
+    return res.json({
+      success: true,
+      message: 'Master admin access verified',
+      admin: {
+        id: req.user.id,
+        email: req.user.email,
+        name: req.user.name
+      }
+    });
+  }
+);
+
+
+// ============================================================
+// MASTER ADMIN - GET PENDING SHOPS
+// GET /api/shops/admin/pending
+// ============================================================
+router.get(
+  '/admin/pending',
+  authMiddleware,
+  masterAdminMiddleware,
+  async (req, res) => {
+    try {
+      const result = await pool.query(`
+        SELECT
+          s.*,
+          t.id AS tenant_id,
+          t.slug AS tenant_slug,
+          t.status AS tenant_status,
+          t.created_at AS submitted_at,
+          t.updated_at AS status_updated_at
+        FROM tenants t
+        INNER JOIN shops s ON s.id = t.shop_id
+        WHERE t.status = 'pending'
+        ORDER BY t.updated_at ASC
+      `);
+
+      return res.json({
+        success: true,
+        count: result.rows.length,
+        shops: result.rows
+      });
+    } catch (error) {
+      console.error('[Admin] Pending shops error:', error);
+
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to load pending shops'
+      });
+    }
+  }
+);
+
+
+// ============================================================
+// MASTER ADMIN - GET SHOP REVIEW DETAILS
+// GET /api/shops/admin/:shopId/review
+// ============================================================
+router.get(
+  '/admin/:shopId/review',
+  authMiddleware,
+  masterAdminMiddleware,
+  async (req, res) => {
+    try {
+      const shopId = Number(req.params.shopId);
+
+      if (!Number.isInteger(shopId) || shopId <= 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid shop ID'
+        });
+      }
+
+      const shopResult = await pool.query(
+        `
+        SELECT
+          s.*,
+          t.id AS tenant_id,
+          t.slug AS tenant_slug,
+          t.status AS tenant_status,
+          t.created_at AS tenant_created_at,
+          t.updated_at AS tenant_updated_at
+        FROM shops s
+        INNER JOIN tenants t ON t.shop_id = s.id
+        WHERE s.id = $1
+        `,
+        [shopId]
+      );
+
+      if (shopResult.rows.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'Shop not found'
+        });
+      }
+
+      const [products, services] = await Promise.all([
+        productModel.getAllProducts(shopId),
+        serviceModel.getServicesByShop({ shopId })
+      ]);
+
+      return res.json({
+        success: true,
+        shop: shopResult.rows[0],
+        products: products || [],
+        services: services || []
+      });
+    } catch (error) {
+      console.error('[Admin] Shop review error:', error);
+
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to load shop review'
+      });
+    }
+  }
+);
+
+
+// ============================================================
+// MASTER ADMIN - APPROVE SHOP
+// POST /api/shops/admin/:shopId/approve
+// ============================================================
+router.post(
+  '/admin/:shopId/approve',
+  authMiddleware,
+  masterAdminMiddleware,
+  async (req, res) => {
+    try {
+      const shopId = Number(req.params.shopId);
+
+      if (!Number.isInteger(shopId) || shopId <= 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid shop ID'
+        });
+      }
+
+      const result = await pool.query(
+        `
+        UPDATE tenants
+        SET
+          status = 'approved',
+          updated_at = NOW()
+        WHERE shop_id = $1
+          AND status = 'pending'
+        RETURNING id, shop_id, slug, status, updated_at
+        `,
+        [shopId]
+      );
+
+      if (result.rowCount === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'Pending shop not found or already reviewed'
+        });
+      }
+
+      return res.json({
+        success: true,
+        message: 'Shop approved successfully',
+        tenant: result.rows[0]
+      });
+    } catch (error) {
+      console.error('[Admin] Approve shop error:', error);
+
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to approve shop'
+      });
+    }
+  }
+);
+
+
+// ============================================================
+// MASTER ADMIN - REJECT SHOP
+// POST /api/shops/admin/:shopId/reject
+// ============================================================
+router.post(
+  '/admin/:shopId/reject',
+  authMiddleware,
+  masterAdminMiddleware,
+  async (req, res) => {
+    try {
+      const shopId = Number(req.params.shopId);
+
+      if (!Number.isInteger(shopId) || shopId <= 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid shop ID'
+        });
+      }
+
+      const result = await pool.query(
+        `
+        UPDATE tenants
+        SET
+          status = 'rejected',
+          updated_at = NOW()
+        WHERE shop_id = $1
+          AND status = 'pending'
+        RETURNING id, shop_id, slug, status, updated_at
+        `,
+        [shopId]
+      );
+
+      if (result.rowCount === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'Pending shop not found or already reviewed'
+        });
+      }
+
+      return res.json({
+        success: true,
+        message: 'Shop rejected successfully',
+        tenant: result.rows[0]
+      });
+    } catch (error) {
+      console.error('[Admin] Reject shop error:', error);
+
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to reject shop'
+      });
+    }
+  }
+);
+
+
+// ============================================================
 // PUBLIC SHOPS
+// Only approved tenant shops are visible
+// GET /api/shops/public
 // ============================================================
 router.get('/public', async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT id, name, slug, address, phone, image_url,
-             open_time, close_time, minordervalue, lat, lng, is_featured,
-             COALESCE(rating, 4.2) as rating,
-             COALESCE(review_count, 0) as review_count,
-             COALESCE(orders_count, 0) as orders_count
-      FROM shops
-      WHERE id NOT IN (1)
-      ORDER BY is_featured DESC NULLS LAST,
-               rating DESC,
-               orders_count DESC,
-               created_at DESC
+      SELECT
+        s.id,
+        s.name,
+        s.slug,
+        s.address,
+        s.phone,
+        s.image_url,
+        s.open_time,
+        s.close_time,
+        s.minordervalue,
+        s.lat,
+        s.lng,
+        s.is_featured,
+        COALESCE(s.rating, 4.2) AS rating,
+        COALESCE(s.review_count, 0) AS review_count,
+        COALESCE(s.orders_count, 0) AS orders_count
+      FROM shops s
+      INNER JOIN tenants t
+        ON t.shop_id = s.id
+       AND t.status = 'approved'
+      WHERE s.id NOT IN (1)
+      ORDER BY
+        s.is_featured DESC NULLS LAST,
+        s.rating DESC,
+        s.orders_count DESC,
+        s.created_at DESC
     `);
 
     console.log(
-      `Found ${result.rows.length} shops for dashboard`
+      `Found ${result.rows.length} approved shops for dashboard`
     );
 
-    res.json(result.rows || []);
+    return res.json(result.rows || []);
   } catch (err) {
     console.error('Public shops fetch error:', err);
-    res.status(500).json({
+
+    return res.status(500).json({
       error: 'Failed to fetch shops'
     });
   }
@@ -67,8 +330,6 @@ router.get('/vendor', async (req, res) => {
       token,
       process.env.JWT_SECRET || 'your_jwt_secret'
     );
-
-    console.log('Decoded JWT:', decoded);
 
     const userId = decoded.id;
 
@@ -122,8 +383,6 @@ router.get('/vendor', async (req, res) => {
       );
     }
 
-    console.log('Vendor DB result:', result.rows);
-
     if (result.rows.length === 0) {
       return res.status(404).json({
         error: 'No vendor store found for this user'
@@ -131,7 +390,6 @@ router.get('/vendor', async (req, res) => {
     }
 
     return res.json(result.rows[0]);
-
   } catch (err) {
     console.error('Vendor fetch error:', err);
 
@@ -203,7 +461,6 @@ router.post('/create', authMiddleware, async (req, res) => {
     await client.query('BEGIN');
     transactionStarted = true;
 
-    // Prevent concurrent requests from creating multiple stores.
     await client.query(
       'SELECT pg_advisory_xact_lock($1::bigint)',
       [userId]
@@ -226,12 +483,10 @@ router.post('/create', authMiddleware, async (req, res) => {
 
       return res.status(409).json({
         error: 'STORE_ALREADY_EXISTS',
-        message:
-          'You already have a store. You cannot create another store.'
+        message: 'You already have a store. You cannot create another store.'
       });
     }
 
-    // Generate unique slug.
     let slug = baseSlug;
     let counter = 1;
 
@@ -249,7 +504,6 @@ router.post('/create', authMiddleware, async (req, res) => {
       slug = `${baseSlug}-${counter}`;
     }
 
-    // Create shop.
     const shopResult = await client.query(
       `
       INSERT INTO shops (
@@ -262,16 +516,7 @@ router.post('/create', authMiddleware, async (req, res) => {
         store_type,
         created_at
       )
-      VALUES (
-        $1,
-        $2,
-        $3,
-        $4,
-        $5,
-        $6,
-        $7,
-        NOW()
-      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
       RETURNING *
       `,
       [
@@ -287,7 +532,6 @@ router.post('/create', authMiddleware, async (req, res) => {
 
     const shop = shopResult.rows[0];
 
-    // Create tenant as draft.
     const tenantResult = await client.query(
       `
       INSERT INTO tenants (
@@ -297,24 +541,14 @@ router.post('/create', authMiddleware, async (req, res) => {
         created_at,
         updated_at
       )
-      VALUES (
-        $1,
-        $2,
-        'draft',
-        NOW(),
-        NOW()
-      )
+      VALUES ($1, $2, 'draft', NOW(), NOW())
       RETURNING *
       `,
-      [
-        shop.id,
-        slug
-      ]
+      [shop.id, slug]
     );
 
     const tenant = tenantResult.rows[0];
 
-    // Link vendor to shop.
     await client.query(
       `
       INSERT INTO user_shop_roles (
@@ -324,10 +558,7 @@ router.post('/create', authMiddleware, async (req, res) => {
       )
       VALUES ($1, $2, 'vendor')
       `,
-      [
-        userId,
-        shop.id
-      ]
+      [userId, shop.id]
     );
 
     await client.query('COMMIT');
@@ -341,7 +572,6 @@ router.post('/create', authMiddleware, async (req, res) => {
       shop,
       tenant
     });
-
   } catch (err) {
     if (transactionStarted) {
       await client.query('ROLLBACK');
@@ -353,7 +583,6 @@ router.post('/create', authMiddleware, async (req, res) => {
       error: 'Failed to create store',
       message: err.message
     });
-
   } finally {
     client.release();
   }
@@ -376,11 +605,6 @@ router.post(
           error: 'Authentication required'
         });
       }
-
-      console.log(
-        '[submit-for-approval] userId:',
-        userId
-      );
 
       const vendorResult = await pool.query(
         `
@@ -432,12 +656,7 @@ router.post(
           updated_at = CURRENT_TIMESTAMP
         WHERE shop_id = $1
           AND status = 'draft'
-        RETURNING
-          id,
-          shop_id,
-          slug,
-          status,
-          updated_at
+        RETURNING id, shop_id, slug, status, updated_at
         `,
         [shop.shop_id]
       );
@@ -450,11 +669,6 @@ router.post(
 
       const tenant = updateResult.rows[0];
 
-      console.log(
-        '[submit-for-approval] Store submitted:',
-        tenant
-      );
-
       return res.status(200).json({
         message: 'Store submitted for approval successfully',
         store: {
@@ -465,12 +679,8 @@ router.post(
           tenant_status: tenant.status
         }
       });
-
     } catch (error) {
-      console.error(
-        '[submit-for-approval] ERROR:',
-        error
-      );
+      console.error('[submit-for-approval] ERROR:', error);
 
       return res.status(500).json({
         error: 'Failed to submit store for approval'
@@ -540,9 +750,7 @@ router.post('/switch-shop', authMiddleware, async (req, res) => {
     const token = jwt.sign(
       tokenPayload,
       process.env.JWT_SECRET,
-      {
-        expiresIn: '180d'
-      }
+      { expiresIn: '180d' }
     );
 
     return res.json({
@@ -557,7 +765,6 @@ router.post('/switch-shop', authMiddleware, async (req, res) => {
         tenant_status: shop.tenant_status
       }
     });
-
   } catch (err) {
     console.error('Switch shop error:', err);
 
@@ -570,14 +777,22 @@ router.post('/switch-shop', authMiddleware, async (req, res) => {
 
 
 // ============================================================
-// EXISTING: GET SHOP BY SLUG
+// GET SHOP BY SLUG
+// Only approved shops are publicly accessible
 // ============================================================
 router.get('/:slug', async (req, res) => {
   const { slug } = req.params;
 
   try {
     const result = await pool.query(
-      'SELECT * FROM shops WHERE LOWER(slug) = LOWER($1)',
+      `
+      SELECT s.*
+      FROM shops s
+      INNER JOIN tenants t
+        ON t.shop_id = s.id
+       AND t.status = 'approved'
+      WHERE LOWER(s.slug) = LOWER($1)
+      `,
       [slug]
     );
 
@@ -589,12 +804,11 @@ router.get('/:slug', async (req, res) => {
       });
     }
 
-    res.json(shop);
-
+    return res.json(shop);
   } catch (err) {
-    console.error(err);
+    console.error('Shop by slug error:', err);
 
-    res.status(500).json({
+    return res.status(500).json({
       error: 'Server error'
     });
   }
@@ -603,7 +817,7 @@ router.get('/:slug', async (req, res) => {
 
 // ============================================================
 // GET /api/shops?lat=...&lng=...
-// NEARBY SHOPS
+// NEARBY APPROVED SHOPS
 // ============================================================
 router.get('/', async (req, res) => {
   const { lat, lng } = req.query;
@@ -616,6 +830,12 @@ router.get('/', async (req, res) => {
 
   const userLat = parseFloat(lat);
   const userLng = parseFloat(lng);
+
+  if (!Number.isFinite(userLat) || !Number.isFinite(userLng)) {
+    return res.status(400).json({
+      error: 'Invalid latitude or longitude'
+    });
+  }
 
   const maxDistance = 5;
 
@@ -631,44 +851,40 @@ router.get('/', async (req, res) => {
       Math.cos(lat2 * Math.PI / 180) *
       Math.sin(dLon / 2) ** 2;
 
-    const c =
-      2 * Math.atan2(
-        Math.sqrt(a),
-        Math.sqrt(1 - a)
-      );
+    const c = 2 * Math.atan2(
+      Math.sqrt(a),
+      Math.sqrt(1 - a)
+    );
 
     return R * c;
   };
 
   try {
     const result = await pool.query(`
-      SELECT *
-      FROM shops
-      WHERE lat IS NOT NULL
-        AND lng IS NOT NULL
-        AND (is_featured IS DISTINCT FROM TRUE)
+      SELECT s.*
+      FROM shops s
+      INNER JOIN tenants t
+        ON t.shop_id = s.id
+       AND t.status = 'approved'
+      WHERE s.lat IS NOT NULL
+        AND s.lng IS NOT NULL
+        AND (s.is_featured IS DISTINCT FROM TRUE)
     `);
 
-    const allShops = result.rows;
-
-    const nearbyShops = allShops
-      .map(shop => {
-        const distance = getDistance(
+    const nearbyShops = result.rows
+      .map(shop => ({
+        ...shop,
+        distance: getDistance(
           userLat,
           userLng,
-          shop.lat,
-          shop.lng
-        );
-
-        return {
-          ...shop,
-          distance
-        };
-      })
+          Number(shop.lat),
+          Number(shop.lng)
+        )
+      }))
       .filter(shop => shop.distance <= maxDistance)
       .sort((a, b) => a.distance - b.distance);
 
-    res.json(
+    return res.json(
       nearbyShops.map(shop => ({
         id: shop.id,
         slug: shop.slug,
@@ -680,38 +896,15 @@ router.get('/', async (req, res) => {
         distance: shop.distance
       }))
     );
-
   } catch (err) {
     console.error('Nearby shop fetch error:', err);
 
-    res.status(500).json({
+    return res.status(500).json({
       error: 'Server error',
       message: err.message
     });
   }
 });
-
-
-// ============================================================
-// MASTER ADMIN ACCESS TEST
-// GET /api/shops/admin/check
-// ============================================================
-router.get(
-  '/admin/check',
-  authMiddleware,
-  masterAdminMiddleware,
-  async (req, res) => {
-    return res.json({
-      success: true,
-      message: 'Master admin access verified',
-      admin: {
-        id: req.user.id,
-        email: req.user.email,
-        name: req.user.name
-      }
-    });
-  }
-);
 
 
 module.exports = router;
