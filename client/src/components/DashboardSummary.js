@@ -276,83 +276,85 @@ const DashboardSummary = () => {
     fetchVisitCount();
   }, []);
 
-  // -----------------------------
-  // Nearby shops - existing API
-  // -----------------------------
-  useEffect(() => {
-    let cancelled = false;
+// -----------------------------
+// Public shops - same API as React Native
+// -----------------------------
+useEffect(() => {
+  let cancelled = false;
 
-    const fetchShops = async (
-      latitude,
-      longitude
-    ) => {
-      try {
-        const response = await fetch(
-          `${API_BASE_URL}/api/shops?lat=${latitude}&lng=${longitude}`
-        );
+  const fetchShops = async () => {
+    try {
+      setLoading(true);
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch shops");
-        }
+      const url = `${API_BASE_URL}/api/shops/public`;
 
-        const data = await response.json();
+      console.log("[JusPing][SHOPS] Request URL:", url);
 
-        if (!cancelled) {
-          setShops(
-            Array.isArray(data) ? data : []
-          );
-        }
-      } catch (error) {
-        console.error(
-          "Failed to fetch shops:",
-          error
-        );
+      const response = await fetch(url);
 
-        if (!cancelled) {
-          setShops([]);
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
+      if (!response.ok) {
+        throw new Error(`Shop API returned ${response.status}`);
       }
-    };
 
-    if (!navigator.geolocation) {
-      setLocationError(true);
-      setLoading(false);
-      return;
+      const data = await response.json();
+
+      const shopList = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.shops)
+        ? data.shops
+        : Array.isArray(data?.data)
+        ? data.data
+        : [];
+
+      // Same visibility rules as React Native.
+      const activeShops = shopList.filter((shop) => {
+        const status = String(
+          shop.tenant_status ?? shop.status ?? ""
+        )
+          .trim()
+          .toLowerCase();
+
+        if (
+          ["draft", "pending", "rejected", "inactive", "disabled"].includes(
+            status
+          )
+        ) {
+          return false;
+        }
+
+        if (shop.is_active === false || shop.is_published === false) {
+          return false;
+        }
+
+        return true;
+      });
+
+      console.log("[JusPing][SHOPS] Total:", shopList.length);
+      console.log("[JusPing][SHOPS] Visible:", activeShops.length);
+
+      if (!cancelled) {
+        setShops(activeShops);
+        setLocationError(false);
+      }
+    } catch (error) {
+      console.error("[JusPing][SHOPS] Loading failed:", error);
+
+      if (!cancelled) {
+        setShops([]);
+      }
+    } finally {
+      if (!cancelled) {
+        setLoading(false);
+      }
     }
+  };
 
-    navigator.geolocation.getCurrentPosition(
-      ({ coords }) => {
-        fetchShops(
-          coords.latitude,
-          coords.longitude
-        );
-      },
-      (error) => {
-        console.warn(
-          "Location unavailable:",
-          error.message
-        );
+  fetchShops();
 
-        if (!cancelled) {
-          setLocationError(true);
-          setLoading(false);
-        }
-      },
-      {
-        enableHighAccuracy: false,
-        timeout: 10000,
-        maximumAge: 300000,
-      }
-    );
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  return () => {
+    cancelled = true;
+  };
+}, []);
 
   // -----------------------------
   // Fetch services from API
@@ -661,10 +663,7 @@ const getShopImage = (shop) => {
   );
 
   // Use live API data when available
-  const list =
-    shops.length > 0
-      ? shops
-      : fallbackShops;
+  const list = shops;
 
   // -----------------------------
   // Search shops
