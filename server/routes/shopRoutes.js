@@ -548,19 +548,41 @@ router.post('/create', authMiddleware, async (req, res) => {
       [shop.id, slug]
     );
 
-    const tenant = tenantResult.rows[0];
 
-    await client.query(
-      `
-      INSERT INTO user_shop_roles (
-        user_id,
-        shop_id,
-        role
-      )
-      VALUES ($1, $2, 'vendor')
-      `,
-      [userId, shop.id]
-    );
+const tenant = tenantResult.rows[0];
+
+// Generate the JusPing platform subdomain
+const storeDomain = `${slug}.jusping.com`;
+
+// Register the domain against the newly created tenant
+await client.query(
+  `
+  INSERT INTO domains (
+    tenant_id,
+    domain,
+    domain_type,
+    is_primary,
+    is_verified,
+    is_active
+  )
+  VALUES ($1, $2, 'subdomain', TRUE, TRUE, TRUE)
+  `,
+  [tenant.id, storeDomain]
+);
+
+// Create vendor role
+await client.query(
+  `
+  INSERT INTO user_shop_roles (
+    user_id,
+    shop_id,
+    role
+  )
+  VALUES ($1, $2, 'vendor')
+  `,
+  [userId, shop.id]
+);
+
 
     await client.query('COMMIT');
 
@@ -569,10 +591,15 @@ router.post('/create', authMiddleware, async (req, res) => {
     );
 
     return res.status(201).json({
-      message: 'Store created successfully',
-      shop,
-      tenant
-    });
+  message: 'Store created successfully',
+  shop,
+  tenant,
+  domain: {
+    domain: storeDomain,
+    domainType: 'subdomain',
+    isPrimary: true
+  }
+});
   } catch (err) {
     if (transactionStarted) {
       await client.query('ROLLBACK');
