@@ -1,16 +1,18 @@
 import React, { useEffect, useMemo, useState } from "react";
+
 import "./DashboardSummary.css";
+
 import { useNavigate } from "react-router-dom";
+
 import { useCart } from "./CartContext";
+
 import { useUser } from "./UserContext";
 
 const API_BASE_URL = "https://connnet4you-server.onrender.com";
 
-const SERVICES_API =
-  "https://city-home-services.jusping.com/services";
+const SERVICES_API = "https://city-home-services.jusping.com/services";
 
-const IMAGE_BASE_URL =
-  "https://www.jusping.com/images/shops";
+const IMAGE_BASE_URL = "https://www.jusping.com/images/shops";
 
 const PLAY_STORE_URL =
   "https://play.google.com/store/apps/details?id=com.connectfree4u.connectfree4u";
@@ -42,6 +44,7 @@ const shopIcons = {
   ShadhuIcecream: "🧁",
   "City-Home-Services": "🏠",
   "test-flow-7": "🏠",
+  "surya-prakash-tution-classes": "🏠",
 };
 
 const displayName = (slug = "") =>
@@ -277,59 +280,123 @@ const DashboardSummary = () => {
   }, []);
 
   // -----------------------------
-  // Nearby shops - existing API
+  // Nearby + approved public shops
   // -----------------------------
   useEffect(() => {
     let cancelled = false;
 
-    const fetchShops = async (
-      latitude,
-      longitude
-    ) => {
+    const getShopList = (data) => {
+      if (Array.isArray(data)) return data;
+      if (Array.isArray(data?.shops)) return data.shops;
+      if (Array.isArray(data?.stores)) return data.stores;
+      if (Array.isArray(data?.data)) return data.data;
+      return [];
+    };
+
+    const getShopKey = (shop) =>
+      String(
+        shop?.slug ||
+          shop?.shop_slug ||
+          shop?.id ||
+          shop?._id ||
+          ""
+      )
+        .trim()
+        .toLowerCase();
+
+    const fetchPublicShops = async () => {
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/api/shops/public`
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch public shops");
+        }
+
+        return getShopList(await response.json());
+      } catch (error) {
+        console.error(
+          "Failed to fetch public shops:",
+          error
+        );
+
+        return [];
+      }
+    };
+
+    const mergeAndSetShops = async (nearbyShops = []) => {
+      const publicShops = await fetchPublicShops();
+
+      if (cancelled) return;
+
+      // Nearby results come first so their distance values are preserved.
+      const merged = new Map();
+
+      [...nearbyShops, ...publicShops].forEach((shop) => {
+        if (!shop || typeof shop !== "object") return;
+
+        const key = getShopKey(shop);
+
+        if (!key) return;
+
+        if (!merged.has(key)) {
+          merged.set(key, shop);
+        } else {
+          // Keep the nearby record and fill any missing fields from public data.
+          merged.set(key, {
+            ...shop,
+            ...merged.get(key),
+          });
+        }
+      });
+
+      setShops(Array.from(merged.values()));
+      setLoading(false);
+    };
+
+    const fetchNearbyShops = async (latitude, longitude) => {
       try {
         const response = await fetch(
           `${API_BASE_URL}/api/shops?lat=${latitude}&lng=${longitude}`
         );
 
         if (!response.ok) {
-          throw new Error("Failed to fetch shops");
+          throw new Error("Failed to fetch nearby shops");
         }
 
-        const data = await response.json();
+        const nearbyShops = getShopList(
+          await response.json()
+        );
 
-        if (!cancelled) {
-          setShops(
-            Array.isArray(data) ? data : []
-          );
-        }
+        await mergeAndSetShops(nearbyShops);
       } catch (error) {
         console.error(
-          "Failed to fetch shops:",
+          "Failed to fetch nearby shops:",
           error
         );
 
-        if (!cancelled) {
-          setShops([]);
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
+        await mergeAndSetShops([]);
       }
     };
 
     if (!navigator.geolocation) {
       setLocationError(true);
-      setLoading(false);
-      return;
+      mergeAndSetShops([]);
+
+      return () => {
+        cancelled = true;
+      };
     }
 
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
-        fetchShops(
-          coords.latitude,
-          coords.longitude
-        );
+        if (!cancelled) {
+          fetchNearbyShops(
+            coords.latitude,
+            coords.longitude
+          );
+        }
       },
       (error) => {
         console.warn(
@@ -339,7 +406,7 @@ const DashboardSummary = () => {
 
         if (!cancelled) {
           setLocationError(true);
-          setLoading(false);
+          mergeAndSetShops([]);
         }
       },
       {
@@ -412,16 +479,14 @@ const DashboardSummary = () => {
       cancelled = true;
     };
   }, []);
-
-  // -----------------------------
+    // -----------------------------
   // My Business status
   // -----------------------------
   useEffect(() => {
     let cancelled = false;
 
     const fetchMyBusiness = async () => {
-      const token =
-        localStorage.getItem("authToken");
+      const token = localStorage.getItem("authToken");
 
       // User is not logged in
       if (!token) {
@@ -429,7 +494,6 @@ const DashboardSummary = () => {
           setMyBusiness(null);
           setBusinessLoading(false);
         }
-
         return;
       }
 
@@ -444,9 +508,7 @@ const DashboardSummary = () => {
         );
 
         if (!response.ok) {
-          throw new Error(
-            "Failed to fetch business"
-          );
+          throw new Error("Failed to fetch business");
         }
 
         const data = await response.json();
@@ -456,9 +518,7 @@ const DashboardSummary = () => {
           : data;
 
         if (!cancelled) {
-          setMyBusiness(
-            currentShop || null
-          );
+          setMyBusiness(currentShop || null);
         }
       } catch (error) {
         console.error(
@@ -489,18 +549,13 @@ const DashboardSummary = () => {
   const handleClick = (slug) => {
     if (!slug) return;
 
-    if (
-      slug.toLowerCase() ===
-      "city-home-services"
-    ) {
+    if (slug.toLowerCase() === "city-home-services") {
       window.location.href =
         "https://city-home-services.jusping.com/services";
-
       return;
     }
 
-    window.location.href =
-      `https://${slug}.jusping.com/products`;
+    window.location.href = `https://${slug}.jusping.com/products`;
   };
 
   // -----------------------------
@@ -513,11 +568,7 @@ const DashboardSummary = () => {
       service.serviceId;
 
     if (!serviceId) {
-      console.error(
-        "Service ID is missing:",
-        service
-      );
-
+      console.error("Service ID is missing:", service);
       return;
     }
 
@@ -530,43 +581,49 @@ const DashboardSummary = () => {
       "https://city-home-services.jusping.com/services"
     );
 
-    bookingUrl.searchParams.set(
-      "shopId",
-      shopId
-    );
+    bookingUrl.searchParams.set("shopId", shopId);
+    bookingUrl.searchParams.set("serviceId", serviceId);
 
-    bookingUrl.searchParams.set(
-      "serviceId",
-      serviceId
-    );
-
-    window.location.href =
-      bookingUrl.toString();
+    window.location.href = bookingUrl.toString();
   };
 
   // -----------------------------
-  // Shop image with fallback
+  // Shop image - dynamic + legacy fallback
   // -----------------------------
-  // -----------------------------
-// Shop image - dynamic + legacy fallback
-// -----------------------------
-const getShopImage = (shop) => {
-  const shopName =
-    shop.name || displayName(shop.slug);
+  const getShopImage = (shop) => {
+    const shopName = shop.name || displayName(shop.slug);
+    const shopSlug = shop.slug || "";
 
-  // 1. New uploaded image / Cloudinary URL
-  if (shop.image_url) {
-    const imageUrl = shop.image_url.trim();
+    // 1. New uploaded image / Cloudinary URL
+    if (shop.image_url) {
+      const imageUrl = shop.image_url.trim();
 
-    // Full URL - Cloudinary or any external image
-    if (
-      imageUrl.startsWith("http://") ||
-      imageUrl.startsWith("https://")
-    ) {
+      // Full URL - Cloudinary or any external image
+      if (
+        imageUrl.startsWith("http://") ||
+        imageUrl.startsWith("https://")
+      ) {
+        return (
+          <img
+            className="jp-shop-img"
+            src={imageUrl}
+            alt={shopName}
+            loading="lazy"
+            onError={(event) => {
+              event.currentTarget.onerror = null;
+              event.currentTarget.src =
+                `${IMAGE_BASE_URL}/logo.png`;
+            }}
+          />
+        );
+      }
+
+      // Old database path such as:
+      // images/shops/Ganga-Medical-hall.png
       return (
         <img
           className="jp-shop-img"
-          src={imageUrl}
+          src={`https://www.jusping.com/${imageUrl.replace(/^\/+/, "")}`}
           alt={shopName}
           loading="lazy"
           onError={(event) => {
@@ -578,100 +635,41 @@ const getShopImage = (shop) => {
       );
     }
 
-    // Old database path such as:
-    // images/shops/Ganga-Medical-hall.png
+    // 2. Legacy slug-based image fallback
+    const extensions = ["jpeg", "jpg", "png", "JPG"];
+
     return (
       <img
         className="jp-shop-img"
-        src={`https://www.jusping.com/${imageUrl.replace(/^\/+/, "")}`}
+        src={`${IMAGE_BASE_URL}/${shopSlug}.${extensions[0]}`}
         alt={shopName}
         loading="lazy"
         onError={(event) => {
-          event.currentTarget.onerror = null;
-          event.currentTarget.src =
-            `${IMAGE_BASE_URL}/logo.png`;
+          const img = event.currentTarget;
+          const attempt = Number(img.dataset.attempt || 0);
+
+          if (attempt < extensions.length - 1) {
+            img.dataset.attempt = String(attempt + 1);
+            img.src =
+              `${IMAGE_BASE_URL}/${shopSlug}.${extensions[attempt + 1]}`;
+          } else {
+            img.onerror = null;
+            img.src = `${IMAGE_BASE_URL}/logo.png`;
+          }
         }}
       />
     );
-  }
+  };
 
-  // 2. Legacy slug-based image fallback
-  const extensions = [
-    "jpeg",
-    "jpg",
-    "png",
-    "JPG",
-  ];
-
-  return (
-    <img
-      className="jp-shop-img"
-      src={`${IMAGE_BASE_URL}/${shop.slug}.${extensions[0]}`}
-      alt={shopName}
-      loading="lazy"
-      onError={(event) => {
-        const img = event.currentTarget;
-        const attempt = Number(
-          img.dataset.attempt || 0
-        );
-
-        if (
-          attempt <
-          extensions.length - 1
-        ) {
-          img.dataset.attempt =
-            String(attempt + 1);
-
-          img.src =
-            `${IMAGE_BASE_URL}/${shop.slug}.${extensions[attempt + 1]}`;
-        } else {
-          img.onerror = null;
-          img.src =
-            `${IMAGE_BASE_URL}/logo.png`;
-        }
-      }}
-    />
-  );
-};
-
-  // -----------------------------
-  // Static fallback shop list
-  // -----------------------------
-  const fallbackShops = useMemo(
-    () =>
-      Object.keys(shopIcons).map(
-        (slug, index) => ({
-          slug,
-          name: displayName(slug),
-          category:
-            slug ===
-            "City-Home-Services"
-              ? "Home Services"
-              : "Local Store",
-          address:
-            "Discover this local store",
-          distance:
-            `${(
-              0.8 +
-              index * 0.3
-            ).toFixed(1)} km`,
-        })
-      ),
-    []
-  );
-
-  // Use live API data when available
-  const list =
-    shops.length > 0
-      ? shops
-      : fallbackShops;
+  // Only display shops returned by the live APIs.
+  // shopIcons is used exclusively for optional card icons.
+  const list = shops;
 
   // -----------------------------
   // Search shops
   // -----------------------------
   const filteredShops = useMemo(() => {
-    const query =
-      search.toLowerCase().trim();
+    const query = search.toLowerCase().trim();
 
     return list.filter((shop) => {
       const name = (
@@ -679,13 +677,8 @@ const getShopImage = (shop) => {
         displayName(shop.slug)
       ).toLowerCase();
 
-      const address = (
-        shop.address || ""
-      ).toLowerCase();
-
-      const category = (
-        shop.category || ""
-      ).toLowerCase();
+      const address = (shop.address || "").toLowerCase();
+      const category = (shop.category || "").toLowerCase();
 
       return (
         name.includes(query) ||
@@ -718,28 +711,17 @@ const getShopImage = (shop) => {
     // No store
     if (!myBusiness) {
       return {
-        title:
-          "Start Your Business on JusPing",
-
+        title: "Start Your Business on JusPing",
         description:
           "Create your own Product or Service store and reach customers in your local community.",
-
-        button:
-          "Create Your Store",
-
+        button: "Create Your Store",
         action: () => {
-          const token =
-            localStorage.getItem(
-              "authToken"
-            );
+          const token = localStorage.getItem("authToken");
 
           if (!token) {
             navigate(
-              `/login?redirect=${encodeURIComponent(
-                "/create-store"
-              )}`
+              `/login?redirect=${encodeURIComponent("/create-store")}`
             );
-
             return;
           }
 
@@ -748,95 +730,63 @@ const getShopImage = (shop) => {
       };
     }
 
-    const status =
-      myBusiness.tenant_status;
+    const status = myBusiness.tenant_status;
 
     // Draft
     if (status === "draft") {
       return {
-        title:
-          "Complete Your Store",
-
+        title: "Complete Your Store",
         description:
           "Your store is saved as a draft. Add your products or services and submit your store for approval.",
-
-        button:
-          "Complete Your Store",
-
-        action: () =>
-          navigate("/my-business"),
+        button: "Complete Your Store",
+        action: () => navigate("/my-business"),
       };
     }
 
     // Pending
     if (status === "pending") {
       return {
-        title:
-          "Store Under Review",
-
+        title: "Store Under Review",
         description:
           "Your store has been submitted for admin approval. We'll activate it once the review is complete.",
-
-        button:
-          "View Store Status",
-
-        action: () =>
-          navigate("/my-business"),
+        button: "View Store Status",
+        action: () => navigate("/my-business"),
       };
     }
 
     // Active
     if (status === "approved") {
       return {
-        title:
-          "My Business",
-
+        title: "My Business",
         description:
           "Manage your JusPing business, products, services and store.",
-
-        button:
-          "Manage My Business",
-
-        action: () =>
-          navigate("/my-business"),
+        button: "Manage My Business",
+        action: () => navigate("/my-business"),
       };
     }
 
     // Rejected
     if (status === "rejected") {
       return {
-        title:
-          "Update Your Store",
-
+        title: "Update Your Store",
         description:
           "Your store needs some changes before it can be approved.",
-
-        button:
-          "Update Store Information",
-
-        action: () =>
-          navigate("/my-business"),
+        button: "Update Store Information",
+        action: () => navigate("/my-business"),
       };
     }
 
     // Fallback
     return {
-      title:
-        "Start Your Business on JusPing",
-
+      title: "Start Your Business on JusPing",
       description:
         "Create your own Product or Service store and reach customers in your local community.",
-
-      button:
-        "Create Your Store",
-
-      action: () =>
-        navigate("/create-store"),
+      button: "Create Your Store",
+      action: () => navigate("/create-store"),
     };
   };
 
-  const businessCTA =
-    getBusinessCTA();
+  const businessCTA = getBusinessCTA();
 
   // -----------------------------
   // Loading
@@ -845,54 +795,27 @@ const getShopImage = (shop) => {
     return (
       <div className="jp-loading">
         <div className="jp-loader-content">
-
           <div className="jp-loader-orbit">
-            <div className="jp-loading-logo">
-              J
-            </div>
-
-            <span className="jp-loader-dot">
-              📍
-            </span>
+            <div className="jp-loading-logo">J</div>
+            <span className="jp-loader-dot">📍</span>
           </div>
-
-          <h2 className="jp-loader-title">
-            Jus<span>Ping</span>
-          </h2>
-
-          <p className="jp-loader-message">
-            Discovering nearby stores...
-          </p>
-
-          <div className="jp-loader-progress">
-            <div className="jp-loader-progress-fill" />
-          </div>
-
-          <small className="jp-loader-subtitle">
-            Connecting you to your local
-            community
-          </small>
-
+          <h2>JusPing</h2>
+          <p>Connecting you with local businesses...</p>
         </div>
       </div>
     );
   }
-
-  return (
+    return (
     <div className="jusping-dashboard">
-
       {/* HEADER */}
       {/* <header className="jp-header">
         ...
       </header> */}
 
       <main className="jp-main">
-
         {/* HERO BANNER */}
         <section className="jp-hero">
-
           <div className="jp-hero-content">
-
             <h1>
               Everything
               <br />
@@ -904,50 +827,34 @@ const getShopImage = (shop) => {
             </p>
 
             <div className="jp-hero-links">
-
               <span>
-                <b className="hero-icon orange">
-                  📍
-                </b>
+                <b className="hero-icon orange">📍</b>
                 Local Shops
               </span>
 
               <span>
-                <b className="hero-icon teal">
-                  🔧
-                </b>
+                <b className="hero-icon teal">🔧</b>
                 Home Services
               </span>
 
               <span>
-                <b className="hero-icon blue">
-                  ▣
-                </b>
+                <b className="hero-icon blue">▣</b>
                 Chat & Community
               </span>
 
               {/* <span>
-                <b className="hero-icon purple">
-                  ✥
-                </b>
+                <b className="hero-icon purple">✥</b>
                 Premium Services
               </span> */}
-
             </div>
-
           </div>
 
           <div className="jp-hero-phone">
-
             <div className="jp-phone">
-
               <div className="jp-phone-notch" />
 
               <div className="jp-phone-screen">
-
-                <div className="jp-phone-logo">
-                  ●
-                </div>
+                <div className="jp-phone-logo">●</div>
 
                 <h2>
                   Jus<span>Ping</span>
@@ -962,50 +869,36 @@ const getShopImage = (shop) => {
                   <br />
                   Grow
                 </p>
-
               </div>
-
             </div>
-
           </div>
-
         </section>
-
 
         {/* CATEGORY ICONS */}
         <section className="jp-categories">
-
-          {categories.map(
-            (category) => (
-              <button
-                className="jp-category"
-                key={category.name}
+          {categories.map((category) => (
+            <button
+              className="jp-category"
+              key={category.name}
+            >
+              <span
+                className={`jp-category-icon ${category.color}`}
               >
-                <span
-                  className={`jp-category-icon ${category.color}`}
-                >
-                  {category.icon}
-                </span>
+                {category.icon}
+              </span>
 
-                <span className="jp-category-label">
-                  {category.name}
-                </span>
-              </button>
-            )
-          )}
-
+              <span className="jp-category-label">
+                {category.name}
+              </span>
+            </button>
+          ))}
         </section>
-
 
         {/* BUSINESS STATUS / CTA */}
         <section className="jp-business-banner">
-
-          <div className="jp-business-icon">
-            🚀
-          </div>
+          <div className="jp-business-icon">🚀</div>
 
           <div className="jp-business-content">
-
             <h2>
               {businessLoading
                 ? "Your Business on JusPing"
@@ -1017,179 +910,119 @@ const getShopImage = (shop) => {
                 ? "Checking your business status..."
                 : businessCTA.description}
             </p>
-
           </div>
 
           {!businessLoading && (
             <button
               className="jp-business-button"
-              onClick={
-                businessCTA.action
-              }
+              onClick={businessCTA.action}
             >
               {businessCTA.button}
               <span>→</span>
             </button>
           )}
-
         </section>
-
 
         {/* NEARBY SHOPS */}
         <section className="jp-section">
-
           <div className="jp-section-heading">
-
             <h2>
-              {search
-                ? "Search Results"
-                : "Nearby Shops"}
+              {search ? "Search Results" : "Nearby Shops"}
             </h2>
 
-            <button
-              onClick={() =>
-                setShowAll(!showAll)
-              }
-            >
-              {showAll
-                ? "Show Less ↑"
-                : "View All"}{" "}
+            <button onClick={() => setShowAll(!showAll)}>
+              {showAll ? "Show Less ↑" : "View All"}{" "}
               <span>→</span>
             </button>
-
           </div>
 
           {visibleShops.length > 0 ? (
-
             <div className="jp-card-grid">
-
-              {visibleShops.map(
-                (shop) => (
-                  <article
-                    className="jp-shop-card"
-                    key={shop.slug}
-                    role="link"
-                    tabIndex={0}
-                    onClick={() =>
-                      handleClick(
-                        shop.slug
-                      )
+              {visibleShops.map((shop) => (
+                <article
+                  className="jp-shop-card"
+                  key={
+                    shop.slug ||
+                    shop.shop_slug ||
+                    shop.id ||
+                    shop._id
+                  }
+                  role="link"
+                  tabIndex={0}
+                  onClick={() => handleClick(shop.slug)}
+                  onKeyDown={(event) => {
+                    if (
+                      event.key === "Enter" ||
+                      event.key === " "
+                    ) {
+                      event.preventDefault();
+                      handleClick(shop.slug);
                     }
-                    onKeyDown={(
-                      event
-                    ) => {
-                      if (
-                        event.key ===
-                          "Enter" ||
-                        event.key === " "
-                      ) {
-                        event.preventDefault();
+                  }}
+                >
+                  <div className="jp-shop-image">
+                    {getShopImage(shop)}
+                  </div>
 
-                        handleClick(
-                          shop.slug
-                        );
-                      }
-                    }}
-                  >
+                  <div className="jp-shop-info">
+                    <h3>
+                      {shop.name ||
+                        displayName(shop.slug)}
+                    </h3>
 
-                    <div className="jp-shop-image">
-                      {getShopImage(shop)}
+                    <p className="jp-distance">
+                      <span>📍</span>{" "}
+                      {shop.distance ||
+                        shop.distance_km ||
+                        "Nearby"}
+                    </p>
+
+                    <div className="jp-shop-category">
+                      <span
+                        style={{
+                          background:
+                            shop.slug === "City-Home-Services"
+                              ? "#0871e7"
+                              : "#159957",
+                        }}
+                      >
+                        {shopIcons[shop.slug] || "🏪"}
+                      </span>
+
+                      {shop.category || "Local Store"}
                     </div>
-
-                    <div className="jp-shop-info">
-
-                      <h3>
-                        {shop.name ||
-                          displayName(
-                            shop.slug
-                          )}
-                      </h3>
-
-                      <p className="jp-distance">
-                        <span>
-                          📍
-                        </span>{" "}
-                        {shop.distance ||
-                          shop.distance_km ||
-                          "Nearby"}
-                      </p>
-
-                      <div className="jp-shop-category">
-
-                        <span
-                          style={{
-                            background:
-                              shop.slug ===
-                              "City-Home-Services"
-                                ? "#0871e7"
-                                : "#159957",
-                          }}
-                        >
-                          {shopIcons[
-                            shop.slug
-                          ] || "🏪"}
-                        </span>
-
-                        {shop.category ||
-                          "Local Store"}
-
-                      </div>
-
-                    </div>
-
-                  </article>
-                )
-              )}
-
+                  </div>
+                </article>
+              ))}
             </div>
-
           ) : (
-
             <div className="jp-empty">
+              <div className="jp-empty-icon">⌕</div>
 
-              <div className="jp-empty-icon">
-                ⌕
-              </div>
-
-              <h3>
-                No stores found
-              </h3>
+              <h3>No stores found</h3>
 
               <p>
-                Try another shop name or
-                search term.
+                Try another shop name or search term.
               </p>
 
-              <button
-                onClick={() =>
-                  setSearch("")
-                }
-              >
+              <button onClick={() => setSearch("")}>
                 Clear search
               </button>
-
             </div>
-
           )}
 
           {locationError && (
             <p className="jp-location-message">
-              Location unavailable. Showing
-              available JusPing stores.
+              Location unavailable. Showing available JusPing
+              stores.
             </p>
           )}
-
         </section>
-
 
         {/* POPULAR SERVICES */}
         <section className="jp-section">
-
           <div className="jp-section-heading">
-
-            <h2>
-              Popular Services
-            </h2>
+            <h2>Popular Services</h2>
 
             <button
               onClick={() =>
@@ -1197,256 +1030,154 @@ const getShopImage = (shop) => {
                   "https://city-home-services.jusping.com/services")
               }
             >
-              View All{" "}
-              <span>→</span>
+              View All <span>→</span>
             </button>
-
           </div>
 
           {servicesLoading ? (
-
-            <p>
-              Loading services...
-            </p>
-
+            <p>Loading services...</p>
           ) : services.length > 0 ? (
-
             <div className="jp-card-grid">
+              {services.map((service, index) => {
+                const serviceName =
+                  service.title ||
+                  service.name ||
+                  "Service";
 
-              {services.map(
-                (service, index) => {
+                const servicePrice =
+                  service.price ??
+                  service.base_price;
 
-                  const serviceName =
-                    service.title ||
-                    service.name ||
-                    "Service";
+                const serviceId =
+                  service.id ??
+                  service.service_id ??
+                  `${serviceName}-${index}`;
 
-                  const servicePrice =
-                    service.price ??
-                    service.base_price;
+                return (
+                  <article
+                    className="jp-service-card"
+                    key={serviceId}
+                  >
+                    <div className="jp-service-image">
+                      <img
+                        src={getServiceImage(service)}
+                        alt={serviceName}
+                        loading="lazy"
+                        onError={(event) => {
+                          const staticAsset =
+                            getStaticServiceAsset(service);
 
-                  const serviceId =
-                    service.id ??
-                    service.service_id ??
-                    `${serviceName}-${index}`;
-
-                  return (
-                    <article
-                      className="jp-service-card"
-                      key={serviceId}
-                    >
-
-                      <div className="jp-service-image">
-
-                        <img
-                          src={getServiceImage(
-                            service
-                          )}
-                          alt={serviceName}
-                          loading="lazy"
-                          onError={(
-                            event
-                          ) => {
-
-                            const staticAsset =
-                              getStaticServiceAsset(
-                                service
-                              );
-
-                            if (
-                              staticAsset?.image
-                            ) {
-                              event.currentTarget.onerror =
-                                null;
-
-                              event.currentTarget.src =
-                                staticAsset.image;
-                            }
-                          }}
-                        />
-
-                        <span
-                          className={`jp-service-badge badge-${
-                            index % 6
-                          }`}
-                        >
-                          {getServiceIcon(
-                            service
-                          )}
-                        </span>
-
-                      </div>
-
-                      <div className="jp-service-info">
-
-                        <h3>
-                          {serviceName}
-                        </h3>
-
-                        <p>
-                          From{" "}
-                          <strong>
-                            {servicePrice != null
-                              ? `₹${servicePrice}`
-                              : "Contact for price"}
-                          </strong>
-                        </p>
-
-                        <button
-                          className="jp-book-button"
-                          onClick={() =>
-                            handleBookService(
-                              service
-                            )
+                          if (staticAsset?.image) {
+                            event.currentTarget.onerror = null;
+                            event.currentTarget.src =
+                              staticAsset.image;
                           }
-                        >
-                          Book Now
-                        </button>
+                        }}
+                      />
 
-                      </div>
+                      <span
+                        className={`jp-service-badge badge-${
+                          index % 6
+                        }`}
+                      >
+                        {getServiceIcon(service)}
+                      </span>
+                    </div>
 
-                    </article>
-                  );
-                }
-              )}
+                    <div className="jp-service-info">
+                      <h3>{serviceName}</h3>
 
+                      <p>
+                        From{" "}
+                        <strong>
+                          {servicePrice != null
+                            ? `₹${servicePrice}`
+                            : "Contact for price"}
+                        </strong>
+                      </p>
+
+                      <button
+                        className="jp-book-button"
+                        onClick={() =>
+                          handleBookService(service)
+                        }
+                      >
+                        Book Now
+                      </button>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
-
           ) : (
-
             <div className="jp-empty">
-
-              <h3>
-                No services available
-              </h3>
-
-              <p>
-                Please check back later.
-              </p>
-
+              <h3>No services available</h3>
+              <p>Please check back later.</p>
             </div>
-
           )}
-
         </section>
-
 
         {/* COMMUNITY CHAT */}
         <section className="jp-section jp-community-section">
-
           <div className="jp-section-heading">
+            <h2>Community Chat</h2>
 
-            <h2>
-              Community Chat
-            </h2>
-
-            <button
-              onClick={() =>
-                goTo("/community")
-              }
-            >
-              View All{" "}
-              <span>→</span>
+            <button onClick={() => goTo("/community")}>
+              View All <span>→</span>
             </button>
-
           </div>
-
 
           <div className="jp-community-grid">
-
             <article className="jp-community-card jp-shop-chat">
-
-              <div className="jp-community-symbol">
-                ▣
-              </div>
+              <div className="jp-community-symbol">▣</div>
 
               <div className="jp-community-content">
-
-                <h3>
-                  Shop Owner - Customer Chat
-                </h3>
+                <h3>Shop Owner - Customer Chat</h3>
 
                 <p>
-                  Chat directly with your
-                  favourite shop owners for
-                  orders, support and updates.
+                  Chat directly with your favourite shop owners
+                  for orders, support and updates.
                 </p>
 
-                <button
-                  onClick={() =>
-                    goTo("/chat")
-                  }
-                >
-                  Start Chatting{" "}
-                  <span>→</span>
+                <button onClick={() => goTo("/chat")}>
+                  Start Chatting <span>→</span>
                 </button>
-
               </div>
 
-              <div className="jp-community-art">
-                🏪
-              </div>
-
+              <div className="jp-community-art">🏪</div>
             </article>
-
 
             <article className="jp-community-card jp-group-chat">
-
-              <div className="jp-community-symbol">
-                👥
-              </div>
+              <div className="jp-community-symbol">👥</div>
 
               <div className="jp-community-content">
-
-                <h3>
-                  Join Community Chat
-                </h3>
+                <h3>Join Community Chat</h3>
 
                 <p>
-                  Connect with people in your
-                  area. Discuss, share and stay
-                  updated.
+                  Connect with people in your area. Discuss,
+                  share and stay updated.
                 </p>
 
-                <button
-                  onClick={() =>
-                    goTo("/community")
-                  }
-                >
-                  Join Now{" "}
-                  <span>→</span>
+                <button onClick={() => goTo("/community")}>
+                  Join Now <span>→</span>
                 </button>
-
               </div>
 
-              <div className="jp-community-art">
-                🧑‍🤝‍🧑
-              </div>
-
+              <div className="jp-community-art">🧑‍🤝‍🧑</div>
             </article>
-
           </div>
-
         </section>
-
 
         {/* PREMIUM SERVICES */}
         {/* <section className="jp-premium">
           ...
         </section> */}
-
       </main>
-
-
-      {/* FOOTER */}
+            {/* FOOTER */}
       <footer className="jp-footer">
-
         <div className="jp-footer-main">
-
           <div className="jp-footer-brand">
-
             <div className="jp-footer-logo">
-
               <div className="jp-logo-mark">
                 <span>●</span>
               </div>
@@ -1454,100 +1185,42 @@ const getShopImage = (shop) => {
               <h2>
                 Jus<span>Ping</span>
               </h2>
-
             </div>
 
             <p>
               Connect Local • Build Community • Grow Together
             </p>
-
           </div>
 
-
           <div className="jp-footer-column">
-
-            <h4>
-              Quick Links
-            </h4>
-
-            <a href="/shops">
-              Shops
-            </a>
-
-            <a href="/services">
-              Services
-            </a>
-
-            <a href="/community">
-              Community
-            </a>
-
+            <h4>Quick Links</h4>
+            <a href="/shops">Shops</a>
+            <a href="/services">Services</a>
+            <a href="/community">Community</a>
           </div>
 
-
           <div className="jp-footer-column">
-
-            <h4>
-              Support
-            </h4>
-
-            <a href="/about">
-              About Us
-            </a>
-
-            <a href="/contact">
-              Contact Us
-            </a>
-
-            <a href="/privacy-policy">
-              Privacy Policy
-            </a>
-
-            <a href="/terms">
-              Terms & Conditions
-            </a>
-
+            <h4>Support</h4>
+            <a href="/about">About Us</a>
+            <a href="/contact">Contact Us</a>
+            <a href="/privacy-policy">Privacy Policy</a>
+            <a href="/terms">Terms & Conditions</a>
           </div>
 
-
           <div className="jp-footer-column">
-
-            <h4>
-              Follow Us
-            </h4>
+            <h4>Follow Us</h4>
 
             <div className="jp-socials">
-
-              <a href="#facebook">
-                f
-              </a>
-
-              <a href="#instagram">
-                ◎
-              </a>
-
-              <a href="#x">
-                X
-              </a>
-
-              <a href="#linkedin">
-                in
-              </a>
-
-              <a href="#youtube">
-                ▶
-              </a>
-
+              <a href="#facebook">f</a>
+              <a href="#instagram">◎</a>
+              <a href="#x">X</a>
+              <a href="#linkedin">in</a>
+              <a href="#youtube">▶</a>
             </div>
-
           </div>
 
-
           <div className="jp-footer-column jp-app-column">
-
-            <h4>
-              Download Our App
-            </h4>
+            <h4>Download Our App</h4>
 
             <a
               className="jp-google-play"
@@ -1555,27 +1228,17 @@ const getShopImage = (shop) => {
               target="_blank"
               rel="noopener noreferrer"
             >
-
-              <span>
-                ▶
-              </span>
+              <span>▶</span>
 
               <small>
                 GET IT ON
-                <strong>
-                  Google Play
-                </strong>
+                <strong>Google Play</strong>
               </small>
-
             </a>
-
           </div>
-
         </div>
 
-
         <div className="jp-footer-bottom">
-
           <span>
             © {new Date().getFullYear()} JusPing.
             All rights reserved.
@@ -1584,11 +1247,8 @@ const getShopImage = (shop) => {
           <span>
             Made with <b>♥</b> for Local Communities
           </span>
-
         </div>
-
       </footer>
-
     </div>
   );
 };
