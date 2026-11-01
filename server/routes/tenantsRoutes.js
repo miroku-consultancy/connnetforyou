@@ -43,7 +43,7 @@ router.get('/resolve', async (req, res) => {
       WHERE LOWER(d.domain) = $1
         AND d.is_active = TRUE
         AND d.is_verified = TRUE
-        AND t.status = 'active'
+        AND t.status = 'approved'
 
       LIMIT 1
       `,
