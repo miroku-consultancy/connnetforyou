@@ -52,6 +52,7 @@ import MyBusiness from "./pages/MyBusiness";
 import EditService from "./pages/EditService";
 import MyProductStore from "./pages/MyProductStore";
 import EditProduct from "./components/EditProduct";
+import MasterAdminScreen from "./pages/MasterAdminScreen";
 //import Banner from './components/Banner';
 
 
@@ -114,6 +115,14 @@ const AppRoutes = () => (
         <Route path="/profile" element={<ProtectedRoute><UserProfileForm /></ProtectedRoute>} />
         <Route path="/profile" element={<UserProfileForm />} />
         <Route path="/admin/add-stock" element={<AddStock />} />
+        <Route
+  path="/master-admin"
+  element={
+    <ProtectedRoute>
+      <MasterAdminScreen />
+    </ProtectedRoute>
+  }
+/>
         {/* Public service marketplace */}
 <Route path="/services" element={<Services />} />
 
