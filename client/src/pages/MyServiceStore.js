@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { secondaryApiUrl } from "../config/apiConfig";
@@ -9,6 +10,8 @@ const MyServiceStore = () => {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [submittingServiceId, setSubmittingServiceId] = useState(null);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const loadServices = async () => {
     try {
@@ -44,10 +47,7 @@ const MyServiceStore = () => {
       setServices(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Load my services error:", err);
-
-      setError(
-        err.message || "Failed to load services"
-      );
+      setError(err.message || "Failed to load services");
     } finally {
       setLoading(false);
     }
@@ -56,6 +56,64 @@ const MyServiceStore = () => {
   useEffect(() => {
     loadServices();
   }, []);
+
+  // Submit a draft or rejected service for admin review
+  const handleSubmitForReview = async (service) => {
+    if (submittingServiceId) return;
+
+    const token = localStorage.getItem("authToken");
+
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Submit "${service.title}" for admin review?`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setSubmittingServiceId(service.id);
+      setError("");
+      setSuccessMessage("");
+
+      const response = await fetch(
+        `${secondaryApiUrl}/api/services/${service.id}/submit-for-review`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error ||
+            data.message ||
+            "Unable to submit service for review"
+        );
+      }
+
+      setSuccessMessage(
+        data.message || "Service submitted successfully for review."
+      );
+
+      await loadServices();
+    } catch (err) {
+      console.error("Submit service for review error:", err);
+      setError(
+        err.message || "Unable to submit service for review"
+      );
+    } finally {
+      setSubmittingServiceId(null);
+    }
+  };
 
   const getStatusLabel = (status) => {
     switch (status) {
@@ -106,7 +164,10 @@ const MyServiceStore = () => {
       return "Contact for price";
     }
 
-    if (service.price === null || service.price === undefined) {
+    if (
+      service.price === null ||
+      service.price === undefined
+    ) {
       return "Price not set";
     }
 
@@ -166,9 +227,7 @@ const MyServiceStore = () => {
   return (
     <div className="my-service-store-page">
 
-      {/* =====================================================
-          HEADER
-         ===================================================== */}
+      {/* HEADER */}
 
       <div className="my-service-store-header">
 
@@ -207,17 +266,14 @@ const MyServiceStore = () => {
 
       </div>
 
-
-      {/* =====================================================
-          ERROR
-         ===================================================== */}
+      {/* ERROR */}
 
       {error && (
         <div className="service-error modern-service-error">
           <span>!</span>
 
           <div>
-            <strong>Unable to load services</strong>
+            <strong>Something went wrong</strong>
             <p>{error}</p>
           </div>
 
@@ -227,18 +283,29 @@ const MyServiceStore = () => {
         </div>
       )}
 
+      {/* SUCCESS */}
+
+      {successMessage && (
+        <div className="service-success-message">
+          <span>✓</span>
+          {successMessage}
+          <button
+            type="button"
+            onClick={() => setSuccessMessage("")}
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       {!error && (
         <>
 
-          {/* =================================================
-              SUMMARY
-             ================================================= */}
+          {/* SUMMARY */}
 
           <div className="service-summary-grid">
 
             <div className="service-summary-card">
-
               <div className="summary-icon">
                 ✦
               </div>
@@ -247,12 +314,9 @@ const MyServiceStore = () => {
                 <span>Total Services</span>
                 <strong>{services.length}</strong>
               </div>
-
             </div>
 
-
             <div className="service-summary-card">
-
               <div className="summary-icon published-icon">
                 ✓
               </div>
@@ -261,12 +325,9 @@ const MyServiceStore = () => {
                 <span>Published</span>
                 <strong>{publishedCount}</strong>
               </div>
-
             </div>
 
-
             <div className="service-summary-card">
-
               <div className="summary-icon pending-icon">
                 ◷
               </div>
@@ -275,12 +336,9 @@ const MyServiceStore = () => {
                 <span>Pending Review</span>
                 <strong>{pendingCount}</strong>
               </div>
-
             </div>
 
-
             <div className="service-summary-card">
-
               <div className="summary-icon draft-icon">
                 ◌
               </div>
@@ -289,15 +347,11 @@ const MyServiceStore = () => {
                 <span>Drafts</span>
                 <strong>{draftCount}</strong>
               </div>
-
             </div>
 
           </div>
 
-
-          {/* =================================================
-              EMPTY STATE
-             ================================================= */}
+          {/* EMPTY STATE */}
 
           {services.length === 0 && (
             <div className="empty-services-card">
@@ -323,10 +377,7 @@ const MyServiceStore = () => {
             </div>
           )}
 
-
-          {/* =================================================
-              SERVICES
-             ================================================= */}
+          {/* SERVICES */}
 
           {services.length > 0 && (
             <section className="services-section">
@@ -351,7 +402,6 @@ const MyServiceStore = () => {
                 </button>
 
               </div>
-
 
               <div className="service-list">
 
@@ -384,13 +434,10 @@ const MyServiceStore = () => {
                         )}`}
                       >
                         <i></i>
-                        {getStatusLabel(
-                          service.status
-                        )}
+                        {getStatusLabel(service.status)}
                       </span>
 
                     </div>
-
 
                     {/* CONTENT */}
 
@@ -404,9 +451,7 @@ const MyServiceStore = () => {
                           </span>
                         )}
 
-                        <h3>
-                          {service.title}
-                        </h3>
+                        <h3>{service.title}</h3>
 
                         <p className="service-description">
                           {service.description ||
@@ -415,17 +460,14 @@ const MyServiceStore = () => {
 
                       </div>
 
-
                       <div className="service-card-bottom">
 
                         <div className="service-price">
 
                           <span>
-                            {service.pricing_type ===
-                            "starting_from"
+                            {service.pricing_type === "starting_from"
                               ? "Starting from"
-                              : service.pricing_type ===
-                                "quote"
+                              : service.pricing_type === "quote"
                               ? "Pricing"
                               : "Service price"}
                           </span>
@@ -436,18 +478,42 @@ const MyServiceStore = () => {
 
                         </div>
 
+                        <div className="service-card-actions">
 
-                        <button
-                          className="service-manage-btn"
-                          onClick={() =>
-                            handleEditService(
-                              service
-                            )
-                          }
-                        >
-                          Manage
-                          <span>→</span>
-                        </button>
+                          {/* SUBMIT FOR REVIEW */}
+
+                          {(service.status === "draft" ||
+                            service.status === "rejected") && (
+                            <button
+                              type="button"
+                              className="service-manage-btn"
+                              disabled={
+                                submittingServiceId === service.id
+                              }
+                              onClick={() =>
+                                handleSubmitForReview(service)
+                              }
+                            >
+                              {submittingServiceId === service.id
+                                ? "Submitting..."
+                                : "Submit for Review"}
+                            </button>
+                          )}
+
+                          {/* MANAGE */}
+
+                          <button
+                            type="button"
+                            className="service-manage-btn"
+                            onClick={() =>
+                              handleEditService(service)
+                            }
+                          >
+                            Manage
+                            <span>→</span>
+                          </button>
+
+                        </div>
 
                       </div>
 

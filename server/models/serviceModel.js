@@ -2,9 +2,7 @@
 const pool = require("../db");
 
 const serviceModel = {
-  // =========================================================
-  // Vendor/Admin: Get ALL services for a shop
-  // =========================================================
+  // Vendor/admin: get all services for a shop
   async getServicesByShop({ shopId }) {
     const { rows } = await pool.query(
       `
@@ -23,8 +21,7 @@ const serviceModel = {
         sh.name AS business_name,
         sh.slug AS shop_slug
       FROM services s
-      JOIN shops sh
-        ON sh.id = s.shop_id
+      JOIN shops sh ON sh.id = s.shop_id
       WHERE s.shop_id = $1
       ORDER BY s.created_at DESC
       `,
@@ -34,19 +31,10 @@ const serviceModel = {
     return rows;
   },
 
-  // =========================================================
-  // Public: Get PUBLISHED services from approved/active stores
-  // =========================================================
-  async getPublishedServices({
-    shopId,
-    category,
-    search
-  } = {}) {
+  // Public: only published services from approved stores
+  async getPublishedServices({ shopId, category, search } = {}) {
     const values = [];
-
-    const conditions = [
-      "s.status = 'published'"
-    ];
+    const conditions = ["s.status = 'published'"];
 
     if (shopId) {
       values.push(shopId);
@@ -60,11 +48,13 @@ const serviceModel = {
 
     if (search) {
       values.push(`%${search}%`);
-      conditions.push(
-        `(s.title ILIKE $${values.length}
+      conditions.push(`
+        (
+          s.title ILIKE $${values.length}
           OR s.description ILIKE $${values.length}
-          OR sh.name ILIKE $${values.length})`
-      );
+          OR sh.name ILIKE $${values.length}
+        )
+      `);
     }
 
     const query = `
@@ -85,8 +75,7 @@ const serviceModel = {
         sh.phone,
         t.slug AS tenant_slug
       FROM services s
-      JOIN shops sh
-        ON sh.id = s.shop_id
+      JOIN shops sh ON sh.id = s.shop_id
       INNER JOIN tenants t
         ON t.shop_id = sh.id
         AND t.status IN ('approved', 'active')
@@ -95,13 +84,9 @@ const serviceModel = {
     `;
 
     const { rows } = await pool.query(query, values);
-
     return rows;
   },
 
-  // =========================================================
-  // Public: Get service by ID from approved/active stores
-  // =========================================================
   async getServiceById(id) {
     const { rows } = await pool.query(
       `
@@ -123,8 +108,7 @@ const serviceModel = {
         sh.phone,
         t.slug AS tenant_slug
       FROM services s
-      JOIN shops sh
-        ON sh.id = s.shop_id
+      JOIN shops sh ON sh.id = s.shop_id
       INNER JOIN tenants t
         ON t.shop_id = sh.id
         AND t.status IN ('approved', 'active')
@@ -137,9 +121,6 @@ const serviceModel = {
     return rows[0] || null;
   },
 
-  // =========================================================
-  // Create service
-  // =========================================================
   async createService(data) {
     const {
       shop_id,
@@ -182,9 +163,6 @@ const serviceModel = {
     return rows[0];
   },
 
-  // =========================================================
-  // Update service
-  // =========================================================
   async updateService(id, shopId, data) {
     const {
       title,
@@ -228,9 +206,6 @@ const serviceModel = {
     return rows[0] || null;
   },
 
-  // =========================================================
-  // Vendor: Count services for a shop
-  // =========================================================
   async countServicesByShop({ shopId }) {
     const { rows } = await pool.query(
       `
@@ -244,9 +219,6 @@ const serviceModel = {
     return rows[0]?.count || 0;
   },
 
-  // =========================================================
-  // Delete service
-  // =========================================================
   async deleteService(id, shopId) {
     const { rows } = await pool.query(
       `

@@ -4,17 +4,13 @@ const pool = require("../db");
 const uploadToCloudinary = require("../utils/uploadToCloudinary");
 
 // ---------------------------------------------------------
-// Resolve the vendor's shop from user_shop_roles
+// Resolve vendor shop from user_shop_roles
 // ---------------------------------------------------------
 const getVendorShopId = async (req) => {
   const userId = req.user?.id;
 
-  if (!userId) {
-    return null;
-  }
+  if (!userId) return null;
 
-  // If JWT already represents a vendor shop,
-  // verify that the user actually owns that shop.
   if (req.user?.shop_id && req.user?.role === "vendor") {
     const selectedResult = await pool.query(
       `
@@ -33,12 +29,6 @@ const getVendorShopId = async (req) => {
     }
   }
 
-  // Root login may have:
-  // role = customer
-  // shop_id = 1
-  //
-  // So fall back to the vendor shop linked
-  // through user_shop_roles.
   const vendorResult = await pool.query(
     `
     SELECT shop_id
@@ -55,16 +45,11 @@ const getVendorShopId = async (req) => {
 };
 
 // ---------------------------------------------------------
-// Vendor: Get all services belonging to vendor's shop
+// Vendor: get own services
 // ---------------------------------------------------------
 exports.getMyServices = async (req, res) => {
   try {
-    console.log("[getMyServices] HIT");
-    console.log("[getMyServices] req.user:", req.user);
-
     const shopId = await getVendorShopId(req);
-
-    console.log("[getMyServices] vendor shopId:", shopId);
 
     if (!shopId) {
       return res.status(403).json({
@@ -76,10 +61,7 @@ exports.getMyServices = async (req, res) => {
       shopId: Number(shopId)
     });
 
-    console.log("[getMyServices] services:", services);
-
     return res.status(200).json(services);
-
   } catch (error) {
     console.error("[getMyServices] ERROR:", error);
 
@@ -90,7 +72,7 @@ exports.getMyServices = async (req, res) => {
 };
 
 // ---------------------------------------------------------
-// Public: Get published services from approved stores
+// Public: get published services
 // ---------------------------------------------------------
 exports.getServices = async (req, res) => {
   try {
@@ -114,9 +96,8 @@ exports.getServices = async (req, res) => {
     });
 
     return res.status(200).json(services);
-
   } catch (error) {
-    console.error("Error fetching public services:", error);
+    console.error("[getServices] ERROR:", error);
 
     return res.status(500).json({
       message: "Error fetching public services"
@@ -125,7 +106,7 @@ exports.getServices = async (req, res) => {
 };
 
 // ---------------------------------------------------------
-// Public details: Only published services from approved stores
+// Public: get one published service
 // ---------------------------------------------------------
 exports.getService = async (req, res) => {
   try {
@@ -146,9 +127,8 @@ exports.getService = async (req, res) => {
     }
 
     return res.json(service);
-
   } catch (error) {
-    console.error("Get service error:", error);
+    console.error("[getService] ERROR:", error);
 
     return res.status(500).json({
       message: "Failed to fetch service"
@@ -157,7 +137,8 @@ exports.getService = async (req, res) => {
 };
 
 // ---------------------------------------------------------
-// Authenticated provider creates service
+// Vendor: create service
+// Initial status = draft
 // ---------------------------------------------------------
 exports.createService = async (req, res) => {
   try {
@@ -169,13 +150,9 @@ exports.createService = async (req, res) => {
       });
     }
 
-    // -------------------------------------------------------
-    // Free plan: Maximum 10 services
-    // -------------------------------------------------------
-    const serviceCount =
-      await serviceModel.countServicesByShop({
-        shopId: Number(shopId)
-      });
+    const serviceCount = await serviceModel.countServicesByShop({
+      shopId: Number(shopId)
+    });
 
     const FREE_SERVICE_LIMIT = 10;
 
@@ -188,8 +165,6 @@ exports.createService = async (req, res) => {
         currentCount: serviceCount
       });
     }
-
-    console.log("[createService] vendor shopId:", shopId);
 
     const {
       title,
@@ -205,15 +180,9 @@ exports.createService = async (req, res) => {
       });
     }
 
-    const validPricingTypes = [
-      "fixed",
-      "starting_from",
-      "quote"
-    ];
-
     const pricingType = pricing_type || "fixed";
 
-    if (!validPricingTypes.includes(pricingType)) {
+    if (!["fixed", "starting_from", "quote"].includes(pricingType)) {
       return res.status(400).json({
         message: "Invalid pricing type"
       });
@@ -221,50 +190,32 @@ exports.createService = async (req, res) => {
 
     let servicePrice = null;
 
-    if (price !== undefined && price !== "") {
+    if (pricingType !== "quote") {
       servicePrice = Number(price);
 
-      if (!Number.isFinite(servicePrice) || servicePrice < 0) {
+      if (
+        price === undefined ||
+        price === "" ||
+        !Number.isFinite(servicePrice) ||
+        servicePrice < 0
+      ) {
         return res.status(400).json({
-          message: "Price must be a valid non-negative number"
+          message: "A valid non-negative price is required"
         });
       }
     }
 
-    if (pricingType === "quote") {
-      servicePrice = null;
-    } else if (servicePrice === null) {
-      return res.status(400).json({
-        message: "Price is required for this pricing type"
-      });
-    }
-
-    // -------------------------------------------------------
-    // Upload service image to Cloudinary
-    // -------------------------------------------------------
     let imageUrl = null;
 
     if (req.file) {
-      console.log(
-        "[createService] Uploading image to Cloudinary..."
-      );
-
       const uploadedImage = await uploadToCloudinary(
         req.file.buffer,
         "jusping/services"
       );
 
       imageUrl = uploadedImage.secure_url;
-
-      console.log(
-        "[createService] Cloudinary image URL:",
-        imageUrl
-      );
     }
 
-    // -------------------------------------------------------
-    // Create service in database
-    // -------------------------------------------------------
     const service = await serviceModel.createService({
       shop_id: Number(shopId),
       title: title.trim(),
@@ -273,19 +224,15 @@ exports.createService = async (req, res) => {
       price: servicePrice,
       pricing_type: pricingType,
       image_url: imageUrl,
-
-      // Store-level approval architecture:
-      // Service is initially part of the draft store.
       status: "draft"
     });
 
     return res.status(201).json({
-      message: "Service created successfully",
+      message: "Service created successfully. Submit it for review when ready.",
       service
     });
-
   } catch (error) {
-    console.error("Create service error:", error);
+    console.error("[createService] ERROR:", error);
 
     return res.status(500).json({
       message: "Failed to create service"
@@ -294,7 +241,13 @@ exports.createService = async (req, res) => {
 };
 
 // ---------------------------------------------------------
-// Authenticated provider updates own service
+// Vendor: update own service
+//
+// published      -> pending_review
+// pending_review -> pending_review
+// rejected       -> draft
+// draft          -> draft
+// inactive       -> inactive
 // ---------------------------------------------------------
 exports.updateService = async (req, res) => {
   try {
@@ -330,13 +283,7 @@ exports.updateService = async (req, res) => {
 
     const pricingType = pricing_type || "fixed";
 
-    if (
-      ![
-        "fixed",
-        "starting_from",
-        "quote"
-      ].includes(pricingType)
-    ) {
+    if (!["fixed", "starting_from", "quote"].includes(pricingType)) {
       return res.status(400).json({
         message: "Invalid pricing type"
       });
@@ -348,8 +295,8 @@ exports.updateService = async (req, res) => {
       servicePrice = Number(price);
 
       if (
-        price === "" ||
         price === undefined ||
+        price === "" ||
         !Number.isFinite(servicePrice) ||
         servicePrice < 0
       ) {
@@ -359,32 +306,50 @@ exports.updateService = async (req, res) => {
       }
     }
 
-    // -------------------------------------------------------
-    // Upload new image only if one was selected
-    // -------------------------------------------------------
+    // Read current status and verify ownership.
+    const existingResult = await pool.query(
+      `
+      SELECT id, status
+      FROM services
+      WHERE id = $1
+        AND shop_id = $2
+      LIMIT 1
+      `,
+      [id, Number(shopId)]
+    );
+
+    if (existingResult.rowCount === 0) {
+      return res.status(404).json({
+        message: "Service not found or you do not own this service"
+      });
+    }
+
+    const currentStatus = existingResult.rows[0].status;
+
+    let nextStatus;
+
+    if (
+      currentStatus === "published" ||
+      currentStatus === "pending_review"
+    ) {
+      nextStatus = "pending_review";
+    } else if (currentStatus === "inactive") {
+      nextStatus = "inactive";
+    } else {
+      nextStatus = "draft";
+    }
+
     let imageUrl = null;
 
     if (req.file) {
-      console.log(
-        "[updateService] Uploading new image to Cloudinary..."
-      );
-
       const uploadedImage = await uploadToCloudinary(
         req.file.buffer,
         "jusping/services"
       );
 
       imageUrl = uploadedImage.secure_url;
-
-      console.log(
-        "[updateService] Cloudinary image URL:",
-        imageUrl
-      );
     }
 
-    // -------------------------------------------------------
-    // Update service in database
-    // -------------------------------------------------------
     const service = await serviceModel.updateService(
       id,
       Number(shopId),
@@ -394,32 +359,26 @@ exports.updateService = async (req, res) => {
         category,
         price: servicePrice,
         pricing_type: pricingType,
-
-        // null means keep existing image because
-        // serviceModel uses COALESCE()
         image_url: imageUrl,
-
-        status:
-          req.body.status === "inactive"
-            ? "inactive"
-            : "draft"
+        status: nextStatus
       }
     );
 
     if (!service) {
       return res.status(404).json({
-        message:
-          "Service not found or you do not own this service"
+        message: "Service could not be updated"
       });
     }
 
     return res.json({
-      message: "Service updated successfully",
+      message:
+        nextStatus === "pending_review"
+          ? "Service updated and submitted for review"
+          : "Service updated successfully",
       service
     });
-
   } catch (error) {
-    console.error("Update service error:", error);
+    console.error("[updateService] ERROR:", error);
 
     return res.status(500).json({
       message: "Failed to update service"
@@ -428,7 +387,175 @@ exports.updateService = async (req, res) => {
 };
 
 // ---------------------------------------------------------
-// Authenticated provider deletes own service
+// Vendor: submit draft/rejected service for review
+// draft/rejected -> pending_review
+// ---------------------------------------------------------
+exports.submitServiceForReview = async (req, res) => {
+  try {
+    const shopId = await getVendorShopId(req);
+
+    if (!shopId) {
+      return res.status(403).json({
+        message: "Your account is not linked to a vendor shop"
+      });
+    }
+
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({
+        message: "Invalid service ID"
+      });
+    }
+
+    const result = await pool.query(
+      `
+      UPDATE services
+      SET
+        status = 'pending_review',
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $1
+        AND shop_id = $2
+        AND status IN ('draft', 'rejected')
+      RETURNING *
+      `,
+      [id, Number(shopId)]
+    );
+
+    if (result.rowCount === 0) {
+      const existing = await pool.query(
+        `
+        SELECT status
+        FROM services
+        WHERE id = $1
+          AND shop_id = $2
+        LIMIT 1
+        `,
+        [id, Number(shopId)]
+      );
+
+      if (existing.rowCount === 0) {
+        return res.status(404).json({
+          message: "Service not found or you do not own this service"
+        });
+      }
+
+      return res.status(409).json({
+        message: `Service cannot be submitted from '${existing.rows[0].status}' status`,
+        status: existing.rows[0].status
+      });
+    }
+
+    return res.json({
+      message: "Service submitted for review successfully",
+      service: result.rows[0]
+    });
+  } catch (error) {
+    console.error("[submitServiceForReview] ERROR:", error);
+
+    return res.status(500).json({
+      message: "Failed to submit service for review"
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// Master admin: approve service
+// pending_review -> published
+// ---------------------------------------------------------
+exports.adminApproveService = async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({
+        message: "Invalid service ID"
+      });
+    }
+
+    const result = await pool.query(
+      `
+      UPDATE services s
+      SET
+        status = 'published',
+        updated_at = CURRENT_TIMESTAMP
+      FROM tenants t
+      WHERE s.id = $1
+        AND s.status = 'pending_review'
+        AND t.shop_id = s.shop_id
+        AND t.status IN ('approved', 'active')
+      RETURNING s.*
+      `,
+      [id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(409).json({
+        message: "Service is not awaiting review or its store is not approved"
+      });
+    }
+
+    return res.json({
+      message: "Service approved and published successfully",
+      service: result.rows[0]
+    });
+  } catch (error) {
+    console.error("[adminApproveService] ERROR:", error);
+
+    return res.status(500).json({
+      message: "Failed to approve service"
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// Master admin: reject service
+// pending_review -> rejected
+// ---------------------------------------------------------
+exports.adminRejectService = async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({
+        message: "Invalid service ID"
+      });
+    }
+
+    const result = await pool.query(
+      `
+      UPDATE services
+      SET
+        status = 'rejected',
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $1
+        AND status = 'pending_review'
+      RETURNING *
+      `,
+      [id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(409).json({
+        message: "Service is not awaiting review"
+      });
+    }
+
+    return res.json({
+      message: "Service rejected successfully",
+      service: result.rows[0]
+    });
+  } catch (error) {
+    console.error("[adminRejectService] ERROR:", error);
+
+    return res.status(500).json({
+      message: "Failed to reject service"
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// Vendor: delete own service
 // ---------------------------------------------------------
 exports.deleteService = async (req, res) => {
   try {
@@ -455,17 +582,15 @@ exports.deleteService = async (req, res) => {
 
     if (!deleted) {
       return res.status(404).json({
-        message:
-          "Service not found or you do not own this service"
+        message: "Service not found or you do not own this service"
       });
     }
 
     return res.json({
       message: "Service deleted successfully"
     });
-
   } catch (error) {
-    console.error("Delete service error:", error);
+    console.error("[deleteService] ERROR:", error);
 
     return res.status(500).json({
       message: "Failed to delete service"

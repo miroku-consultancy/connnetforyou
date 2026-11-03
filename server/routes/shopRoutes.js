@@ -142,54 +142,109 @@ router.get(
 // ============================================================
 // MASTER ADMIN - APPROVE SHOP
 // POST /api/shops/admin/:shopId/approve
+//
+// First approval of a service store:
+// - Approves the tenant
+// - Publishes all initial draft services
+//
+// Product-store behaviour remains unchanged.
 // ============================================================
 router.post(
   '/admin/:shopId/approve',
   authMiddleware,
   masterAdminMiddleware,
   async (req, res) => {
+    const shopId = Number(req.params.shopId);
+
+    if (!Number.isInteger(shopId) || shopId <= 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid shop ID'
+      });
+    }
+
+    const client = await pool.connect();
+    let transactionStarted = false;
+
     try {
-      const shopId = Number(req.params.shopId);
+      await client.query('BEGIN');
+      transactionStarted = true;
 
-      if (!Number.isInteger(shopId) || shopId <= 0) {
-        return res.status(400).json({
-          success: false,
-          error: 'Invalid shop ID'
-        });
-      }
-
-      const result = await pool.query(
+      // Approve only a pending tenant
+      const result = await client.query(
         `
-        UPDATE tenants
-        SET
-          status = 'approved',
-          updated_at = NOW()
-        WHERE shop_id = $1
-          AND status = 'pending'
-        RETURNING id, shop_id, slug, status, updated_at
+          UPDATE tenants t
+          SET
+            status = 'approved',
+            updated_at = NOW()
+          FROM shops s
+          WHERE t.shop_id = $1
+            AND t.shop_id = s.id
+            AND t.status = 'pending'
+          RETURNING
+            t.id,
+            t.shop_id,
+            t.slug,
+            t.status,
+            t.updated_at,
+            s.store_type
         `,
         [shopId]
       );
 
       if (result.rowCount === 0) {
+        await client.query('ROLLBACK');
+        transactionStarted = false;
+
         return res.status(404).json({
           success: false,
           error: 'Pending shop not found or already reviewed'
         });
       }
 
+      const tenant = result.rows[0];
+      let publishedServices = 0;
+
+      // Publish initial draft services only for service stores
+      if (tenant.store_type === 'service') {
+        const serviceResult = await client.query(
+          `
+            UPDATE services
+            SET status = 'published'
+            WHERE shop_id = $1
+              AND status = 'draft'
+            RETURNING id
+          `,
+          [shopId]
+        );
+
+        publishedServices = serviceResult.rowCount;
+      }
+
+      await client.query('COMMIT');
+      transactionStarted = false;
+
       return res.json({
         success: true,
         message: 'Shop approved successfully',
-        tenant: result.rows[0]
+        tenant,
+        published_services: publishedServices
       });
+
     } catch (error) {
+      if (transactionStarted) {
+        await client.query('ROLLBACK');
+      }
+
       console.error('[Admin] Approve shop error:', error);
 
       return res.status(500).json({
         success: false,
         error: 'Failed to approve shop'
       });
+
+    } finally {
+      client.release();
     }
   }
 );
